@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- head and css -->
+  {% include 't_head.html' %}
+</head>
+
+<body>
+  <div class="d-flex" id="wrapper">
+    <!-- Sidebar -->
+    {% include 't_sidebar.html' %}
+
+    <!-- Page Content -->
+    <div id="page-content-wrapper">
+
+      <!-- Navbar -->
+      {% include 't_navbar.html' %}
+
+      <!-- Model View -->
+      <div class="modal fade" id="ModalFilterView">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+
+            <!-- Modal Header -->
+            <div class="modal-header">
+              <h4 class="modal-title">Select a Class and start playing with its methods</h4>
+              <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <!-- Modal body -->
+            <div class="modal-body">
+              <!-- scrollbox -->
+              <div id=scrollbox>
+                <!-- Search Bar and Table -->
+                <div class="col-sm-12">
+                  <table class="table table-sm table-dark table-bordered">
+                    <thead>
+                      <tr>
+                        <th style='width: 10%'> index</th>
+                        <th style='width: 90%'> classes</th>
+                      </tr>
+                    </thead>
+                    <tbody id="myTable">
+                      <h3>Classes</h3>
+                      <p>Use the search bar below to quickly filter results:</p>
+                      <input class="form-control" id="myInput" type="text" placeholder="Search..">
+                      <br>
+                      {% for c in loaded_classes %}
+                      <tr>
+                        <td>[{{ loop.index0 }}]</td>
+                        <td><a href=hook_lab?class_index={{ loop.index0 }}>{{ c }}</a></td>
+                      </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+
+              </div>
+              <!-- scrollbox -->
+
+            </div>
+
+            <!-- Modal footer -->
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="container-fluid">
+        <br>
+        <h2>Hook LAB 🔮 - Select a Class and start playing with its methods 🕹</h2>
+        <div class="border-top my-3"></div>
+
+        <div class="row">
+
+          <div class="col-sm-12">
+            <!-- Dropdown menu -->
+            <button type="button" data-toggle="modal" data-target="#ModalFilterView"
+              class="btn btn-danger dropdown-toggle">
+              Select a Class
+            </button>
+            <br>
+            <br>
+          </div>
+
+        </div>
+
+        <div class="row">
+          <div class="col-sm-12">
+            <!-- Textarea with overload -->
+            <h3>Hook Template - <font class=text-primary>{{ selected_class}}</font>
+            </h3>
+            <form action="/custom_frida_script" method="post">
+              <input type=hidden name=choice value=4>
+
+              <textarea id=hooktable name=frida_custom_script
+                class="form-control">{{ hook_template_str|safe }}</textarea>
+              <br>
+              <center><input type=submit class="btn btn-primary"></center>
+              <br>
+            </form>
+          </div>
+
+        </div>
+      </div>
+      <!-- /#container-fluid -->
+
+    </div>
+    <!-- /#page-content-wrapper -->
+
+  </div>
+  <!-- /#wrapper -->
+
+  <!-- Javascript loading -->
+  {% include 't_js_script.html' %}
+
+</body>
+
+</html>

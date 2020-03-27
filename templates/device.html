@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- head and css -->
+  {% include 't_head.html' %}
+</head>
+
+<body>
+  <div class="d-flex" id="wrapper">
+    <!-- Sidebar -->
+    {% include 't_sidebar.html' %}
+
+    <!-- Page Content -->
+    <div id="page-content-wrapper">
+
+      <!-- Navbar -->
+      {% include 't_navbar.html' %}
+
+      <!-- Content -->
+      <div class="container-fluid">
+
+        <!-- Search Bar and Table -->
+        <div class="col-sm-12">
+          <br>
+          <!-- Avanced menu -->
+          <!-- Collapse View Button
+          <p align=right>
+            <button 
+              class="btn btn-primary" 
+              type="button" 
+              data-toggle="collapse" 
+              data-target="#collapseViewDevice" 
+              aria-expanded="true" 
+              aria-controls="collapseView">
+              Advanced Settings
+            </button>
+          </p>
+          -->
+          <div class="collapse show" id="collapseViewDevice">
+            <div class="form-group">
+              <label for="system_package">System Package used for diff loaded classes - (In case of issue try to attach a different persistent process)</label>
+              <input type="text" class="form-control" id="system_package" placeholder="{{ system_package_str|safe }} "
+                disabled>
+              <small class="form-text text-muted">
+                Edit this setting directly in the configuration file (<font color=red>config.json</font>)
+              </small>
+            </div>
+          </div>
+
+          <!-- Avanced menu -->
+          <h2>📱Device - Setting Panel</h2>
+          <form class="form-group 
+                       list-group-item 
+                       list-group-item-action 
+                       bg-light
+                       rounded" action="/" method=post>
+
+            <div class="form-group">
+              <label for="package">Package name</label>
+              <input type="text" class="form-control" id="package" name="package" required="true"
+                placeholder="com.example.app">
+            </div>
+            <div class="form-group">
+              <label for="mode">Spawn or Attach</label>
+              <select class="form-control" id="mode" name="mode">
+                <option>Spawn</option>
+                <option>Attach</option>
+              </select>
+            </div>
+            <!-- 
+            <div class="form-group">
+              <label for="suspend_process">Suspend the process at startup</label>
+              <select class="form-control" 
+                      id="suspend_process" 
+                      name="suspend_process">
+                <option>No</option>
+                <option>Yes</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="sleep_time">Suspend the app for 5,10 or 30sec</label>
+              <select class="form-control" 
+                      id="sleep_time" 
+                      name="sleep_time">
+                <option>5</option>
+                <option>10</option>
+                <option>30</option>
+              </select>
+            </div>
+            -->
+            <div class="form-group">
+              <label for="fridastartupscript">Run a FRIDA script at startup</label>
+              <textarea class="form-control" id="fridastartupscript" name="fridastartupscript"
+                rows="10">{{ custom_script_loaded }}</textarea>
+            </div>
+            <div class="form-group">
+              <button type="submit" class="btn btn-primary mb-2">Submit</button>
+              <button class="btn btn-danger mb-2 float-right" type="button" data-toggle="collapse"
+                data-target="#collapseViewCFS" aria-expanded="true" aria-controls="collapseView">
+                Custom Frida Script
+              </button>
+            </div>
+            <!-- Custom Frida Script - Toggle -->
+
+            <div class="collapse" id="collapseViewCFS">
+              <div class="form-group">
+                <h5>&nbsp;Load one of your favorite Frida Custom Scripts</h5>
+                <ul class="list-group">
+                  {% for cs in custom_scripts %}
+                  <a href="/?cs={{ cs }}" class="list-group-item list-group-item-action">
+                    [{{ loop.index0 }}] - {{ cs }}
+                  </a>
+                  {% endfor %}
+                </ul>
+                <small class="form-text text-muted">
+                  &nbsp; Scripts are automatically loaded from the <font color=red>custom_scripts</font> folder.
+                  <u><b>Make sure to add your favorite <font color=red>.js</font> scripts!</b></u> 😉
+                </small>
+              </div>
+            </div>
+            <!-- Custom Frida Script - Toggle -->
+
+          </form>
+        </div> <!-- form group-->
+        <br>
+        <br>
+      </div>
+      <!-- /#container-fluid -->
+    </div>
+    <!-- /#page-content-wrapper -->
+
+  </div>
+  <!-- /#wrapper -->
+
+  <!-- Javascript loading -->
+  {% include 't_js_script.html' %}
+
+</body>
+
+</html>

@@ -1,0 +1,77 @@
+  <!-- Bootstrap core JavaScript -->
+  {% block scripts %}
+  <script src="{{url_for('.static', filename='jquery.min.js')}}"></script>
+  <script src="{{url_for('.static', filename='bootstrap.bundle.min.js')}}"></script>
+
+  <!-- Menu Toggle Script -->
+  <script>
+      $("#menu-toggle").click(function (e) {
+          e.preventDefault();
+          $("#wrapper").toggleClass("toggled");
+      });
+  </script>
+
+  <!-- Search Bar Filter-->
+  <script>
+      $(document).ready(function () {
+          $("#myInput").on("keyup", function () {
+              var value = $(this).val().toLowerCase();
+              $("#myTable tr").filter(function () {
+                  $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+              });
+          });
+      });
+  </script>
+
+ <!-- Toggle Buttons -->
+  <script 
+    src="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.1/js/bootstrap4-toggle.min.js">
+  </script>
+
+  <!-- highlight.js Library Loading -->
+  <script src="https:////cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/highlight.min.js">
+  </script>
+  <script>
+      hljs.initHighlightingOnLoad();
+  </script>
+
+  <!-- Codemirror - Textarea Editor -->
+  <script 
+    src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.2/codemirror.min.js">
+  </script>
+  <script 
+    src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.48.4/mode/javascript/javascript.js">
+  </script>
+  <script>
+      var editor = CodeMirror.fromTextArea(hooktable, {
+          lineNumbers: true,
+          mode: 'javascript',
+          theme: 'dracula',
+      });
+      editor.setSize("100%",550);
+  </script>
+  <script>
+    var editor = CodeMirror.fromTextArea(fridastartupscript, {
+        lineNumbers: true,
+        mode: 'javascript',
+        theme: 'dracula',
+    });
+    editor.setSize("100%",300);
+</script>
+<script>
+    var editor = CodeMirror.fromTextArea(console_output_1, {
+        lineNumbers: true,
+        mode: 'javascript',
+        theme: 'dracula',
+    });
+    editor.setSize("100%",620);
+
+    var editor = CodeMirror.fromTextArea(console_output_2, {
+        lineNumbers: true,
+        mode: 'javascript',
+        theme: 'dracula',
+    });
+    editor.setSize("100%",620);
+</script>
+
+  {% endblock %}

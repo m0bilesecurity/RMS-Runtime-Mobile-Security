@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- head and css -->
+  {% include 't_head.html' %}
+</head>
+
+<body>
+
+<!-- Model View -->
+<div class="modal" id="ModalFilterView">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <h4 class="modal-title">Select the Classes that you want to hook</h4>
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+      </div>
+
+      <!-- Modal body -->
+      <div class="modal-body">
+        <!-- scrollbox -->
+        <div id=scrollbox>
+          <div class="col-sm-12">
+            <form class="form-group list-group-item list-group-item-action bg-light" action="/dump" method="get">
+              <b>Package:</b> {{package_name_str}}</p>
+              <label for="filter">Hook all classes that start with:</label>
+              <input type="text" class="form-control" id="filter" name="filter" required="true"
+                placeholder="com.example., com.external_library, com.test,">
+              <input type="hidden" name=choice value=1>
+              <small class="form-text text-muted">
+                &nbsp;&nbsp;You can insert multiple filters. Just make sure to use <b><font color=red>,</font></b> to separete the strings you want to use as a filters
+              </small>
+              <br>
+              <button type="submit" class="btn btn-primary mb-2">Submit</button>&nbsp;&nbsp;
+              <font color=red><b> NOTE: </b></font>Hooking more than 500 classes can crash the app
+            </form>
+          </div>
+          <br>
+          <div class="col-sm-12">
+
+            <!-- FORM START -->
+            <form class="form-group list-group-item list-group-item-action bg-light" 
+                  action="/dump" 
+                  method="POST">
+            <table class="table table-sm table-dark table-bordered">
+              <thead>
+                <tr>
+                  <th style='width: 10%'> Select</th>
+                  <th style='width: 10%'> Index</th>
+                  <th style='width: 80%'> Classes</th>
+                </tr>
+              </thead>
+              <tbody id="myTable">
+                <input class="form-control" id="myInput" type="text"
+                  placeholder="Use this search bar to quickly filter results:">
+                <br>
+                  <button type="submit" class="btn btn-primary mb-2">Hook Selected</button>&nbsp;&nbsp;
+                    <font color=red><b> NOTE: </b></font>Hooking more than 500 classes can crash the app 
+                {% for c in loaded_classes %}
+                <tr>
+                  <td align=center> <input type="checkbox" name=tohook value="{{ loop.index0 }}"> </td>
+                  <td align=center> {{ loop.index0 }} </td>
+                  <td> {{ c }} </td>
+                </tr>
+                {% endfor %}
+              </form> <!-- FORM END -->
+              </tbody>
+            </table>
+          </div>
+
+
+        </div>
+        <!-- scrollbox -->
+
+      </div>
+
+      <!-- Modal footer -->
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Model View -->
+
+  <div class="d-flex" id="wrapper">
+    <!-- Sidebar -->
+    {% include 't_sidebar.html' %}
+
+    <!-- Page Content -->
+    <div id="page-content-wrapper">
+
+      <!-- Navbar -->
+      {% include 't_navbar.html' %}
+
+      <!-- Content -->
+      <div class="container-fluid">
+        
+        <!-- Buttons -->
+        <div class="col-sm-12">
+          <br>
+          <h2>Load Classes and Methods 🎯... and then HOOK everything ⚓️</h2>
+          <div class="border-top my-3"></div>
+          <div class="row">
+            <div align=center class="col-sm-3 border-top border-right border-left">
+              <br>
+              <h1>1</h1>
+            </div>
+            <div align=center class="col-sm-3 border-top border-right border-left">
+              <br>
+              <h1>2</h1>
+            </div>
+            <div align=center class="col-sm-3 border-top border-right border-left">
+              <br>
+              <h1>3</h1>
+            </div>
+            <div align=center class="col-sm-3 border-top border-right border-left">
+              <br>
+              <h1>4</h1>
+            </div>
+          </div>
+          <div class="row">
+            <div align=center class="col-sm-3 border-bottom border-right border-left">
+              <a role="button" href="/dump?choice=1" class="btn btn-primary">Load Classes</a>
+            </div>
+            <!-- model view button -->
+            <div align=center class="col-sm-3 border-bottom border-right border-left">
+              <a role="button" data-toggle="modal" data-target="#ModalFilterView" class="btn btn-warning">
+                Insert a Filter
+              </a>
+              <br>
+              <b>(<font color=red>optional</font>)</b>
+              <br>
+              <font color=red><b> NOTE: </b></font>Hooking more than 500 classes or complex classes can easily crash the app. Use a filter if you receive an error! 😉
+              <br>
+              <br>
+            </div>
+            <div align=center class="col-sm-3 border-bottom border-right border-left">
+              <a role="button" href="/dump?choice=2" class="btn btn-info">Load Methods</a>
+            </div>
+            <div align=center class="col-sm-3 border-bottom border-right border-left">
+              <a role="button" href="/dump?choice=3" class="btn btn-danger">Hook all methods</a>
+            </div>
+          </div>
+        </div>
+        <br>
+        <!-- Buttons -->
+
+        <!-- Search Bar and Table -->
+        <div class="col-sm-12 
+                    form-group 
+                    list-group-item 
+                    list-group-item-action 
+                    bg-light
+                    rounded">
+          <table class="table table-sm table-dark table-bordered">
+            <thead>
+              <tr>
+                <th style='width: 3%'> index</th>
+                <th style='width: 27%'> classes</th>
+                <th style='width: 55%'> methods</th>
+              </tr>
+            </thead>
+            <tbody id="myTable">
+              <h3>Classes</h3>
+              <p>Use the search bar below to quickly filter results:</p>
+              <input class="form-control" id="myInput" type="text" placeholder="Search..">
+              <br>
+              {{ loaded_classes_str|safe }}
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+      <!-- /#container-fluid -->
+    </div>
+    <!-- /#page-content-wrapper -->
+
+  </div>
+  <!-- /#wrapper -->
+
+  <!-- Javascript loading -->
+  {% include 't_js_script.html' %}
+
+</body>
+
+</html>

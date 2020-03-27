@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  {% include 't_head.html' %}
+</head>
+
+<body>
+  <div class="d-flex" id="wrapper">
+    <!-- Sidebar -->
+    {% include 't_sidebar.html' %}
+
+    <!-- Page Content -->
+    <div id="page-content-wrapper">
+
+      <!-- Navbar -->
+      {% include 't_navbar.html' %}
+
+      <!-- 2 textarea side by side -->
+      <div class="container-fluid">
+        <br>
+
+
+        <div class="row">
+          <div class="col-sm-8">
+            <h2>Check Console Output&nbsp;&nbsp;🖥</h2>
+          </div>
+          <div align=right class="col-sm-4">
+            <!-- Default switch -->
+            <div class="custom-control custom-switch">
+              <input type="checkbox" class="custom-control-input" id="timercheck" checked>
+              <label class="custom-control-label" for="timercheck">
+                Auto Refresh Page
+              </label>
+            </div>
+          </div>
+
+        </div> <!-- row -->
+        <div class="border-top my-3"></div>
+
+        <br>
+        <div class="row">
+          <div class="col-sm-6">
+            <h3 align=center>Check the history of all the methods called</h3>
+            <textarea id=console_output_1 name=console_output
+              class="form-control">{{ called_console_output_str|safe }}</textarea>
+          </div>
+
+          <div class="col-sm-6">
+            <h3 align=center>Check args and return value</h3>
+            <textarea id=console_output_2 name=console_output
+              class="form-control">{{ hooked_console_output_str|safe }}</textarea>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <!-- /#container-fluid -->
+
+  </div>
+  <!-- /#page-content-wrapper -->
+
+  </div>
+  <!-- /#wrapper -->
+
+  <!-- Javascript loading -->
+  {% include 't_js_script.html' %}
+
+  {% block scripts %}
+  <!-- Auto Refresh Page -->
+  <script>
+    // auto refresh page every 20s
+    setInterval(reloadPage, 20000);
+
+    function reloadPage() {
+      var refreshEnabled = $("#timercheck").is(':checked');
+      if (refreshEnabled == true) {
+        window.location.reload(1);
+      } else {
+        setInterval.clearInterval();
+      }
+    }
+  </script>
+  {% endblock %}
+
+</body>
+
+</html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- head and css -->
+  {% include 't_head.html' %}
+</head>
+
+<body>
+  <div class="d-flex" id="wrapper">
+    <!-- Sidebar -->
+    {% include 't_sidebar.html' %}
+
+    <!-- Page Content -->
+    <div id="page-content-wrapper">
+
+      <!-- Navbar -->
+      {% include 't_navbar.html' %}
+
+      <!-- 2 textarea side by side -->
+      <div class="container-fluid">
+        <br>
+        <h2>Compare Loaded Classes 🔍</h2>
+        <div class="border-top my-3"></div>
+        <div class="row">
+          <div class="col-sm-5">
+            <h3 align=center>Check current Loaded Classes</h3>
+            <form action="diff_classes" method=GET>
+              <input type=hidden name=choice value=1>
+              <br>
+              <center>
+                <input type=submit value="Load Classes" class="btn btn-primary">
+              </center>
+              <br>
+            </form>
+
+            <textarea id=console_output_1 name=console_output
+              class="form-control">{{ current_loaded_classes|safe }}</textarea>
+          </div>
+
+          <div class="col-sm-2">
+            <h3 align=center>do some stuff with the app</h3>
+            <h3 align=center style='font-size:100px; color: red'>&#8594;</h3>
+          </div>
+
+          <div class="col-sm-5">
+            <h3 align=center>Check <b>*<font color=red>NEW</font>*</b> Loaded Classes</h3>
+            <form action="diff_classes" method=GET>
+              <input type=hidden name=choice value=2>
+              <br>
+              <center>
+                <input type=submit class="btn btn-primary" value="Load Classes">
+              </center>
+              <br>
+            </form>
+
+            <textarea id=console_output_2 name=console_output
+              class="form-control">{{ new_loaded_classes|safe }}</textarea>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <!-- /#container-fluid -->
+
+  </div>
+  <!-- /#page-content-wrapper -->
+
+  </div>
+  <!-- /#wrapper -->
+
+  <!-- Javascript loading -->
+  {% include 't_js_script.html' %}
+
+</body>
+
+</html>
