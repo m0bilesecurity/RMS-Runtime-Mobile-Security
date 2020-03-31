@@ -41,13 +41,13 @@
         <br>
         <div class="row">
           <div class="col-sm-6">
-            <h3 align=center>Check the history of all the methods called</h3>
+            <h3 align=center>History of all the methods called <font color=red>[IF HOOKED]</font></h3>
             <textarea id=console_output_1 name=console_output
               class="form-control">{{ called_console_output_str|safe }}</textarea>
           </div>
 
           <div class="col-sm-6">
-            <h3 align=center>Check args and return value</h3>
+            <h3 align=center>Console Output</h3>
             <textarea id=console_output_2 name=console_output
               class="form-control">{{ hooked_console_output_str|safe }}</textarea>
           </div>
@@ -69,8 +69,8 @@
   {% block scripts %}
   <!-- Auto Refresh Page -->
   <script>
-    // auto refresh page every 20s
-    setInterval(reloadPage, 20000);
+    // auto refresh page every 3s
+    setInterval(reloadPage, 3000);
 
     function reloadPage() {
       var refreshEnabled = $("#timercheck").is(':checked');

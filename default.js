@@ -17,7 +17,7 @@ rpc.exports = {
         onMatch: function (className) {
 
           //Remove too generics
-          if (className.length > 5) 
+          if (className.length > 5)
             loaded_classes.push(className)
 
         },
@@ -55,7 +55,7 @@ rpc.exports = {
   },
   loadcustomfridascript: function (frida_script) {
     Java.perform(function () {
-      console.log("FRIDA custom script LOADED")
+      console.log("FRIDA script LOADED")
       eval(frida_script)
     })
   },
@@ -73,7 +73,7 @@ rpc.exports = {
           //Cleaning up
           m = m.toGenericString();
           //add info for the UI
-          method_and_args["ui_name"]=m.replace(className+".","")
+          method_and_args["ui_name"] = m.replace(className + ".", "")
           // Remove generics from the method
           while (m.includes("<")) {
             m = m.replace(/<.*?>/g, "");
@@ -229,5 +229,56 @@ rpc.exports = {
     })
     // return HOOK template
     return hto;
-  }
+  },
+  heapsearchtemplate: function (loaded_classes, loaded_methods, template) {
+    var hto = "" //hto stands for hooks template output
+    Java.perform(function () {
+      loaded_classes.forEach(function (clazz) {
+        loaded_methods[clazz].forEach(function (dict) {
+          var t = template //template2
+
+          // replace className
+          t = t.replace("{className}", clazz);
+          // replace classMethod x2
+          t = t.replace("{classMethod}", dict["name"]);
+          t = t.replace("{classMethod}", dict["name"]);
+
+          t = t.replace("{methodSignature}", dict["ui_name"]);
+
+          //check if the method has args 
+          if (dict["args"] != "\"\"") {
+
+            // Check args length
+            var args_len = (dict["args"].split(",")).length
+
+            //args creation (method inputs) - v[i] to N
+            var args = "";
+            for (var i = 0; i < args_len; i++) {
+              if (i + 1 == args_len) args = args + "v" + i;
+              else args = args + "v" + i + ",";
+            }
+
+            //replace
+            t = t.replace("{args}", args);
+
+          } else {
+            //Current methods has NO args 
+
+            //replace
+            t = t.replace("{args}", "");
+
+          }
+
+          //Debug - print FRIDA template
+          //send(t);
+
+          // hooks concat
+          hto = hto + t;
+        });
+      });
+
+    })
+    // return HOOK template
+    return hto;
+  },
 };

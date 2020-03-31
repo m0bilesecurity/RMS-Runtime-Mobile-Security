@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, redirect, url_for
 from flask_bootstrap import Bootstrap
 import frida, sys, os
 import json
@@ -24,7 +24,7 @@ api = None
 package_name=""
 
 
-template1="""
+template_massive_hook="""
 Java.perform(function () {
     var classname = "{className}";
     var classmethod = "{classMethod}";
@@ -36,15 +36,15 @@ Java.perform(function () {
 
         var s="";
         s=s+("\\nHOOK: " + classname + "." + classmethod + "()");
-        s=s+"\\nIN: "+eval(args);
-        s=s+"\\nOUT: "+ret;
+        s=s+"\\nInput: "+eval(args);
+        s=s+"\\nOutput: "+ret;
         send(s);
                 
         return ret;
     };
 });
 """
-template2="""
+template_hook_lab="""
 Java.perform(function () {
     var classname = "{className}";
     var classmethod = "{classMethod}";
@@ -57,7 +57,7 @@ Java.perform(function () {
         var ret = this.{classMethod}({args});
 
         var s="";
-        s=s+("\\nHOOK: " + classname + "." + classmethod + "()");
+        s=s+"\\nHOOK: " + classname + "." + classmethod + "()";
         s=s+"\\nIN: "+{args};
         s=s+"\\nOUT: "+ret;
         send(s);
@@ -65,6 +65,31 @@ Java.perform(function () {
         return ret;
     };
 });
+"""
+
+template_heap_search="""
+    Java.performNow(function () {
+      var classname = "{className}"
+      var classmethod = "{classMethod}";
+
+      send("Heap Search - START ("+classname+")");
+
+      Java.choose(classname, {
+        onMatch: function (instance) {
+          
+          var s="";
+          s=s+"Instance Found: " +instance.toString();
+          s=s+"\\nCalling method: " +classmethod;
+          
+          //{methodSignature}
+          var ret = instance.{classMethod}({args}); //<-- replace v[i] with the value that you want to pass
+          s=s+"\\nOutput: "+ ret;
+          send(s);
+
+        }
+      });
+      send("Heap Search - END ("+classname+")");
+    });
 """
 
 ''' 
@@ -218,13 +243,14 @@ def home():
         # --> Hook all loaded classes and methods
 
         global calls_count
-        global template1
+        global template_massive_hook
         calls_count=0
         className=""
         classMethod=""
 
-        api.hookclassesandmethods(loaded_classes,loaded_methods,template1)
-        return printwebpage()
+        api.hookclassesandmethods(loaded_classes,loaded_methods,template_massive_hook)
+        #redirect the user to the console output
+        return redirect(url_for('console_output_loader'))
 
 
     # Default template
@@ -276,20 +302,6 @@ def diff_analysis():
         new_loaded_classes=temp_str_2,
         package_name_str=package_name)
 
-''' 
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Console Output - TAB
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'''
-
-@app.route('/console_output', methods=['GET', 'POST'])
-def console_output_loader():
-
-    return render_template(
-        "console_output.html",
-        called_console_output_str=calls_console_output, 
-        hooked_console_output_str=hooks_console_output,
-        package_name_str=package_name)
 
 ''' 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -299,7 +311,7 @@ Hook LAB - TAB
 
 @app.route('/hook_lab', methods=['GET', 'POST'])
 def hook_lab():
-    global template2
+    global template_hook_lab
     global loaded_methods
     global loaded_classes
     hook_template=""
@@ -315,7 +327,7 @@ def hook_lab():
         if not loaded_methods:
             loaded_methods=api.loadmethods(loaded_classes)
         # template generation
-        hook_template=api.generatehooktemplate(selected_class,loaded_methods,template2)
+        hook_template=api.generatehooktemplate(selected_class,loaded_methods,template_hook_lab)
 
     if selected_class!="":
         selected_class=selected_class[0]
@@ -331,6 +343,45 @@ def hook_lab():
 
 ''' 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Heap Search - TAB
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'''
+
+@app.route('/heap_search', methods=['GET', 'POST'])
+def heap_search():
+    global template_heap_search
+    global loaded_methods
+    global loaded_classes
+    heap_template=""
+    selected_class=""
+
+    # class_index contains the index of the loaded class selected by the user
+    class_index=request.args.get('class_index')
+    if class_index != None:
+        class_index = int(class_index) 
+        # get methods of the selected class
+        selected_class=[loaded_classes[class_index]]
+        #check if methods are loaded or not
+        if not loaded_methods:
+            loaded_methods=api.loadmethods(loaded_classes)
+        # heap template generation
+        heap_template=api.heapsearchtemplate(selected_class,loaded_methods,template_heap_search)
+
+    if selected_class!="":
+        selected_class=selected_class[0]
+
+    # print hook template
+    return render_template(
+        "heap_search.html",
+        loaded_classes=loaded_classes,
+        selected_class=selected_class,
+        heap_template_str=heap_template,
+        package_name_str=package_name
+    )
+
+
+''' 
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Custom Frida Script - TAB
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '''
@@ -340,8 +391,9 @@ def frida_script_loader():
     if request.method == 'POST':
         script=request.values.get('frida_custom_script')
         api.loadcustomfridascript(script)
-        # auto redirect the user to the dump classes and methods page
-        return printwebpage()
+        # auto redirect the user to the console output page
+        return redirect(url_for('console_output_loader'))
+
 
     #Load frida custom scripts inside "custom_scripts" folder
     custom_scripts=[]
@@ -362,6 +414,21 @@ def frida_script_loader():
         custom_scripts=custom_scripts,
         custom_script_loaded=cs_file
         )
+
+''' 
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Console Output - TAB
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'''
+
+@app.route('/console_output', methods=['GET', 'POST'])
+def console_output_loader():
+
+    return render_template(
+        "console_output.html",
+        called_console_output_str=calls_console_output, 
+        hooked_console_output_str=hooks_console_output,
+        package_name_str=package_name)
 
 ''' 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
