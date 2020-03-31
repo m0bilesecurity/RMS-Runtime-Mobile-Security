@@ -14,14 +14,24 @@
   <!-- Search Bar Filter-->
   <script>
       $(document).ready(function () {
-          $("#myInput").on("keyup", function () {
+          $("#UserInput").on("keyup", function () {
               var value = $(this).val().toLowerCase();
-              $("#myTable tr").filter(function () {
+              $("#MainTable tr").filter(function () {
                   $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
               });
           });
       });
   </script>
+    <script>
+        $(document).ready(function () {
+            $("#UserInput_Filter").on("keyup", function () {
+                var value = $(this).val().toLowerCase();
+                $("#MainTable_Filter tr").filter(function () {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+        });
+    </script>
 
  <!-- Toggle Buttons -->
   <script 

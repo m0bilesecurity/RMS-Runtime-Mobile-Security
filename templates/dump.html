@@ -53,8 +53,8 @@
                   <th style='width: 80%'> Classes</th>
                 </tr>
               </thead>
-              <tbody id="myTable">
-                <input class="form-control" id="myInput" type="text"
+              <tbody id="MainTable_Filter">
+                <input class="form-control" id="UserInput_Filter" type="text"
                   placeholder="Use this search bar to quickly filter results:">
                 <br>
                   <button type="submit" class="btn btn-primary mb-2">Hook Selected</button>&nbsp;&nbsp;
@@ -166,10 +166,10 @@
                 <th style='width: 55%'> methods</th>
               </tr>
             </thead>
-            <tbody id="myTable">
+            <tbody id="MainTable">
               <h3>Classes</h3>
               <p>Use the search bar below to quickly filter results:</p>
-              <input class="form-control" id="myInput" type="text" placeholder="Search..">
+              <input class="form-control" id="UserInput" type="text" placeholder="Search..">
               <br>
               {{ loaded_classes_str|safe }}
             </tbody>

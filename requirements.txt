@@ -1,5 +1,4 @@
 frida-tools
 frida
-argparse
 Flask
 flask_bootstrap
