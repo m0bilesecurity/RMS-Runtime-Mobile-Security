@@ -28,6 +28,9 @@ A clear and concise description of what you expected to happen.
  - Device: [e.g. Genymotion, AVD, Google Pixel 3]
  - OS: [e.g. iOS8.1]
  - Frida Server version: [e.g. 12.8.20]
+ - Package Name: [e.g. com.example.app]
+ - Class name: [e.g. sg.vantagepoint.a.c] (optional)
+ - Method name: [e.g. public static boolean c()] (optional)
 
 **Console Logs** [Required]
 If applicable, add console logs.
