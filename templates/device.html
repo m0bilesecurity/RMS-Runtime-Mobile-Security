@@ -68,6 +68,11 @@
                 <option>Attach</option>
               </select>
             </div>
+            <div class="form-group">
+              <label for="remote">Remote device</label>
+              <input type="text" class="form-control" id="remote" name="remote" 
+                placeholder="127.0.0.1:1337">
+            </div>
             <!-- 
             <div class="form-group">
               <label for="suspend_process">Suspend the process at startup</label>
@@ -96,7 +101,7 @@
                 rows="10">{{ custom_script_loaded }}</textarea>
             </div>
             <div class="form-group">
-              <button type="submit" class="btn btn-primary mb-2">Submit</button>
+              <button type="submit" class="btn btn-primary mb-2">Connect</button>
               <button class="btn btn-danger mb-2 float-right" type="button" data-toggle="collapse"
                 data-target="#collapseViewCFS" aria-expanded="true" aria-controls="collapseView">
                 Custom Frida Script

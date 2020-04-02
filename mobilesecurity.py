@@ -127,6 +127,7 @@ def device_management():
         package_name=request.values.get('package')
         mode=request.values.get('mode')
         frida_script=request.values.get('fridastartupscript')
+        remote=request.values.get('remote')
 
         if package_name: print("Package Name: "+package_name, file=sys.stdout)
         if mode: print("Mode: "+mode, file=sys.stdout)
@@ -136,7 +137,8 @@ def device_management():
         with open(os.path.dirname(os.path.realpath(__file__)) + '/default.js') as f: 
             frida_code = f.read()
 
-        device = frida.get_usb_device()
+        if remote: device = frida.get_device_manager().add_remote_device(remote)
+        else: device = frida.get_usb_device()
 
         # attaching a persistent process to get enumerateLoadedClasses() result 
         # before starting the target app - default process is com.android.systemui
