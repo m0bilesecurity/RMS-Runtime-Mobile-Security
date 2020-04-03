@@ -57,6 +57,7 @@
                        rounded" action="/" method=post>
 
             <div class="form-group">
+              <label for="package">Package name</label>
               <input class="form-control" list="package" name="package" required="true" placeholder="com.example.app">
       	      <datalist id="package">
       	      {% for package in packages %}
