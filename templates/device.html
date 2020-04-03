@@ -58,8 +58,12 @@
 
             <div class="form-group">
               <label for="package">Package name</label>
-              <input type="text" class="form-control" id="package" name="package" required="true"
-                placeholder="com.example.app">
+              <input class="form-control" list="package" name="package" required="true" placeholder="com.example.app">
+      	      <datalist id="package">
+      	      {% for package in packages %}
+      	        <option>{{ package }}</option>
+      	      {% endfor %}
+              </datalist>
             </div>
             <div class="form-group">
               <label for="mode">Spawn or Attach</label>
