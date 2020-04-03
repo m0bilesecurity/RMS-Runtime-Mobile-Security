@@ -1,3 +1,6 @@
 {
-    "system_package": "com.android.systemui"
+    "system_package": "com.android.systemui",
+    "device_type": "usb",
+    "device_args": {
+    }
 }

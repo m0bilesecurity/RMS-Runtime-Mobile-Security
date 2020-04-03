@@ -1,0 +1,12 @@
+version: '3'
+
+services:
+  rms:
+    build: .
+    ports:
+      - "5000:5000"
+    restart: always
+    volumes:
+      - "./custom_scripts:/app/custom_scripts"
+    devices:
+      - "/dev/ttyUSB0:/dev/ttyUSB0"
