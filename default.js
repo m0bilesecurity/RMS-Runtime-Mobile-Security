@@ -71,7 +71,7 @@ rpc.exports = {
         classMethods_dirty.forEach(function (m) {
           var method_and_args = {};
           //Cleaning up
-          m = m.toGenericString();
+          m = m.toString();
           //add info for the UI
           method_and_args["ui_name"] = m.replace(className + ".", "")
           // Remove generics from the method
@@ -101,12 +101,6 @@ rpc.exports = {
             //add a comma if the current item is not the last one
             if (i + 1 < args_array.length) args_srt = args_srt + ",";
           }
-
-          //map byte[B] --> [B (toGenericString())
-          args_srt = args_srt.replace("byte[]", "[B")
-
-          //map T --> java.lang.Object (toGenericString())
-          args_srt = args_srt.replace("\"T\"", "\"java.lang.Object\"")
 
           method_and_args["args"] = args_srt
           classMethods.push(method_and_args);
