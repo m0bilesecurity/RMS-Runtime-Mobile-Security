@@ -128,11 +128,13 @@ def device_management():
     custom_scripts = []
     packages = []
 
-    # Read config.json file
-    with open(os.path.dirname(os.path.realpath(__file__)) + "/config.json") as f:
-        config = json.load(f)
+    config = read_config_file()
 
-    device = get_device(device_type=config["device_type"], device_args=config["device_args"])
+    try:
+        device = get_device(device_type=config["device_type"], device_args=config["device_args"])
+    except:
+        print('Device not found')
+
     if request.method == 'GET':
         try:
             for package in device.enumerate_applications():
@@ -276,7 +278,7 @@ def home():
         return redirect(url_for('console_output_loader'))
 
     # Default template
-    return printwebpage();
+    return printwebpage()
 
 
 ''' 
@@ -314,10 +316,10 @@ def diff_analysis():
     temp_str_2 = ""
 
     for i, c in enumerate(current_loaded_classes):
-        temp_str_1 = temp_str_1 + "\n" + str(i) + " - " + str(c);
+        temp_str_1 = temp_str_1 + "\n" + str(i) + " - " + str(c)
 
     for i, c in enumerate(new_loaded_classes):
-        temp_str_2 = temp_str_2 + "\n" + str(i) + " - " + str(c);
+        temp_str_2 = temp_str_2 + "\n" + str(i) + " - " + str(c)
 
     return render_template(
         "diff_classes.html",
@@ -454,8 +456,58 @@ def console_output_loader():
         "console_output.html",
         called_console_output_str=calls_console_output,
         hooked_console_output_str=hooks_console_output,
-        package_name_str=package_name)
+        package_name_str=package_name
+    )
 
+
+''' 
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Config File - TAB
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'''
+
+
+@app.route('/config', methods=['GET', 'POST'])
+def edit_config_file():
+    config = read_config_file()
+    
+    if request.method == 'POST':
+        new_config = {}
+
+        device_type = request.values.get('device-type')
+        system_package = request.values.get('package')
+        device_args_keys = request.values.getlist('key[]')
+        device_args_values = request.values.getlist('value[]')
+        
+        device_args = dict(zip(device_args_keys, device_args_values))
+
+        if device_type: new_config['device_type'] = device_type
+        if system_package: new_config['system_package'] = system_package
+        if device_args: new_config['device_args'] = device_args
+        else: new_config['device_args'] = {}
+
+        with open(os.path.dirname(os.path.realpath(__file__)) + "/config.json", "w") as f:
+            json.dump(new_config, f, indent=4)
+
+        return redirect(url_for('device_management'))
+
+    return render_template(
+        "config.html",
+        system_package_str=config["system_package"],
+        args=config['device_args']
+    )
+
+''' 
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Read config.json file
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'''
+
+
+def read_config_file():
+    with open(os.path.dirname(os.path.realpath(__file__)) + "/config.json") as f:
+        config = json.load(f)
+    return config
 
 ''' 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

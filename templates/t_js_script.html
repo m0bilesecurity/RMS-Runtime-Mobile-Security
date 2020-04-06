@@ -84,4 +84,19 @@
     editor.setSize("100%",620);
 </script>
 
+<!--Add and remove device arguments -->
+<script>
+    attach_delete();
+    $('.btn-success').click(function(){
+        $('.dynamic-element').first().clone().appendTo('.dynamic-stuff').show();
+        attach_delete();
+    });
+    
+    function attach_delete(){
+        $('.btn_remove').off();
+        $('.btn_remove').click(function(){
+            $(this).closest('.form-group').remove();
+        });
+    }
+</script>
   {% endblock %}
