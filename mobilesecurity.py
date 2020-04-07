@@ -127,13 +127,16 @@ def device_management():
     cs_file = ""
     custom_scripts = []
     packages = []
-
     config = read_config_file()
 
-    try:
-        device = get_device(device_type=config["device_type"], device_args=config["device_args"])
-    except:
-        print('Device not found')
+    device = get_device(device_type=config["device_type"], device_args=config["device_args"])
+
+    conn_args = ""
+    if config['device_type'] == 'remote':
+        conn_args = config['device_args']['host']
+    elif config['device_type'] == 'id':
+        conn_args = config['device_args']['id']
+
 
     if request.method == 'GET':
         try:
@@ -205,8 +208,10 @@ def device_management():
         custom_script_loaded=cs_file,
         custom_scripts=custom_scripts,
         system_package_str=config["system_package"],
+        device_type_str=config["device_type"],
         package_name_str=package_name,
-        packages=packages
+        packages=packages,
+        conn_args_str=conn_args
     )
 
 
@@ -470,6 +475,10 @@ Config File - TAB
 @app.route('/config', methods=['GET', 'POST'])
 def edit_config_file():
     config = read_config_file()
+    placeholder = {
+        'host':'IP:PORT',
+        'id':'Device’s serial number'
+    }
     
     if request.method == 'POST':
         new_config = {}
@@ -481,10 +490,9 @@ def edit_config_file():
         
         device_args = dict(zip(device_args_keys, device_args_values))
 
-        if device_type: new_config['device_type'] = device_type
-        if system_package: new_config['system_package'] = system_package
+        if device_type: new_config['device_type'] = device_type.lower()
+        if system_package: new_config['system_package'] = system_package.strip()
         if device_args: new_config['device_args'] = device_args
-        else: new_config['device_args'] = {}
 
         with open(os.path.dirname(os.path.realpath(__file__)) + "/config.json", "w") as f:
             json.dump(new_config, f, indent=4)
@@ -493,9 +501,37 @@ def edit_config_file():
 
     return render_template(
         "config.html",
-        system_package_str=config["system_package"],
-        args=config['device_args']
+        system_package_str=config['system_package'],
+        device_type_str=config['device_type'],
+        args=config['device_args'],
+        placeholder_str=placeholder,
+        is_hide=is_hide,
+        printOptions=printOptions()
     )
+
+# Support show arguments in config tab
+def is_hide(device_type, key):
+    correlation = {
+        'usb':'',
+        'remote':'host',
+        'id':'id',
+        'local':''
+    }
+    return correlation[device_type.lower()] != key
+
+# Support init with correct device type selected
+def printOptions():
+    devices = ['USB','Remote','Local','ID']
+    config = read_config_file()
+    temp_str = ""
+    
+    for device_type in devices:
+        if device_type.lower() == config['device_type']:
+            temp_str = temp_str + "<option selected>"+str(device_type)+"</option>"
+        else:
+            temp_str = temp_str + "<option>"+str(device_type)+"</option>"
+    return temp_str
+
 
 ''' 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -508,6 +544,7 @@ def read_config_file():
     with open(os.path.dirname(os.path.realpath(__file__)) + "/config.json") as f:
         config = json.load(f)
     return config
+
 
 ''' 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

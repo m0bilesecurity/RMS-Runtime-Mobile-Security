@@ -39,39 +39,27 @@
             <div class="form-group">
               <label for="device-type">Device type</label>
               <select class="form-control" id="device-type" name="device-type">
-                <option>USB</option>
-                <option>Remote</option>
-                <option>Local</option>
+                {{ printOptions|safe }}
               </select>
             </div>
 
             <div class="form-group">
               <label for="device-args">Device arguments</label>
-              <div class="form-group">
-                <div class="row">
-                  <div class="col-md-12">
-                    <button type="button" class="btn btn-success btn-sm">New arg.</button>
-                  </div>
-                </div>
-              </div>
-              <div class="dynamic-stuff">   
-                <!-- Dynamic element will be cloned here -->
-                {% for key, value in args.items() %}
-                <div class="form-group">
+              <div id="dynamic-content">   
+                <!-- Dynamic elements -->
+                {% for key, value in args.items() %}     
+                <div class="form-group {{ 'd-none' if is_hide(device_type_str, key) }}">
                   <div class="row">
-                    <div class="col-md-4">  
-                      <input type="text" class="form-control" name="key[]" value="{{ key }}">
+                    <div class="col-sm">  
+                      <input type="text" class="form-control" name="key[]" value="{{ key|safe }}"
+                      readonly>
                     </div> 
-                    <div class="col-md-3">
-                      <input type="text" class="form-control" name="value[]" value="{{ value }}">
-                    </div>
-                    <div class="col-md-1">
-                      <button type="button" name="remove" id="remove" class="btn btn-danger btn_remove">Remove</button>
-                    </div>
+                    <div class="col-sm">
+                      <input type="text" class="form-control" name="value[]" value="{{ value|safe }}" placeholder="{{ placeholder_str[key] }}">
+                    </div>     
                   </div>
-                </div>
-                {% endfor %} 
-              </div> <!-- dynamic-stuff -->
+                </div> {% endfor %}               
+              </div> <!-- dynamic elements -->
             </div>
             <br>
             <br>
@@ -79,20 +67,6 @@
               <button type="submit" class="btn btn-primary mb-2">Save</button>
             </div>
           </form>
-
-          <div class="form-group dynamic-element" style="display:none">
-            <div class="row">
-              <div class="col-md-4">  
-                <input type="text" class="form-control" name="key[]" value="{{ key }}">
-              </div> 
-              <div class="col-md-3">
-                <input type="text" class="form-control" name="value[]" value="{{ value }}">
-              </div>
-              <div class="col-md-1">
-                <button type="button" class="btn btn-danger btn_remove">Remove</button>
-              </div>
-            </div>
-          </div> <!-- hidden dynamic-element -->
         </div> <!-- form group -->
         <br>
         <br>

@@ -84,19 +84,38 @@
     editor.setSize("100%",620);
 </script>
 
-<!--Add and remove device arguments -->
+<!-- Config tab - Show and hide device arguments -->
 <script>
-    attach_delete();
-    $('.btn-success').click(function(){
-        $('.dynamic-element').first().clone().appendTo('.dynamic-stuff').show();
-        attach_delete();
+    $("#device-type").change(function(){
+      type = $( "select option:selected" ).text().toLowerCase();
+      switch(type){
+        case "usb":
+          hide_args();
+          break;
+        case "remote":
+          show_arg('host');
+          break;
+        case "id":
+          show_arg('id');
+          break;
+        case "local":
+          hide_args();
+          break;
+      }
     });
-    
-    function attach_delete(){
-        $('.btn_remove').off();
-        $('.btn_remove').click(function(){
-            $(this).closest('.form-group').remove();
-        });
+    function hide_args(){
+        $('#dynamic-content').children('.form-group').each(function(){
+            $(this).addClass('d-none');
+        }); 
     }
-</script>
+  
+    function show_arg(key) {
+        hide_args();
+        $('#dynamic-content').children('.d-none').each(function(){
+            if ($(this).find('input[readonly]').attr('value') == key){
+            $(this).removeClass('d-none');
+          }
+        }); 
+    }
+  </script>
   {% endblock %}
