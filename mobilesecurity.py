@@ -103,16 +103,20 @@ def get_device(device_type="usb", device_args=None):
     device_args = device_args or {}
     device_manager = frida.get_device_manager()
     if device_type == "id":
-        device_id = device_args.pop('id', -1)
+        device_id = device_args['id']
+        device_args.clear()
         return device_manager.get_device(device_id, **device_args)
     if device_type == "usb":
+        device_args.clear()
         return device_manager.get_usb_device(**device_args)
     elif device_type == "local":
+        device_args.clear()
         return device_manager.get_local_device(**device_args)
     elif device_type == "remote":
-        device_host = device_args.pop('host', None)
+        device_host = device_args['host']
         if device_host:
             return device_manager.add_remote_device(device_host)
+        device_args.clear()
         return device_manager.get_remote_device(**device_args)
 
     return device_manager.enumerate_devices()[0]
@@ -129,14 +133,13 @@ def device_management():
     packages = []
     config = read_config_file()
 
-    device = get_device(device_type=config["device_type"], device_args=config["device_args"])
-
     conn_args = ""
     if config['device_type'] == 'remote':
         conn_args = config['device_args']['host']
     elif config['device_type'] == 'id':
         conn_args = config['device_args']['id']
 
+    device = get_device(device_type=config["device_type"], device_args=config['device_args'])
 
     if request.method == 'GET':
         try:
