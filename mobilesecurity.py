@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, redirect, url_for
+from flask import Flask, request, render_template, redirect, url_for, flash
 from flask_bootstrap import Bootstrap
 import frida, sys, os
 import json
@@ -139,7 +139,10 @@ def device_management():
     elif config['device_type'] == 'id':
         conn_args = config['device_args']['id']
 
-    device = get_device(device_type=config["device_type"], device_args=config['device_args'])
+    try:
+        device = get_device(device_type=config["device_type"], device_args=config['device_args'])
+    except:
+        return redirect(url_for('edit_config_file', error=True))
 
     if request.method == 'GET':
         try:
@@ -483,6 +486,10 @@ def edit_config_file():
         'id':'Device’s serial number'
     }
     
+    error=False
+    if request.values.get('error'): 
+        error = "Device not connected. Please, modify the settings and try again."
+
     if request.method == 'POST':
         new_config = {}
 
@@ -509,7 +516,8 @@ def edit_config_file():
         args=config['device_args'],
         placeholder_str=placeholder,
         is_hide=is_hide,
-        printOptions=printOptions()
+        printOptions=printOptions(),
+        error_str=error
     )
 
 # Support show arguments in config tab

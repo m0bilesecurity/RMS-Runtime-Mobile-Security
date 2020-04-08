@@ -23,6 +23,11 @@
         <!-- Search Bar and Table -->
         <div class="col-sm-12">
           <br>
+          {% if error_str %}
+          <div class="alert alert-danger" role="alert">
+            {{ error_str }}
+          </div>
+          {% endif %}
           <!-- Config file menu -->
           <h2>Edit config file</h2>
           <form class="form-group 
