@@ -3,3 +3,5 @@
 /lib
 /.Python
 .DS_Store
+.vscode
+__pycache__

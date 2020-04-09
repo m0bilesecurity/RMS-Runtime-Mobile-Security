@@ -84,4 +84,38 @@
     editor.setSize("100%",620);
 </script>
 
+<!-- Config tab - Show and hide device arguments -->
+<script>
+    $("#device-type").change(function(){
+      type = $( "select option:selected" ).text().toLowerCase();
+      switch(type){
+        case "usb":
+          hide_args();
+          break;
+        case "remote":
+          show_arg('host');
+          break;
+        case "id":
+          show_arg('id');
+          break;
+        case "local":
+          hide_args();
+          break;
+      }
+    });
+    function hide_args(){
+        $('#dynamic-content').children('.form-group').each(function(){
+            $(this).addClass('d-none');
+        }); 
+    }
+  
+    function show_arg(key) {
+        hide_args();
+        $('#dynamic-content').children('.d-none').each(function(){
+            if ($(this).find('input[readonly]').attr('value') == key){
+            $(this).removeClass('d-none');
+          }
+        }); 
+    }
+  </script>
   {% endblock %}

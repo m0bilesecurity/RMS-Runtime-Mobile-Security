@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- head and css -->
+  {% include 't_head.html' %}
+</head>
+
+<body>
+  <div class="d-flex" id="wrapper">
+    <!-- Sidebar -->
+    {% include 't_sidebar.html' %}
+
+    <!-- Page Content -->
+    <div id="page-content-wrapper">
+
+      <!-- Navbar -->
+      {% include 't_navbar.html' %}
+
+      <!-- Content -->
+      <div class="container-fluid">
+
+        <!-- Search Bar and Table -->
+        <div class="col-sm-12">
+          <br>
+          {% if error_str %}
+          <div class="alert alert-danger" role="alert">
+            {{ error_str }}
+          </div>
+          {% endif %}
+          <!-- Config file menu -->
+          <h2>Edit config file</h2>
+          <form class="form-group 
+                       list-group-item 
+                       list-group-item-action 
+                       bg-light
+                       rounded" action="/config" method=post>
+            
+            <div class="form-group">
+              <label for="system_package">System Package used for diff loaded classes - (In case of issue try to attach a different persistent process)</label>
+              <input type="text" class="form-control" id="system_package" name="package" value="{{ system_package_str|safe }} ">
+            </div>
+
+            <div class="form-group">
+              <label for="device-type">Device type</label>
+              <select class="form-control" id="device-type" name="device-type">
+                {{ printOptions|safe }}
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="device-args">Device arguments</label>
+              <div id="dynamic-content">   
+                <!-- Dynamic elements -->
+                {% for key, value in args.items() %}     
+                <div class="form-group {{ 'd-none' if is_hide(device_type_str, key) }}">
+                  <div class="row">
+                    <div class="col-sm">  
+                      <input type="text" class="form-control" name="key[]" value="{{ key|safe }}"
+                      readonly>
+                    </div> 
+                    <div class="col-sm">
+                      <input type="text" class="form-control" name="value[]" value="{{ value|safe }}" placeholder="{{ placeholder_str[key] }}">
+                    </div>     
+                  </div>
+                </div> {% endfor %}               
+              </div> <!-- dynamic elements -->
+            </div>
+            <br>
+            <br>
+            <div class="form-group">
+              <button type="submit" class="btn btn-primary mb-2">Save</button>
+            </div>
+          </form>
+        </div> <!-- form group -->
+        <br>
+        <br>
+      </div>
+      <!-- /#container-fluid -->
+    </div>
+    <!-- /#page-content-wrapper -->
+
+  </div>
+  <!-- /#wrapper -->
+
+  <!-- Javascript loading -->
+  {% include 't_js_script.html' %}
+
+</body>
+
+</html>
