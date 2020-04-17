@@ -1,11 +1,15 @@
-from flask import Flask, request, render_template, redirect, url_for
-from flask_bootstrap import Bootstrap
-import frida, sys, os
+import os
+import sys
 import json
+import frida
+from flask_bootstrap import Bootstrap
+from flask_socketio import SocketIO, emit
+from flask import Flask, request, render_template, redirect, url_for
 
 app = Flask(__name__)
+socket_io = SocketIO(app)
 
-# Global variables 
+# Global variables
 loaded_classes = []
 system_classes = []
 loaded_methods = {}
@@ -43,6 +47,7 @@ Java.perform(function () {
     };
 });
 """
+
 template_hook_lab = """
 Java.perform(function () {
     var classname = "{className}";
@@ -96,6 +101,20 @@ template_heap_search = """
 Device - TAB
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '''
+
+
+def log_handler(level, text):
+    if not text:
+        return
+
+    if level == 'info':
+        print(text, file=sys.stdout)
+    else:
+        print(text, file=sys.stderr)
+
+    global hooks_console_output
+    hooks_console_output += text + '\n'
+    socket_io.emit('console_output', {'data': hooks_console_output, 'level': level}, namespace='/console')
 
 
 def get_device(device_type="usb", device_args=None):
@@ -178,6 +197,7 @@ def device_management():
         # before starting the target app - default process is com.android.systemui
         session = device.attach(config["system_package"])
         script = session.create_script(frida_code)
+        script.set_log_handler(log_handler)
         script.load()
         api = script.exports
         system_classes = api.loadclasses()
@@ -192,6 +212,7 @@ def device_management():
             print('[*] Process Attached')
 
         script = session.create_script(frida_code)
+        script.set_log_handler(log_handler)
         script.on('message', on_message)
         script.load()
 
@@ -206,7 +227,7 @@ def device_management():
             api.loadcustomfridascript(frida_script)
             # DEBUG print(frida_script, file=sys.stdout)
 
-        # automatically redirect the user to the dump classes and methods tab  
+        # automatically redirect the user to the dump classes and methods tab
         return printwebpage()
 
     return render_template(
@@ -240,7 +261,7 @@ def home():
         if array_to_hook is not None:
             hooked_classes = []
             for index in array_to_hook:
-                # hooked classes 
+                # hooked classes
                 hooked_classes.append(loaded_classes[int(index)])
             loaded_classes = hooked_classes
         return printwebpage()
@@ -250,14 +271,14 @@ def home():
     if choice is not None:
         choice = int(request.args.get('choice'))
 
-    # ***** MENU ***** 
+    # ***** MENU *****
     if choice == 1:
         # --> Dump Loaded Classes (w/o filters)
 
         # clean up the array
         loaded_classes.clear()
         loaded_methods.clear()
-        # check if the user is trying to filter loaded classes 
+        # check if the user is trying to filter loaded classes
         filter = request.args.get('filter')
         if filter:
             hooked_classes = api.loadclasseswithfilter(filter)
@@ -471,6 +492,17 @@ def console_output_loader():
     )
 
 
+@socket_io.on('connect', namespace='/console')
+def ws_connect():
+    print('Client connected')
+    emit('console_output', {'data': hooks_console_output})
+
+
+@socket_io.on('disconnect', namespace='/console')
+def ws_disconnect():
+    print('Client disconnected')
+
+
 ''' 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Config File - TAB
@@ -482,12 +514,12 @@ Config File - TAB
 def edit_config_file():
     config = read_config_file()
     placeholder = {
-        'host':'IP:PORT',
-        'id':'Device’s serial number'
+        'host': 'IP:PORT',
+        'id': 'Device’s serial number'
     }
-    
-    error=False
-    if request.values.get('error'): 
+
+    error = False
+    if request.values.get('error'):
         error = "Device not connected. Please, modify the settings and try again."
 
     if request.method == 'POST':
@@ -497,7 +529,7 @@ def edit_config_file():
         system_package = request.values.get('package')
         device_args_keys = request.values.getlist('key[]')
         device_args_values = request.values.getlist('value[]')
-        
+
         device_args = dict(zip(device_args_keys, device_args_values))
 
         if device_type: new_config['device_type'] = device_type.lower()
@@ -520,27 +552,29 @@ def edit_config_file():
         error_str=error
     )
 
+
 # Support show arguments in config tab
 def is_hide(device_type, key):
     correlation = {
-        'usb':'',
-        'remote':'host',
-        'id':'id',
-        'local':''
+        'usb': '',
+        'remote': 'host',
+        'id': 'id',
+        'local': ''
     }
     return correlation[device_type.lower()] != key
 
+
 # Support init with correct device type selected
 def printOptions():
-    devices = ['USB','Remote','Local','ID']
+    devices = ['USB', 'Remote', 'Local', 'ID']
     config = read_config_file()
     temp_str = ""
-    
+
     for device_type in devices:
         if device_type.lower() == config['device_type']:
-            temp_str = temp_str + "<option selected>"+str(device_type)+"</option>"
+            temp_str = temp_str + "<option selected>" + str(device_type) + "</option>"
         else:
-            temp_str = temp_str + "<option>"+str(device_type)+"</option>"
+            temp_str = temp_str + "<option>" + str(device_type) + "</option>"
     return temp_str
 
 
@@ -628,4 +662,4 @@ if __name__ == '__main__':
     print("")
 
     # run Flask
-    app.run()
+    socket_io.run(app)

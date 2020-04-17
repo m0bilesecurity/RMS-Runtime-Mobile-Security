@@ -3,6 +3,9 @@
 
 <head>
   {% include 't_head.html' %}
+  <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"
+          integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous">
+  </script>
 </head>
 
 <body>
@@ -22,17 +25,8 @@
 
 
         <div class="row">
-          <div class="col-sm-8">
+          <div class="col-sm-12">
             <h2>Check Console Output&nbsp;&nbsp;🖥</h2>
-          </div>
-          <div align=right class="col-sm-4">
-            <!-- Default switch -->
-            <div class="custom-control custom-switch">
-              <input type="checkbox" class="custom-control-input" id="timercheck" checked>
-              <label class="custom-control-label" for="timercheck">
-                Auto Refresh Page
-              </label>
-            </div>
           </div>
 
         </div> <!-- row -->
@@ -53,7 +47,6 @@
           </div>
         </div>
       </div>
-
     </div>
     <!-- /#container-fluid -->
 
@@ -69,17 +62,13 @@
   {% block scripts %}
   <!-- Auto Refresh Page -->
   <script>
-    // auto refresh page every 3s
-    setInterval(reloadPage, 3000);
+    const socket = io.connect('//' + document.domain + ':' + location.port + '/console');
+    socket.on('console_output', function(msg) {
+        if(msg.data.length) {
+            console_output_2_editor.setValue(msg.data);
+        }
+    });
 
-    function reloadPage() {
-      var refreshEnabled = $("#timercheck").is(':checked');
-      if (refreshEnabled == true) {
-        window.location.reload(1);
-      } else {
-        setInterval.clearInterval();
-      }
-    }
   </script>
   {% endblock %}
 

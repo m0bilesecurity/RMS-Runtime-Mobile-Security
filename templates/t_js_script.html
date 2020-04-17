@@ -35,11 +35,11 @@
 
  <!-- Toggle Buttons -->
   <script 
-    src="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.1/js/bootstrap4-toggle.min.js">
+    src="//cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.1/js/bootstrap4-toggle.min.js">
   </script>
 
   <!-- highlight.js Library Loading -->
-  <script src="https:////cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/highlight.min.js">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/highlight.min.js">
   </script>
   <script>
       hljs.initHighlightingOnLoad();
@@ -47,10 +47,10 @@
 
   <!-- Codemirror - Textarea Editor -->
   <script 
-    src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.2/codemirror.min.js">
+    src="//cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.2/codemirror.min.js">
   </script>
   <script 
-    src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.48.4/mode/javascript/javascript.js">
+    src="//cdnjs.cloudflare.com/ajax/libs/codemirror/5.48.4/mode/javascript/javascript.js">
   </script>
   <script>
       var editor = CodeMirror.fromTextArea(hooktable, {
@@ -76,12 +76,12 @@
     });
     editor.setSize("100%",620);
 
-    var editor = CodeMirror.fromTextArea(console_output_2, {
+    var console_output_2_editor = CodeMirror.fromTextArea(console_output_2, {
         lineNumbers: true,
         mode: 'javascript',
         theme: 'dracula',
     });
-    editor.setSize("100%",620);
+    console_output_2_editor.setSize("100%",620);
 </script>
 
 <!-- Config tab - Show and hide device arguments -->
