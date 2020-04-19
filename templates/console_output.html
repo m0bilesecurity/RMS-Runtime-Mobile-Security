@@ -35,17 +35,26 @@
         <br>
         <div class="row">
           <div class="col-sm-6">
-            <h3 align=center>History of all the methods called <font color=red>[IF HOOKED]</font></h3>
-            <textarea id=console_output_1 name=console_output
+            <h3 align=center>Calls Stack Hooked methods</h3>
+            <textarea id=calls_stack name=console_output
               class="form-control">{{ called_console_output_str|safe }}</textarea>
           </div>
 
           <div class="col-sm-6">
-            <h3 align=center>Console Output</h3>
-            <textarea id=console_output_2 name=console_output
+            <h3 align=center>I/O Hooked methods</h3>
+            <textarea id=hooks_stack name=console_output
               class="form-control">{{ hooked_console_output_str|safe }}</textarea>
           </div>
         </div>
+        <br>
+        <div class="row">
+          <div class="col-sm-12">
+            <h3 align=center>Global Console Output</h3>
+            <textarea id=global_console_output name=console_output
+              class="form-control">{{ global_console_output_str|safe }}</textarea>
+          </div>
+        </div> <!-- row -->
+
       </div>
     </div>
     <!-- /#container-fluid -->
@@ -60,14 +69,62 @@
   {% include 't_js_script.html' %}
 
   {% block scripts %}
-  <!-- Auto Refresh Page -->
   <script>
+    // Console Output TAB
+        var calls_stack_editor = CodeMirror.fromTextArea(calls_stack, {
+            lineNumbers: true,
+            mode: 'javascript',
+            theme: 'dracula',
+            readOnly: true
+        });
+        calls_stack_editor.setSize("100%",620);
+    
+        var hooks_stack_editor = CodeMirror.fromTextArea(hooks_stack, {
+            lineNumbers: true,
+            mode: 'javascript',
+            theme: 'dracula',
+            readOnly: true
+        });
+        hooks_stack_editor.setSize("100%",620);
+    
+        var global_console_editor = CodeMirror.fromTextArea(global_console_output, {
+            lineNumbers: true,
+            mode: 'javascript',
+            theme: 'dracula',
+            readOnly: true
+        });
+        global_console_editor.setSize("100%",300);
+  </script>
+
+
+  <script>
+
+    //Set cursors always at the bottom 
+    global_console_editor.setCursor(global_console_editor.lineCount(), 0)
+    hooks_stack_editor.setCursor(hooks_stack_editor.lineCount(), 0)
+    calls_stack_editor.setCursor(calls_stack_editor.lineCount(), 0)
+
     const socket = io.connect('//' + document.domain + ':' + location.port + '/console');
-    socket.on('console_output', function(msg) {
+    socket.on('calls_stack', function(msg) {
         if(msg.data.length) {
-            console_output_2_editor.setValue(msg.data);
+          calls_stack_editor.setValue(msg.data);
+          calls_stack_editor.setCursor(calls_stack_editor.lineCount(), 0)
         }
     });
+    socket.on('hooks_stack', function(msg) {
+        if(msg.data.length) {
+          hooks_stack_editor.setValue(msg.data);
+          hooks_stack_editor.setCursor(hooks_stack_editor.lineCount(), 0)
+        }
+    });
+
+    socket.on('global_console', function(msg) {
+        if(msg.data.length) {
+          global_console_editor.setValue(msg.data);
+          global_console_editor.setCursor(global_console_editor.lineCount(), 0)
+        }
+    });
+
 
   </script>
   {% endblock %}

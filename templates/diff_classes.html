@@ -72,6 +72,26 @@
   <!-- Javascript loading -->
   {% include 't_js_script.html' %}
 
+  {% block scripts %}
+<script>
+    var editor = CodeMirror.fromTextArea(console_output_1, {
+        lineNumbers: true,
+        mode: 'javascript',
+        theme: 'dracula',
+        readOnly: true
+    });
+    editor.setSize("100%",620);
+
+    var editor = CodeMirror.fromTextArea(console_output_2, {
+        lineNumbers: true,
+        mode: 'javascript',
+        theme: 'dracula',
+        readOnly: true
+    });
+    editor.setSize("100%",620);
+</script>
+  {% endblock %}
+
 </body>
 
 </html>
