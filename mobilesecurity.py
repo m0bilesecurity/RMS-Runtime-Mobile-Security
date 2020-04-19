@@ -1,11 +1,15 @@
-from flask import Flask, request, render_template, redirect, url_for
-from flask_bootstrap import Bootstrap
-import frida, sys, os
+import os
+import sys
 import json
+import frida
+from flask_bootstrap import Bootstrap
+from flask_socketio import SocketIO, emit
+from flask import Flask, request, render_template, redirect, url_for
 
 app = Flask(__name__)
+socket_io = SocketIO(app)
 
-# Global variables 
+# Global variables
 loaded_classes = []
 system_classes = []
 loaded_methods = {}
@@ -17,6 +21,7 @@ new_loaded_classes = []
 # Global variables - console output
 calls_console_output = ""
 hooks_console_output = ""
+global_console_output = ""
 calls_count = 0
 
 api = None
@@ -30,19 +35,20 @@ Java.perform(function () {
     var hookclass = Java.use(classname);
 
     hookclass.{classMethod}.{overload}implementation = function ({args}) {
-        send("CALLED: " + classname + "." + classmethod + "()");
+        send("CALLED: " + classname + "." + classmethod + "()\\n");
         var ret = this.{classMethod}({args});
 
         var s="";
-        s=s+("\\nHOOK: " + classname + "." + classmethod + "()");
-        s=s+"\\nInput: "+eval(args);
-        s=s+"\\nOutput: "+ret;
+        s=s+("HOOK: " + classname + "." + classmethod + "()\\n");
+        s=s+"Input: "+eval(args)+"\\n";
+        s=s+"Output: "+ret+"\\n";
         send(s);
                 
         return ret;
     };
 });
 """
+
 template_hook_lab = """
 Java.perform(function () {
     var classname = "{className}";
@@ -52,13 +58,13 @@ Java.perform(function () {
     //{methodSignature}
 
     hookclass.{classMethod}.{overload}implementation = function ({args}) {
-        send("CALLED: " + classname + "." + classmethod + "()");
+        send("CALLED: " + classname + "." + classmethod + "()\\n");
         var ret = this.{classMethod}({args});
 
         var s="";
-        s=s+"\\nHOOK: " + classname + "." + classmethod + "()";
-        s=s+"\\nIN: "+{args};
-        s=s+"\\nOUT: "+ret;
+        s=s+"HOOK: " + classname + "." + classmethod + "()\\n";
+        s=s+"IN: "+{args}+"\\n";
+        s=s+"OUT: "+ret+"\\n";
         send(s);
                 
         return ret;
@@ -71,18 +77,18 @@ template_heap_search = """
       var classname = "{className}"
       var classmethod = "{classMethod}";
 
-      send("Heap Search - START ("+classname+")");
+      send("Heap Search - START ("+classname+")\\n");
 
       Java.choose(classname, {
         onMatch: function (instance) {
           
           var s="";
-          s=s+"Instance Found: " +instance.toString();
-          s=s+"\\nCalling method: " +classmethod;
+          s=s+"[*] Instance Found: " +instance.toString()+"\\n";
+          s=s+"Calling method: " +classmethod+"\\n";
           
           //{methodSignature}
           var ret = instance.{classMethod}({args}); //<-- replace v[i] with the value that you want to pass
-          s=s+"\\nOutput: "+ ret;
+          s=s+"Output: "+ ret + "\\n";
           send(s);
 
         }
@@ -96,31 +102,6 @@ template_heap_search = """
 Device - TAB
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '''
-
-
-def get_device(device_type="usb", device_args=None):
-    device_type = device_type.lower()
-    device_args = device_args or {}
-    device_manager = frida.get_device_manager()
-    if device_type == "id":
-        device_id = device_args['id']
-        device_args.clear()
-        return device_manager.get_device(device_id, **device_args)
-    if device_type == "usb":
-        device_args.clear()
-        return device_manager.get_usb_device(**device_args)
-    elif device_type == "local":
-        device_args.clear()
-        return device_manager.get_local_device(**device_args)
-    elif device_type == "remote":
-        device_host = device_args['host']
-        if device_host:
-            return device_manager.add_remote_device(device_host)
-        device_args.clear()
-        return device_manager.get_remote_device(**device_args)
-
-    return device_manager.enumerate_devices()[0]
-
 
 @app.route('/', methods=['GET', 'POST'])
 def device_management():
@@ -162,6 +143,10 @@ def device_management():
                 cs_file = f.read()
 
     if request.method == 'POST':
+
+        #output reset
+        reset_variables_and_output()
+
         package_name = request.values.get('package')
         mode = request.values.get('mode')
         frida_script = request.values.get('fridastartupscript')
@@ -178,6 +163,7 @@ def device_management():
         # before starting the target app - default process is com.android.systemui
         session = device.attach(config["system_package"])
         script = session.create_script(frida_code)
+        #script.set_log_handler(log_handler)
         script.load()
         api = script.exports
         system_classes = api.loadclasses()
@@ -192,6 +178,7 @@ def device_management():
             print('[*] Process Attached')
 
         script = session.create_script(frida_code)
+        #script.set_log_handler(log_handler)
         script.on('message', on_message)
         script.load()
 
@@ -206,7 +193,7 @@ def device_management():
             api.loadcustomfridascript(frida_script)
             # DEBUG print(frida_script, file=sys.stdout)
 
-        # automatically redirect the user to the dump classes and methods tab  
+        # automatically redirect the user to the dump classes and methods tab
         return printwebpage()
 
     return render_template(
@@ -220,6 +207,28 @@ def device_management():
         conn_args_str=conn_args
     )
 
+def get_device(device_type="usb", device_args=None):
+    device_type = device_type.lower()
+    device_args = device_args or {}
+    device_manager = frida.get_device_manager()
+    if device_type == "id":
+        device_id = device_args['id']
+        device_args.clear()
+        return device_manager.get_device(device_id, **device_args)
+    if device_type == "usb":
+        device_args.clear()
+        return device_manager.get_usb_device(**device_args)
+    elif device_type == "local":
+        device_args.clear()
+        return device_manager.get_local_device(**device_args)
+    elif device_type == "remote":
+        device_host = device_args['host']
+        if device_host:
+            return device_manager.add_remote_device(device_host)
+        device_args.clear()
+        return device_manager.get_remote_device(**device_args)
+
+    return device_manager.enumerate_devices()[0]
 
 ''' 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -240,7 +249,7 @@ def home():
         if array_to_hook is not None:
             hooked_classes = []
             for index in array_to_hook:
-                # hooked classes 
+                # hooked classes
                 hooked_classes.append(loaded_classes[int(index)])
             loaded_classes = hooked_classes
         return printwebpage()
@@ -250,14 +259,14 @@ def home():
     if choice is not None:
         choice = int(request.args.get('choice'))
 
-    # ***** MENU ***** 
+    # ***** MENU *****
     if choice == 1:
         # --> Dump Loaded Classes (w/o filters)
 
         # clean up the array
         loaded_classes.clear()
         loaded_methods.clear()
-        # check if the user is trying to filter loaded classes 
+        # check if the user is trying to filter loaded classes
         filter = request.args.get('filter')
         if filter:
             hooked_classes = api.loadclasseswithfilter(filter)
@@ -467,8 +476,19 @@ def console_output_loader():
         "console_output.html",
         called_console_output_str=calls_console_output,
         hooked_console_output_str=hooks_console_output,
+        global_console_output_str=global_console_output,
         package_name_str=package_name
     )
+
+
+@socket_io.on('connect', namespace='/console')
+def ws_connect():
+    print('Client connected')
+
+
+@socket_io.on('disconnect', namespace='/console')
+def ws_disconnect():
+    print('Client disconnected')
 
 
 ''' 
@@ -482,12 +502,12 @@ Config File - TAB
 def edit_config_file():
     config = read_config_file()
     placeholder = {
-        'host':'IP:PORT',
-        'id':'Device’s serial number'
+        'host': 'IP:PORT',
+        'id': 'Device’s serial number'
     }
-    
-    error=False
-    if request.values.get('error'): 
+
+    error = False
+    if request.values.get('error'):
         error = "Device not connected. Please, modify the settings and try again."
 
     if request.method == 'POST':
@@ -497,7 +517,7 @@ def edit_config_file():
         system_package = request.values.get('package')
         device_args_keys = request.values.getlist('key[]')
         device_args_values = request.values.getlist('value[]')
-        
+
         device_args = dict(zip(device_args_keys, device_args_values))
 
         if device_type: new_config['device_type'] = device_type.lower()
@@ -520,27 +540,29 @@ def edit_config_file():
         error_str=error
     )
 
+
 # Support show arguments in config tab
 def is_hide(device_type, key):
     correlation = {
-        'usb':'',
-        'remote':'host',
-        'id':'id',
-        'local':''
+        'usb': '',
+        'remote': 'host',
+        'id': 'id',
+        'local': ''
     }
     return correlation[device_type.lower()] != key
 
+
 # Support init with correct device type selected
 def printOptions():
-    devices = ['USB','Remote','Local','ID']
+    devices = ['USB', 'Remote', 'Local', 'ID']
     config = read_config_file()
     temp_str = ""
-    
+
     for device_type in devices:
         if device_type.lower() == config['device_type']:
-            temp_str = temp_str + "<option selected>"+str(device_type)+"</option>"
+            temp_str = temp_str + "<option selected>" + str(device_type) + "</option>"
         else:
-            temp_str = temp_str + "<option>"+str(device_type)+"</option>"
+            temp_str = temp_str + "<option>" + str(device_type) + "</option>"
     return temp_str
 
 
@@ -595,21 +617,98 @@ on_message stuff
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '''
 
-
 def on_message(message, data):
+
+
+    if message['type'] == 'send':
+        if "CALLED" in message['payload']:
+            log_handler("calls_stack",message['payload'])
+        if "HOOK" in message['payload']:
+            log_handler("hooks_stack",message['payload'])
+        if ("CALLED" not in message['payload'] and
+            "HOOK" not in message['payload']):
+            log_handler("global_stack",message['payload'])
+
+
+''' 
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Supplementary functions
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'''
+
+def reset_variables_and_output():
     global calls_count
     global calls_console_output
     global hooks_console_output
-    if message['type'] == 'send':
-        if "CALLED" in message['payload']:
-            to_print = "[" + str(calls_count) + "] " + message['payload']
-            print(to_print, file=sys.stdout)
-            calls_console_output = calls_console_output + "\n" + to_print
-            calls_count += 1
-        else:
-            hooks_console_output = hooks_console_output + "\n" + message['payload']
-            print("[*] {0}".format(message['payload']), file=sys.stdout)
+    global global_console_output
+    global loaded_classes
+    global system_classes
+    global loaded_methods
+    global current_loaded_classes
+    global new_loaded_classes
 
+
+    #output reset
+    calls_console_output = ""
+    hooks_console_output = ""
+    global_console_output = ""
+    calls_count = 0
+    #variable reset
+    loaded_classes = []
+    system_classes = []
+    loaded_methods = {}
+    #diff classes variables
+    current_loaded_classes = []
+    new_loaded_classes = []
+
+
+def log_handler(level, text):
+    global calls_count
+    global calls_console_output
+    global hooks_console_output
+    global global_console_output
+
+    if not text:
+        return
+    '''
+    if level == 'info':
+        print(text, file=sys.stdout)
+    else:
+        print(text, file=sys.stderr)
+    '''
+    if level == 'calls_stack':
+        text = "[" + str(calls_count) + "] " + text
+        calls_console_output = calls_console_output + "\n" + text
+        calls_count += 1
+        socket_io.emit(
+        'calls_stack', 
+        {
+            'data': calls_console_output, 
+            'level': level
+        }, 
+        namespace='/console'
+        )
+    if level == 'hooks_stack':
+        hooks_console_output = hooks_console_output + "\n" + text
+        socket_io.emit(
+        'hooks_stack', 
+        {
+            'data': hooks_console_output, 
+            'level': level
+        }, 
+        namespace='/console'
+        )
+    
+    global_console_output = global_console_output + "\n" + text
+    socket_io.emit(
+    'global_console', 
+    {
+        'data': global_console_output, 
+        'level': level
+    }, 
+    namespace='/console'
+    )
+    print(text)
 
 ''' 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -628,4 +727,4 @@ if __name__ == '__main__':
     print("")
 
     # run Flask
-    app.run()
+    socket_io.run(app)

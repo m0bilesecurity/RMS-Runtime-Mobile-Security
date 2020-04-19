@@ -117,6 +117,17 @@
   <!-- Javascript loading -->
   {% include 't_js_script.html' %}
 
+  {% block scripts %}
+  <script>
+    var editor = CodeMirror.fromTextArea(hooktable, {
+        lineNumbers: true,
+        mode: 'javascript',
+        theme: 'dracula'
+    });
+    editor.setSize("100%",550);
+  </script> 
+  {% endblock %}
+
 </body>
 
 </html>

@@ -146,6 +146,16 @@
 
   <!-- Javascript loading -->
   {% include 't_js_script.html' %}
+  {% block scripts %}
+  <script>
+    var editor = CodeMirror.fromTextArea(fridastartupscript, {
+        lineNumbers: true,
+        mode: 'javascript',
+        theme: 'dracula'
+    });
+    editor.setSize("100%",300);
+  </script>
+  {% endblock %}
 
 </body>
 
