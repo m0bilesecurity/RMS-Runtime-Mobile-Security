@@ -36,7 +36,7 @@ rpc.exports = {
 
           //check if a filter exists
           if (filter != null) {
-            if (className.search(filter.trim()) > -1 ) {
+            if (className.search(filter) > -1 ) {
               loaded_classes.push(className)
             }
           }
