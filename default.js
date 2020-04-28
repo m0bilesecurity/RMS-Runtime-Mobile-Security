@@ -36,14 +36,9 @@ rpc.exports = {
 
           //check if a filter exists
           if (filter != null) {
-            //check if we have multiple filters (comma separated list)
-            var filter_array = filter.split(",");
-            filter_array.forEach(function (f) {
-              //f.trim() is needed to remove possibile spaces after the comma
-              if (className.startsWith(f.trim())) {
-                loaded_classes.push(className)
-              }
-            });
+            if (className.search(filter.trim()) > -1 ) {
+              loaded_classes.push(className)
+            }
           }
         },
         onComplete: function () {
