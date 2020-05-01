@@ -39,9 +39,9 @@ Java.perform(function () {
         var ret = this.{classMethod}({args});
 
         var s="";
-        s=s+("HOOK: " + classname + "." + classmethod + "()\\n");
-        s=s+"Input: "+eval(args)+"\\n";
-        s=s+"Output: "+ret+"\\n";
+        s=s+"HOOK: " + classname + "." + classmethod + "()\\n";
+        s=s+"IN: "+eval(args)+"\\n";
+        s=s+"OUT: "+ret+"\\n";
         send(s);
                 
         return ret;
