@@ -54,8 +54,6 @@ Java.perform(function () {
     var classname = "{className}";
     var classmethod = "{classMethod}";
     var hookclass = Java.use(classname);
-    var jlog = Java.use('android.util.Log')
-    var jexception = Java.use('java.lang.Exception');
     
     //{methodSignature}
 
@@ -65,9 +63,10 @@ Java.perform(function () {
 
         var s="";
         s=s+"HOOK: " + classname + "." + classmethod + "()\\n";
-        s=s+"IN: "+{args}+"\\n";
+        s=s+"IN: "+eval({args})+"\\n";
         s=s+"OUT: "+ret+"\\n";
-        s=s+"StackTrace: "+jlog.getStackTraceString(jexception.$new()) +"\\n";
+        //uncomment the line below to print StackTrace
+        //s=s+"StackTrace: "+Java.use('android.util.Log').getStackTraceString(Java.use('java.lang.Exception').$new()) +"\\n";
         send(s);
                 
         return ret;
