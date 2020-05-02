@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- head and css -->
+  {% include 't_head.html' %}
+  <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"
+          integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous">
+  </script>
+</head>
+
+<body>
+  <div class="d-flex" id="wrapper">
+    <!-- Sidebar -->
+    {% include 't_sidebar.html' %}
+
+    <!-- Page Content -->
+    <div id="page-content-wrapper">
+
+      <!-- Navbar -->
+      {% include 't_navbar.html' %}
+
+      <div class="container-fluid">
+
+        <br>
+        <h3>File System Monitor 🗳</h3>
+        <div class="border-top my-3"></div>
+        <!-- Textarea for injecting the custom script -->
+        <div class="row">
+
+          <div class="col-sm-12">
+            <br>
+            <h4>What do you want to monitor?</h4>
+            <form class="form-group 
+            list-group-item 
+            list-group-item-action 
+            bg-light
+            rounded" action="/file_system_monitor" method=POST>
+            <div class="row">
+            <div class="col-sm-2">
+                <div class="form-group">
+                    <label for="suspend_process">open?</label>
+                    <select class="form-control" 
+                            id="monitor_open" 
+                            name="monitor_open">
+                      <option>True</option>
+                      <option>False</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-sm-2">
+                <div class="form-group">
+                    <label for="suspend_process">close?</label>
+                    <select class="form-control" 
+                            id="monitor_close" 
+                            name="monitor_close">
+                      <option>True</option>
+                      <option>False</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-sm-2">
+                <div class="form-group">
+                    <label for="suspend_process">read?</label>
+                    <select class="form-control" 
+                            id="monitor_read" 
+                            name="monitor_read">
+                      <option>True</option>
+                      <option>False</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-sm-2">
+                <div class="form-group">
+                    <label for="suspend_process">write?</label>
+                    <select class="form-control" 
+                            id="monitor_write" 
+                            name="monitor_wite">
+                      <option>True</option>
+                      <option>False</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-sm-2">
+                <div class="form-group">
+                    <label for="suspend_process">unlink?</label>
+                    <select class="form-control" 
+                            id="monitor_unlink" 
+                            name="monitor_unlink">
+                      <option>True</option>
+                      <option>False</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-sm-2">
+                <div class="form-group">
+                    <label for="suspend_process">remove?</label>
+                    <select class="form-control" 
+                            id="monitor_remove" 
+                            name="monitor_remove">
+                      <option>True</option>
+                      <option>False</option>
+                    </select>
+                </div>
+            </div>
+            </div> <!-- row -->
+
+            <center><input type=submit class="btn btn-primary"></center>
+            </form>
+
+          </div> <!--col-sm-12 -->
+
+        </div><!-- /#row -->
+
+        <br>
+        <div class="row">
+            <div class="col-sm-12">
+                <textarea id=file_monitor_console name=file_monitor_console class="form-control">{{ fs_monitor_console_output_str|safe }}</textarea>
+                <br>
+            </div>
+        </div><!-- /#row -->
+
+      </div>
+      <!-- /#container-fluid -->
+
+    </div>
+    <!-- /#page-content-wrapper -->
+
+  </div>
+  <!-- /#wrapper -->
+
+  <!-- Javascript loading -->
+  {% include 't_js_script.html' %}
+  {% block scripts %}
+  <script>
+    var file_monitor_editor = CodeMirror.fromTextArea(file_monitor_console, {
+        lineNumbers: true,
+        mode: 'javascript',
+        theme: 'dracula',
+        readOnly: true
+    });
+    file_monitor_editor.setSize("100%",500);
+    
+  </script>
+  <script>
+    //Set cursors always at the bottom 
+    file_monitor_editor.setCursor(file_monitor_editor.lineCount(), 0);
+
+    const socket = io.connect('//' + document.domain + ':' + location.port + '/console');
+    socket.on('fs_monitor', function(msg) {
+        if(msg.data.length) {
+            file_monitor_editor.setValue(msg.data);
+            file_monitor_editor.setCursor(file_monitor_editor.lineCount(), 0)
+        }
+    });
+  </script> 
+  {% endblock %}
+
+</body>
+
+</html>

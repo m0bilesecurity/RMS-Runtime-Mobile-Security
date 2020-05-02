@@ -1,3 +1,10 @@
+/************************************************************************
+ * Name: Strings Compare
+ * OS: Android
+ * Author: iddoeldor
+ * Source: https://github.com/iddoeldor/frida-snippets#string-comparison
+ *************************************************************************/
+
 Java.perform(function() {
 
     var str = Java.use('java.lang.String');

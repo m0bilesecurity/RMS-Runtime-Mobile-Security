@@ -54,25 +54,29 @@ e.g.
 
 ## 1. Run your favorite app by simply inserting its package name ##
 **NOTE** RMS attachs a persistence process called **com.android.systemui** to get the list of all the classes that are already loaded in memory before the launch of the target app. If you have an issue with it, try to find a different package that works well on your device. 
-You can set another default package by simply editing the config.json file.
+You can set another default package via the Config Tab or by simply editing the config.json file.
 
 ![DEMO_1](/DEMO/GIF/DEMO_1_Device.gif)
 
 ## 2. Check which Classes and Methods have been loaded in memory  ##
-![DEMO_2](/DEMO/GIF/DEMO_2_Classes_Methods_DUMP.gif)
+![DEMO_2](/DEMO/GIF/DEMO_2_Dump.gif)
 
 ## 3. Hook on the fly Classes/Methods and trace their args and return values  ##
-![DEMO_3](/DEMO/GIF/DEMO_3_Console_Output.gif)
+![DEMO_3](/DEMO/GIF/DEMO_3_Massive_Hook.gif)
 
-## 4. Select a Class and generate on the fly an Hook template for all its methods  ##
-![DEMO_4](/DEMO/GIF/DEMO_4_Main_Hook_Lab.gif)
+## 4. Search instances of a specific class on the Heap and call its methods [BETA]  ##
+![DEMO_4](/DEMO/GIF/DEMO_4_Heap_Search.gif)
 
-## 5. Easily detect new classes that have been loaded in memory   ##
-![DEMO_5](/DEMO/GIF/DEMO_5_Diff_Classes.gif)
+## 5. Select a Class and generate on the fly an Hook template for all its methods  ##
+![DEMO_5](/DEMO/GIF/DEMO_5_Hook_Hack.gif)
 
-## 6. Inject your favorite FRIDA CUSTOM SCRIPTS on the fly   ##
+## 6. Easily detect new classes that have been loaded in memory   ##
+![DEMO_6](/DEMO/GIF/DEMO_6_Diff_Classes.gif)
+
+## 7. Inject your favorite FRIDA CUSTOM SCRIPTS on the fly   ##
 Just add your .js files inside the custom_script folder and they will be automatically loaded by the web interface ready to be executed.
-![DEMO_6](/DEMO/GIF/DEMO_6_Custom_Script.gif)
+
+![DEMO_7](/DEMO/GIF/DEMO_7_Custom_Script.gif)
 
 
 # Acknowledgements
@@ -81,8 +85,12 @@ Special thanks to the following Open Source projects for the inspiration:
 * [Objection](https://github.com/sensepost/objection)
 * [House](https://github.com/nccgroup/house)
 
+### DEMO apps:
+
 [RootBeer Sample](https://play.google.com/store/apps/details?id=com.scottyab.rootbeer.sample) is the DEMO app used to show how RMS works.
 [RootBeer](https://github.com/scottyab/rootbeer) is an **amazing root detection library**. I decided to use the Sample app as DEMO just to show that, as every client-side only check, its root detection logic can be easily bypassed if not combined with a server-side validation. 
+
+[Anti-Frida](https://github.com/b-mueller/frida-detection-demo) Frida Detection Examples by Bernhard Mueller.
 
 # License
 RMS is licensed under a [GNU General Public v3 License](https://www.gnu.org/licenses/gpl-3.0.en.html).
