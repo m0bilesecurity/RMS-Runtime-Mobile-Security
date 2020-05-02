@@ -275,4 +275,84 @@ rpc.exports = {
     // return HOOK template
     return hto;
   },
+  filesystemmonitor: function (m_open, m_close, m_read, m_write, m_unlink, m_remove) {
+    Java.perform(function () {
+      if (m_open == "True") Java.performNow(monitor_open);
+      if (m_close == "True") Java.performNow(monitor_close);
+      if (m_read == "True") Java.performNow(monitor_read);
+      if (m_write == "True") Java.performNow(monitor_write);
+      if (m_unlink == "True") Java.performNow(monitor_unlink);
+      if (m_remove == "True") Java.performNow(monitor_remove);   
+    })
+  }
 };
+
+
+var monitor_open = function () {
+  Interceptor.attach(
+    Module.findExportByName("libc.so", "open"), {
+      onEnter: function (args) {
+        var file = Memory.readCString(args[0]);
+        if (!file.includes("/dev/ashmem") && !file.includes("/proc/"))
+          send("FS Monitor |   action: open   | file: " + file);
+      }
+    }
+  );
+}
+
+var monitor_close = function () {
+  Interceptor.attach(
+    Module.findExportByName("libc.so", "close"), {
+      onEnter: function (args) {
+        var file = Memory.readCString(args[0]);
+        send("FS Monitor |   action: close  | file: " + file);
+      }
+    }
+  );
+
+}
+
+var monitor_read = function () {
+  Interceptor.attach(
+    Module.findExportByName("libc.so", "read"), {
+      onEnter: function (args) {
+        var file = Memory.readCString(args[0]);
+        send("FS Monitor |   action: read   | file: " + file);
+      }
+    }
+  );
+
+}
+
+var monitor_write = function () {
+  Interceptor.attach(
+    Module.findExportByName("libc.so", "write"), {
+      onEnter: function (args) {
+        var file = Memory.readCString(args[0]);
+        send("FS Monitor |   action: write  | write: " + file);
+      }
+    }
+  );
+}
+
+var monitor_unlink = function () {
+  Interceptor.attach(
+    Module.findExportByName("libc.so", "unlink"), {
+      onEnter: function (args) {
+        var file = Memory.readCString(args[0]);
+        send("FS Monitor |   action: unlink | file: " + file);
+      }
+    }
+  );
+}
+
+var monitor_remove = function () {
+  Interceptor.attach(
+    Module.findExportByName("libc.so", "remove"), {
+      onEnter: function (args) {
+        var file = Memory.readCString(args[0]);
+        send("FS Monitor |   action: remove | file: " + file);
+      }
+    }
+  );
+}

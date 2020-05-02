@@ -22,6 +22,7 @@ new_loaded_classes = []
 calls_console_output = ""
 hooks_console_output = ""
 global_console_output = ""
+fs_monitor_console_output = ""
 calls_count = 0
 
 api = None
@@ -429,15 +430,39 @@ def heap_search():
         package_name_str=package_name
     )
 
+''' 
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+File System Monitor - TAB
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'''
+
+@app.route('/file_system_monitor', methods=['GET', 'POST'])
+def file_system_monitor():
+    if request.method == 'POST':
+        m_open = request.values.get('monitor_open')
+        m_close = request.values.get('monitor_close')
+        m_read = request.values.get('monitor_read')
+        m_write = request.values.get('monitor_write')
+        m_unlink = request.values.get('monitor_unlink')
+        m_remove = request.values.get('monitor_remove')
+        api.filesystemmonitor(m_open,m_close,m_read,m_write,m_unlink,m_remove);
+
+
+
+    return render_template(
+        "file_system_monitor.html",
+        package_name_str=package_name,
+        fs_monitor_console_output_str=fs_monitor_console_output
+    )
 
 ''' 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Custom Frida Script - TAB
+Load Frida Script - TAB
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '''
 
 
-@app.route('/custom_frida_script', methods=['GET', 'POST'])
+@app.route('/load_frida_script', methods=['GET', 'POST'])
 def frida_script_loader():
     if request.method == 'POST':
         script = request.values.get('frida_custom_script')
@@ -458,7 +483,7 @@ def frida_script_loader():
                 cs_file = f.read()
 
     return render_template(
-        "custom_frida_script.html",
+        "load_frida_script.html",
         package_name_str=package_name,
         custom_scripts=custom_scripts,
         custom_script_loaded=cs_file
@@ -627,8 +652,11 @@ def on_message(message, data):
             log_handler("calls_stack",message['payload'])
         if "HOOK" in message['payload']:
             log_handler("hooks_stack",message['payload'])
+        if "FS Monitor" in message['payload']:
+            log_handler("fs_monitor",message['payload'])
         if ("CALLED" not in message['payload'] and
-            "HOOK" not in message['payload']):
+            "HOOK" not in message['payload'] and
+            "FS Monitor" not in message['payload']):
             log_handler("global_stack",message['payload'])
 
 
@@ -643,6 +671,7 @@ def reset_variables_and_output():
     global calls_console_output
     global hooks_console_output
     global global_console_output
+    global fs_monitor_console_output
     global loaded_classes
     global system_classes
     global loaded_methods
@@ -654,6 +683,7 @@ def reset_variables_and_output():
     calls_console_output = ""
     hooks_console_output = ""
     global_console_output = ""
+    fs_monitor_console_output = ""
     calls_count = 0
     #variable reset
     loaded_classes = []
@@ -669,6 +699,7 @@ def log_handler(level, text):
     global calls_console_output
     global hooks_console_output
     global global_console_output
+    global fs_monitor_console_output
 
     if not text:
         return
@@ -700,7 +731,16 @@ def log_handler(level, text):
         }, 
         namespace='/console'
         )
-    
+    if level == 'fs_monitor':
+        fs_monitor_console_output = fs_monitor_console_output + "\n" + text
+        socket_io.emit(
+        'fs_monitor', 
+        {
+            'data': fs_monitor_console_output, 
+            'level': level
+        }, 
+        namespace='/console'
+        )
     global_console_output = global_console_output + "\n" + text
     socket_io.emit(
     'global_console', 
@@ -722,7 +762,7 @@ if __name__ == '__main__':
     print("")
     print("_________________________________________________________")
     print("RMS - Runtime Mobile Security")
-    print("Version: 1.0.3")
+    print("Version: 1.0.4")
     print("by @mobilesecurity_")
     print("Twitter Profile: https://twitter.com/mobilesecurity_")
     print("_________________________________________________________")
