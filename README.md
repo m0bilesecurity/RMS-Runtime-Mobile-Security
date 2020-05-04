@@ -75,8 +75,11 @@ You can set another default package via the Config Tab or by simply editing the 
 
 ## 7. Inject your favorite FRIDA CUSTOM SCRIPTS on the fly   ##
 Just add your .js files inside the custom_script folder and they will be automatically loaded by the web interface ready to be executed.
-
 ![DEMO_7](/DEMO/GIF/DEMO_7_Custom_Script.gif)
+
+## 8. File System Monitor [BETA]  ##
+You can monitor the following native functions: libc.so - open, close, read, write, unlink, remove
+![DEMO_8](/DEMO/GIF/DEMO_8_FS_monitor.png)
 
 
 # Acknowledgements

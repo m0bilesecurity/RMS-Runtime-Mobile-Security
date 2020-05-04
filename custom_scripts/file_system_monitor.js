@@ -3,6 +3,7 @@
  * OS: Android
  * Author: @mobilesecurity_
  * Source: https://github.com/m0bilesecurity
+ * Info: (libc.so - open, close, read, write, unlink, remove)
 *************************************************************************/
 
 Interceptor.attach(
