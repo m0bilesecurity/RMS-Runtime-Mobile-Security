@@ -81,6 +81,12 @@ Just add your .js files inside the custom_script folder and they will be automat
 You can monitor the following native functions: libc.so - open, close, read, write, unlink, remove
 ![DEMO_8](/DEMO/GIF/DEMO_8_FS_monitor.png)
 
+## 9. FRIDA Script to load Stetho by Facebook [BETA]  ##
+Inject the FRIDA script to load the amazing [Stetho](http://facebook.github.io/stetho/).
+
+Stetho is a sophisticated debug bridge for Android applications. When enabled, developers have access to the Chrome Developer Tools feature natively part of the Chrome desktop browser. Developers can also choose to enable the optional dumpapp tool which offers a powerful command-line interface to application internals.
+![DEMO_9](/DEMO/GIF/DEMO_9_Stetho.gif)
+
 
 # Acknowledgements
 Special thanks to the following Open Source projects for the inspiration:
