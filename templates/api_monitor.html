@@ -23,7 +23,7 @@
       <div class="container-fluid">
 
         <br>
-        <h3>File System Monitor 🗳</h3>
+        <h3>API Monitor 🗳</h3>
         <div class="border-top my-3"></div>
         <!-- Textarea for injecting the custom script -->
         <div class="row">
@@ -35,7 +35,8 @@
             list-group-item 
             list-group-item-action 
             bg-light
-            rounded" action="/file_system_monitor" method=POST>
+            rounded" action="/api_monitor" method=POST>
+            <h4>File System</h4>
             <div class="row">
             <div class="col-sm-2">
                 <div class="form-group">
@@ -115,7 +116,7 @@
         <br>
         <div class="row">
             <div class="col-sm-12">
-                <textarea id=file_monitor_console name=file_monitor_console class="form-control">{{ fs_monitor_console_output_str|safe }}</textarea>
+                <textarea id=api_monitor_console name=api_monitor_console class="form-control">{{ api_monitor_console_output_str|safe }}</textarea>
                 <br>
             </div>
         </div><!-- /#row -->
@@ -133,24 +134,24 @@
   {% include 't_js_script.html' %}
   {% block scripts %}
   <script>
-    var file_monitor_editor = CodeMirror.fromTextArea(file_monitor_console, {
+    var api_monitor_editor = CodeMirror.fromTextArea(api_monitor_console, {
         lineNumbers: true,
         mode: 'javascript',
         theme: 'dracula',
         readOnly: true
     });
-    file_monitor_editor.setSize("100%",500);
+    api_monitor_editor.setSize("100%",500);
     
   </script>
   <script>
     //Set cursors always at the bottom 
-    file_monitor_editor.setCursor(file_monitor_editor.lineCount(), 0);
+    api_monitor_editor.setCursor(api_monitor_editor.lineCount(), 0);
 
     const socket = io.connect('//' + document.domain + ':' + location.port + '/console');
-    socket.on('fs_monitor', function(msg) {
+    socket.on('api_monitor', function(msg) {
         if(msg.data.length) {
-            file_monitor_editor.setValue(msg.data);
-            file_monitor_editor.setCursor(file_monitor_editor.lineCount(), 0)
+            api_monitor_editor.setValue(msg.data);
+            api_monitor_editor.setCursor(api_monitor_editor.lineCount(), 0)
         }
     });
   </script> 

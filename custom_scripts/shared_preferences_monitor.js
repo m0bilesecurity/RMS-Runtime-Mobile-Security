@@ -90,11 +90,11 @@ Java.perform(function () {
     };
   
     function print(method,key,value){
-      var api = "SharedPreferences"
       var mkey = key ? key.toString() : 'null';
       var mvalue = value ? value.toString() : 'null';
   
-      send(api + " - " +
+      send("API Monitor | "+
+           "SharedPreferences" + " | " +
            method + " - " +
            "(" + mkey + ":" + mvalue + ")"
           );

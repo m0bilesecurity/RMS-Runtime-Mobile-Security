@@ -22,7 +22,7 @@ new_loaded_classes = []
 calls_console_output = ""
 hooks_console_output = ""
 global_console_output = ""
-fs_monitor_console_output = ""
+api_monitor_console_output = ""
 calls_count = 0
 
 api = None
@@ -436,8 +436,8 @@ File System Monitor - TAB
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '''
 
-@app.route('/file_system_monitor', methods=['GET', 'POST'])
-def file_system_monitor():
+@app.route('/api_monitor', methods=['GET', 'POST'])
+def api_monitor():
     if request.method == 'POST':
         m_open = request.values.get('monitor_open')
         m_close = request.values.get('monitor_close')
@@ -450,9 +450,9 @@ def file_system_monitor():
 
 
     return render_template(
-        "file_system_monitor.html",
+        "api_monitor.html",
         package_name_str=package_name,
-        fs_monitor_console_output_str=fs_monitor_console_output
+        api_monitor_console_output_str=api_monitor_console_output
     )
 
 ''' 
@@ -652,11 +652,11 @@ def on_message(message, data):
             log_handler("calls_stack",message['payload'])
         if "HOOK" in message['payload']:
             log_handler("hooks_stack",message['payload'])
-        if "FS Monitor" in message['payload']:
-            log_handler("fs_monitor",message['payload'])
+        if "API Monitor" in message['payload']:
+            log_handler("api_monitor",message['payload'])
         if ("CALLED" not in message['payload'] and
             "HOOK" not in message['payload'] and
-            "FS Monitor" not in message['payload']):
+            "API Monitor" not in message['payload']):
             log_handler("global_stack",message['payload'])
 
 
@@ -671,7 +671,7 @@ def reset_variables_and_output():
     global calls_console_output
     global hooks_console_output
     global global_console_output
-    global fs_monitor_console_output
+    global api_monitor_console_output
     global loaded_classes
     global system_classes
     global loaded_methods
@@ -683,7 +683,7 @@ def reset_variables_and_output():
     calls_console_output = ""
     hooks_console_output = ""
     global_console_output = ""
-    fs_monitor_console_output = ""
+    api_monitor_console_output = ""
     calls_count = 0
     #variable reset
     loaded_classes = []
@@ -699,7 +699,7 @@ def log_handler(level, text):
     global calls_console_output
     global hooks_console_output
     global global_console_output
-    global fs_monitor_console_output
+    global api_monitor_console_output
 
     if not text:
         return
@@ -731,12 +731,12 @@ def log_handler(level, text):
         }, 
         namespace='/console'
         )
-    if level == 'fs_monitor':
-        fs_monitor_console_output = fs_monitor_console_output + "\n" + text
+    if level == 'api_monitor':
+        api_monitor_console_output = api_monitor_console_output + "\n" + text
         socket_io.emit(
-        'fs_monitor', 
+        'api_monitor', 
         {
-            'data': fs_monitor_console_output, 
+            'data': api_monitor_console_output, 
             'level': level
         }, 
         namespace='/console'

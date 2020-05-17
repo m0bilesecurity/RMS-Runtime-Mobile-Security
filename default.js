@@ -294,7 +294,7 @@ var monitor_open = function () {
       onEnter: function (args) {
         var file = Memory.readCString(args[0]);
         if (!file.includes("/dev/ashmem") && !file.includes("/proc/"))
-          send("FS Monitor |   action: open   | file: " + file);
+          send("API Monitor | FileSystem |   action: open   | file: " + file);
       }
     }
   );
@@ -305,7 +305,7 @@ var monitor_close = function () {
     Module.findExportByName("libc.so", "close"), {
       onEnter: function (args) {
         var file = Memory.readCString(args[0]);
-        send("FS Monitor |   action: close  | file: " + file);
+        send("API Monitor | FileSystem |   action: close  | file: " + file);
       }
     }
   );
@@ -317,7 +317,7 @@ var monitor_read = function () {
     Module.findExportByName("libc.so", "read"), {
       onEnter: function (args) {
         var file = Memory.readCString(args[0]);
-        send("FS Monitor |   action: read   | file: " + file);
+        send("API Monitor | FileSystem |   action: read   | file: " + file);
       }
     }
   );
@@ -329,7 +329,7 @@ var monitor_write = function () {
     Module.findExportByName("libc.so", "write"), {
       onEnter: function (args) {
         var file = Memory.readCString(args[0]);
-        send("FS Monitor |   action: write  | write: " + file);
+        send("API Monitor | FileSystem |   action: write  | write: " + file);
       }
     }
   );
@@ -340,7 +340,7 @@ var monitor_unlink = function () {
     Module.findExportByName("libc.so", "unlink"), {
       onEnter: function (args) {
         var file = Memory.readCString(args[0]);
-        send("FS Monitor |   action: unlink | file: " + file);
+        send("API Monitor | FileSystem |   action: unlink | file: " + file);
       }
     }
   );
@@ -351,7 +351,7 @@ var monitor_remove = function () {
     Module.findExportByName("libc.so", "remove"), {
       onEnter: function (args) {
         var file = Memory.readCString(args[0]);
-        send("FS Monitor |   action: remove | file: " + file);
+        send("API Monitor | FileSystem |   action: remove | file: " + file);
       }
     }
   );
