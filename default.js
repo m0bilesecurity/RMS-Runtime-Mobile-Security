@@ -63,9 +63,19 @@ rpc.exports = {
     var loaded_methods = {};
     Java.perform(function () {
       loaded_classes.forEach(function (className, index) {
+        var jClass;
+        var classMethods_dirty;
 
-        var jClass = Java.use(className);
-        var classMethods_dirty = jClass.class.getDeclaredMethods();
+        //catch possible issues
+        try{
+          jClass = Java.use(className);
+          classMethods_dirty = jClass.class.getDeclaredMethods();
+        }catch(err){
+          send("Exception while loading methods for "+className);
+          //skip current loop
+          loaded_methods[className] = []
+          return;
+        }
         var classMethods = []
 
         classMethods_dirty.forEach(function (m) {
