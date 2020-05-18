@@ -77,8 +77,10 @@ You can set another default package via the Config Tab or by simply editing the 
 Just add your .js files inside the custom_script folder and they will be automatically loaded by the web interface ready to be executed.
 ![DEMO_7](/DEMO/GIF/DEMO_7_Custom_Script.gif)
 
-## 8. File System Monitor [BETA]  ##
-You can monitor the following native functions: libc.so - open, close, read, write, unlink, remove
+## 8. API Monitor [BETA]  ##
+More than 19 possible Categories
+![DEMO_10](/DEMO/GIF/DEMO_10_API_Monitor.png)
+You can also monitor native functions: libc.so - open, close, read, write, unlink, remove
 ![DEMO_8](/DEMO/GIF/DEMO_8_FS_monitor.png)
 
 ## 9. FRIDA Script to load Stetho by Facebook [BETA]  ##
