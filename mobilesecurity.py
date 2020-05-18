@@ -633,26 +633,10 @@ Render Template Function - used for the sidebar and dump page
 def printwebpage():
     return render_template(
         "dump.html",
-        loaded_classes_str=printClassesMethods(),
-        package_name_str=package_name,
-        loaded_classes=loaded_classes
+        loaded_classes=loaded_classes,
+        loaded_methods=loaded_methods,
+        package_name_str=package_name
     )
-
-
-# Support print function
-def printClassesMethods():
-    temp_str = ""
-    for index, class_name in enumerate(loaded_classes):
-        temp_str = temp_str + "<tr><td><center>[" + str(index) + "]</center></td>" + "<td>" + class_name + "</td>"
-        # print(str(index)+" Class: "+class_name, file=sys.stdout);
-        temp_str = temp_str + "<td><pre><code class=Java>"
-        if loaded_methods:
-            # if(class_name in loaded_methods):
-            for index, method_name in enumerate(loaded_methods[class_name]):
-                m = method_name
-                temp_str = temp_str + m["ui_name"] + ";<br>"
-        temp_str = temp_str + "</code></pre></td></tr>"
-    return temp_str
 
 
 ''' 

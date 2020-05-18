@@ -171,7 +171,9 @@
               <p>Use the search bar below to quickly filter results:</p>
               <input class="form-control" id="UserInput" type="text" placeholder="Search..">
               <br>
-              {{ loaded_classes_str|safe }}
+              {% for class_name in loaded_classes %}
+              <tr><td><center>[{{ loop.index0 }}]</center></td><td>{{class_name}}</td>
+                <td><pre><code class=Java>{% for method_name in loaded_methods[class_name] %}{{method_name["ui_name"]}};<br>{% endfor %}</code></pre></td></tr>{% endfor %}
             </tbody>
           </table>
         </div>
