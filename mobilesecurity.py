@@ -432,26 +432,43 @@ def heap_search():
 
 ''' 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-File System Monitor - TAB
+API Monitor - TAB
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '''
 
 @app.route('/api_monitor', methods=['GET', 'POST'])
 def api_monitor():
+
+    api_monitor = {}
+    api_selected=[]
+
+    with open(os.path.dirname(os.path.realpath(__file__)) + "/api_monitor/api_monitor.json") as f:
+        api_monitor = json.load(f)
+
+    
     if request.method == 'POST':
-        m_open = request.values.get('monitor_open')
-        m_close = request.values.get('monitor_close')
-        m_read = request.values.get('monitor_read')
-        m_write = request.values.get('monitor_write')
-        m_unlink = request.values.get('monitor_unlink')
-        m_remove = request.values.get('monitor_remove')
-        api.filesystemmonitor(m_open,m_close,m_read,m_write,m_unlink,m_remove);
+        api_selected = request.values.getlist('api_selected')
+        api_filter = [e for e in api_monitor if e['Category'] in api_selected]
+        api_to_hook = json.loads(json.dumps(api_filter))
+        api.apimonitor(api_to_hook);
 
+        ''' DEBUG
+        print("\nAPI Selected",file=sys.stdout)
+        print(api_selected,file=sys.stdout)
 
+        print("\nAPI Monitor")
+        for e in api_monitor:
+            print(e["Category"],file=sys.stdout)
+
+        print("\nAPI to Hook")
+        for c in api_to_hook:
+            print(c["Category"],file=sys.stdout)
+        '''
 
     return render_template(
         "api_monitor.html",
         package_name_str=package_name,
+        api_monitor=api_monitor,
         api_monitor_console_output_str=api_monitor_console_output
     )
 

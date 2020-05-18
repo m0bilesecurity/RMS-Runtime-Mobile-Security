@@ -275,84 +275,115 @@ rpc.exports = {
     // return HOOK template
     return hto;
   },
-  filesystemmonitor: function (m_open, m_close, m_read, m_write, m_unlink, m_remove) {
+  apimonitor: function (api_to_monitor) {
     Java.perform(function () {
-      if (m_open == "True") Java.performNow(monitor_open);
-      if (m_close == "True") Java.performNow(monitor_close);
-      if (m_read == "True") Java.performNow(monitor_read);
-      if (m_write == "True") Java.performNow(monitor_write);
-      if (m_unlink == "True") Java.performNow(monitor_unlink);
-      if (m_remove == "True") Java.performNow(monitor_remove);   
+      /* DEBUG
+      api_to_monitor.forEach(function (e) {
+        console.log(e["Category"]);
+        e["hooks"].forEach(function (hook) {
+          console.log("--> "+hook["clazz"]+" - "+hook["method"]);
+        });
+      });
+      */
+      api_to_monitor.forEach(function (e) {
+        e["hooks"].forEach(function (hook) {
+          // Java or Native Hook?
+
+          // Native - File System only at the moment
+          if (e["HookType"] == "Native") {
+            nativedynamichook(hook, e["Category"]);
+          }
+
+          // Java 
+          if (e["HookType"] == "Java") {
+            javadynamichook(hook, e["Category"], function (realRetval, to_print) {
+              to_print.returnValue = realRetval
+
+              //check if type object if yes convert it to string
+              if (realRetval && typeof realRetval === 'object') {
+                var retval_string = [];
+                for (var k = 0, l = realRetval.length; k < l; k++) {
+                  retval_string.push(realRetval[k]);
+                }
+                to_print.returnValue = '' + retval_string.join('');
+              }
+              if (!to_print.result) to_print.result = undefined
+              if (!to_print.returnValue) to_print.returnValue = undefined
+
+              send('API Monitor - ' + JSON.stringify(to_print));
+              return realRetval;
+            });
+          } // end javadynamichook
+
+        });
+
+      });
+
     })
   }
 };
 
-
-var monitor_open = function () {
+function nativedynamichook(hook, category) {
+  // File System monitor only - libc.so
   Interceptor.attach(
-    Module.findExportByName("libc.so", "open"), {
+    Module.findExportByName(hook["clazz"], hook["method"]), {
       onEnter: function (args) {
         var file = Memory.readCString(args[0]);
-        if (!file.includes("/dev/ashmem") && !file.includes("/proc/"))
-          send("API Monitor | FileSystem |   action: open   | file: " + file);
+        //bypass ashem and prod if libc.so - open
+        if (hook["clazz"] == "libc.so" &&
+          hook["method"] == "open" &&
+          !file.includes("/dev/ashmem") &&
+          !file.includes("/proc/"))
+          send("API Monitor - " + category + " - " + hook["clazz"] + " - " + hook["method"] + " - " + file);
       }
     }
   );
 }
 
-var monitor_close = function () {
-  Interceptor.attach(
-    Module.findExportByName("libc.so", "close"), {
-      onEnter: function (args) {
-        var file = Memory.readCString(args[0]);
-        send("API Monitor | FileSystem |   action: close  | file: " + file);
+function javadynamichook(hook, category, callback) {
+  var Exception = Java.use('java.lang.Exception');
+  var toHook;
+  try {
+    var clazz = hook.clazz;
+    var method = hook.method;
+
+    try {
+      if (hook.target &&
+        parseInt(Java.androidVersion, 10) < hook.target) {
+        send('API Monitor - Android Version not supported - Cannot hook - ' + clazz + '.' + method)
+        return
+      }
+      // Check if class and method is available
+      toHook = Java.use(clazz)[method];
+      if (!toHook) {
+        send('API Monitor - Cannot find ' + clazz + '.' + method);
+        return
+      }
+    } catch (err) {
+      send('API Monitor - Cannot find ' + clazz + '.' + method);
+      return
+    }
+    for (var i = 0; i < toHook.overloads.length; i++) {
+      toHook.overloads[i].implementation = function () {
+        var args = [].slice.call(arguments);
+        // Call original method
+        var retval = this[method].apply(this, arguments);
+        if (callback) {
+          var calledFrom = Exception.$new().getStackTrace().toString().split(',')[1];
+          var to_print = {
+            category: category,
+            class: clazz,
+            method: method,
+            args: args,
+            calledFrom: calledFrom
+            //result: retval ? retval.toString() : null,
+          };
+          retval = callback(retval, to_print);
+        }
+        return retval;
       }
     }
-  );
-
-}
-
-var monitor_read = function () {
-  Interceptor.attach(
-    Module.findExportByName("libc.so", "read"), {
-      onEnter: function (args) {
-        var file = Memory.readCString(args[0]);
-        send("API Monitor | FileSystem |   action: read   | file: " + file);
-      }
-    }
-  );
-
-}
-
-var monitor_write = function () {
-  Interceptor.attach(
-    Module.findExportByName("libc.so", "write"), {
-      onEnter: function (args) {
-        var file = Memory.readCString(args[0]);
-        send("API Monitor | FileSystem |   action: write  | write: " + file);
-      }
-    }
-  );
-}
-
-var monitor_unlink = function () {
-  Interceptor.attach(
-    Module.findExportByName("libc.so", "unlink"), {
-      onEnter: function (args) {
-        var file = Memory.readCString(args[0]);
-        send("API Monitor | FileSystem |   action: unlink | file: " + file);
-      }
-    }
-  );
-}
-
-var monitor_remove = function () {
-  Interceptor.attach(
-    Module.findExportByName("libc.so", "remove"), {
-      onEnter: function (args) {
-        var file = Memory.readCString(args[0]);
-        send("API Monitor | FileSystem |   action: remove | file: " + file);
-      }
-    }
-  );
+  } catch (err) {
+    send('API Monitor - ERROR: ' + clazz + "." + method + " [\"Error\"] => " + err);
+  }
 }

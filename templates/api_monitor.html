@@ -29,89 +29,43 @@
         <div class="row">
 
           <div class="col-sm-12">
-            <br>
             <h4>What do you want to monitor?</h4>
             <form class="form-group 
             list-group-item 
             list-group-item-action 
             bg-light
             rounded" action="/api_monitor" method=POST>
-            <h4>File System</h4>
+            <br/>
             <div class="row">
-            <div class="col-sm-2">
-                <div class="form-group">
-                    <label for="suspend_process">open?</label>
-                    <select class="form-control" 
-                            id="monitor_open" 
-                            name="monitor_open">
-                      <option>True</option>
-                      <option>False</option>
-                    </select>
+              
+              
+              <div class="col-sm-6">
+                {% for e in api_monitor %}
+                {% if loop.index<=10 %}
+                <div class="checkbox">
+                  <label><input type="checkbox" name="api_selected" value="{{e["Category"]}}">  {{ loop.index }}. {{e["Category"]}} {% if e["Comment"] is defined  %} - <font color=red>NOTE:</font> {{e["Comment"]}} {% endif %}</label>
                 </div>
-            </div>
-            <div class="col-sm-2">
-                <div class="form-group">
-                    <label for="suspend_process">close?</label>
-                    <select class="form-control" 
-                            id="monitor_close" 
-                            name="monitor_close">
-                      <option>True</option>
-                      <option>False</option>
-                    </select>
+                {% endif %}
+                {% endfor %}
+              </div>
+
+              <div class="col-sm-6">
+                {% for e in api_monitor %}
+                {% if loop.index>10 and loop.index<=20  %}
+                <div class="checkbox">
+                 <label><input type="checkbox" name="api_selected" value="{{e["Category"]}}">  {{ loop.index }}. {{e["Category"]}} {% if e["Comment"] is defined  %} - <font color=red>NOTE:</font> {{e["Comment"]}} {% endif %}</label>
                 </div>
-            </div>
-            <div class="col-sm-2">
-                <div class="form-group">
-                    <label for="suspend_process">read?</label>
-                    <select class="form-control" 
-                            id="monitor_read" 
-                            name="monitor_read">
-                      <option>True</option>
-                      <option>False</option>
-                    </select>
-                </div>
-            </div>
-            <div class="col-sm-2">
-                <div class="form-group">
-                    <label for="suspend_process">write?</label>
-                    <select class="form-control" 
-                            id="monitor_write" 
-                            name="monitor_wite">
-                      <option>True</option>
-                      <option>False</option>
-                    </select>
-                </div>
-            </div>
-            <div class="col-sm-2">
-                <div class="form-group">
-                    <label for="suspend_process">unlink?</label>
-                    <select class="form-control" 
-                            id="monitor_unlink" 
-                            name="monitor_unlink">
-                      <option>True</option>
-                      <option>False</option>
-                    </select>
-                </div>
-            </div>
-            <div class="col-sm-2">
-                <div class="form-group">
-                    <label for="suspend_process">remove?</label>
-                    <select class="form-control" 
-                            id="monitor_remove" 
-                            name="monitor_remove">
-                      <option>True</option>
-                      <option>False</option>
-                    </select>
-                </div>
-            </div>
-            </div> <!-- row -->
+                {% endif %}
+                {% endfor %}
+              </div>
+          
+              </div> <!-- end row -->
+
+
+              <br/>
 
             <center><input type=submit class="btn btn-primary"></center>
-            </form>
 
-          </div> <!--col-sm-12 -->
-
-        </div><!-- /#row -->
 
         <br>
         <div class="row">

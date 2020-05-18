@@ -93,6 +93,7 @@ Special thanks to the following Open Source projects for the inspiration:
 * [FRIDA](https://github.com/frida/frida)
 * [Objection](https://github.com/sensepost/objection)
 * [House](https://github.com/nccgroup/house)
+* [MobSF](https://github.com/MobSF/Mobile-Security-Framework-MobSF)
 
 ### DEMO apps:
 
