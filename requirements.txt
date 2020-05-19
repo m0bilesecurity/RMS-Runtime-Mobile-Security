@@ -3,3 +3,5 @@ frida
 Flask
 Flask-SocketIO
 flask_bootstrap
+gevent
+gevent-websocket
