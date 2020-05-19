@@ -552,7 +552,7 @@ def edit_config_file():
 
     error = False
     if request.values.get('error'):
-        error = "Device not connected. Please, modify the settings and try again."
+        error = True
 
     if request.method == 'POST':
         new_config = {}
@@ -581,7 +581,7 @@ def edit_config_file():
         placeholder_str=placeholder,
         is_hide=is_hide,
         printOptions=printOptions(),
-        error_str=error
+        error=error
     )
 
 
