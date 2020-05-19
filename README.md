@@ -56,38 +56,38 @@ e.g.
 **NOTE** RMS attachs a persistence process called **com.android.systemui** to get the list of all the classes that are already loaded in memory before the launch of the target app. If you have an issue with it, try to find a different package that works well on your device. 
 You can set another default package via the Config Tab or by simply editing the config.json file.
 
-![DEMO_1](/DEMO/GIF/DEMO_1_Device.gif)
+![DEMO_1](/DEMO/DEMO_1_Device.gif)
 
 ## 2. Check which Classes and Methods have been loaded in memory  ##
-![DEMO_2](/DEMO/GIF/DEMO_2_Dump.gif)
+![DEMO_2](/DEMO/DEMO_2_Dump.gif)
 
 ## 3. Hook on the fly Classes/Methods and trace their args and return values  ##
-![DEMO_3](/DEMO/GIF/DEMO_3_Massive_Hook.gif)
+![DEMO_3](/DEMO/DEMO_3_Massive_Hook.gif)
 
 ## 4. Search instances of a specific class on the Heap and call its methods [BETA]  ##
-![DEMO_4](/DEMO/GIF/DEMO_4_Heap_Search.gif)
+![DEMO_4](/DEMO/DEMO_4_Heap_Search.gif)
 
 ## 5. Select a Class and generate on the fly an Hook template for all its methods  ##
-![DEMO_5](/DEMO/GIF/DEMO_5_Hook_Hack.gif)
+![DEMO_5](/DEMO/DEMO_5_Hook_Hack.gif)
 
 ## 6. Easily detect new classes that have been loaded in memory   ##
-![DEMO_6](/DEMO/GIF/DEMO_6_Diff_Classes.gif)
+![DEMO_6](/DEMO/DEMO_6_Diff_Classes.gif)
 
 ## 7. Inject your favorite FRIDA CUSTOM SCRIPTS on the fly   ##
 Just add your .js files inside the custom_script folder and they will be automatically loaded by the web interface ready to be executed.
-![DEMO_7](/DEMO/GIF/DEMO_7_Custom_Script.gif)
+![DEMO_7](/DEMO/DEMO_7_Custom_Script.gif)
 
 ## 8. API Monitor [BETA]  ##
 More than 19 possible Categories
-![DEMO_10](/DEMO/GIF/DEMO_10_API_Monitor.png)
+![DEMO_10](/DEMO/DEMO_10_API_Monitor.png)
 You can also monitor native functions: libc.so - open, close, read, write, unlink, remove
-![DEMO_8](/DEMO/GIF/DEMO_8_FS_monitor.png)
+![DEMO_8](/DEMO/DEMO_8_FS_monitor.png)
 
 ## 9. FRIDA Script to load Stetho by Facebook [BETA]  ##
 Inject the FRIDA script to load the amazing [Stetho](http://facebook.github.io/stetho/).
 
 Stetho is a sophisticated debug bridge for Android applications. When enabled, developers have access to the Chrome Developer Tools feature natively part of the Chrome desktop browser. Developers can also choose to enable the optional dumpapp tool which offers a powerful command-line interface to application internals.
-![DEMO_9](/DEMO/GIF/DEMO_9_Stetho.gif)
+![DEMO_9](/DEMO/DEMO_9_Stetho.gif)
 
 
 # Acknowledgements

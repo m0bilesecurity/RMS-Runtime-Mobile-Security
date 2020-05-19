@@ -442,10 +442,10 @@ def api_monitor():
     api_monitor = {}
     api_selected=[]
 
-    with open(os.path.dirname(os.path.realpath(__file__)) + "/api_monitor/api_monitor.json") as f:
+    with open(os.path.dirname(os.path.realpath(__file__)) + "/api_monitor.json") as f:
         api_monitor = json.load(f)
 
-    
+
     if request.method == 'POST':
         api_selected = request.values.getlist('api_selected')
         api_filter = [e for e in api_monitor if e['Category'] in api_selected]

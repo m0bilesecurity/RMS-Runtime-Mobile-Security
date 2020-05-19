@@ -30,6 +30,10 @@
 
           <div class="col-sm-12">
             <h4>What do you want to monitor?</h4>
+            <small class="form-text text-muted">
+              <font color=red><b></b>NOTE:</b></font> You can easily add more monitors by simply editing the json file called <b>api_monitor.json</b>
+            </small>
+            <br>
             <form class="form-group 
             list-group-item 
             list-group-item-action 
@@ -43,7 +47,7 @@
                 {% for e in api_monitor %}
                 {% if loop.index<=10 %}
                 <div class="checkbox">
-                  <label><input type="checkbox" name="api_selected" value="{{e["Category"]}}">  {{ loop.index }}. {{e["Category"]}} {% if e["Comment"] is defined  %} - <font color=red>NOTE:</font> {{e["Comment"]}} {% endif %}</label>
+                  <label><input type="checkbox" name="api_selected" value="{{e["Category"]}}">  {{ loop.index }}. {{e["Category"]}} {% if e["Comment"] is defined  %} <font color=red>&#8594;</font> {{e["Comment"]}} {% endif %}</label>
                 </div>
                 {% endif %}
                 {% endfor %}
@@ -53,7 +57,7 @@
                 {% for e in api_monitor %}
                 {% if loop.index>10 and loop.index<=20  %}
                 <div class="checkbox">
-                 <label><input type="checkbox" name="api_selected" value="{{e["Category"]}}">  {{ loop.index }}. {{e["Category"]}} {% if e["Comment"] is defined  %} - <font color=red>NOTE:</font> {{e["Comment"]}} {% endif %}</label>
+                 <label><input type="checkbox" name="api_selected" value="{{e["Category"]}}">  {{ loop.index }}. {{e["Category"]}} {% if e["Comment"] is defined  %} <font color=red>&#8594;</font> {{e["Comment"]}} {% endif %}</label>
                 </div>
                 {% endif %}
                 {% endfor %}

@@ -98,7 +98,6 @@
       {
         "Category": "SharedPreferences",
         "HookType": "Java",
-        "Comment": "Not working on Android 7",
         "hooks": [
           {
             "clazz": "android.app.SharedPreferencesImpl",
@@ -594,7 +593,7 @@
       {
         "Category": "FileSytem Native",
         "HookType": "Native",
-        "Comment": "Hook it alone! Not combine with other Categories",
+        "Comment": "Hook it alone! Do not combine with other Categories",
         "hooks": [
           {
             "clazz": "libc.so",
