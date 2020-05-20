@@ -34,13 +34,13 @@ Refer to the official FRIDA guide for the installation: https://frida.re/docs/an
 
 # Improvements
 * iOS support
+* Frida Gadget is currently NOT supported
 * Feel free to send me your best JS sript via a Pull request. I'll be happy to bundle all the best as default scripts in the next RMS release.
 e.g.
 	* root detection bypass
 	* ssl pinning bypass
 	* reflection detection
 	* etc...
-
 
 
 # Installation

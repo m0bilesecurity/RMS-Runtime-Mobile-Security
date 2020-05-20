@@ -11,7 +11,16 @@
       </div>
       <div class="list-group list-group-flush">
         <p class="list-group-item list-group-item-action bg-light">
-          <b>Package:</b> {{package_name_str}}</p>
+          {% if target_package and system_package %}
+          <b>Target Package:</b> {{target_package}} <br>
+          <b>System Package: </b> {{system_package}} <br>
+          {% endif %}
+          {% if no_system_package==True %}
+          <br>
+            <b><font color=red>{{system_package}} is NOT available on your device!</font></b> <br><br>
+            <b><font color=red>For a better RE experience, Click <a href="/config">here</a> to change it!</font></b>
+          {% endif %}
+        </p>
       </div>
     </div>
     <!-- /#sidebar-wrapper -->

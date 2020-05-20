@@ -27,7 +27,9 @@ calls_count = 0
 
 api = None
 
-package_name = ""
+target_package = ""
+system_package = ""
+no_system_package=False
 
 template_massive_hook = """
 Java.perform(function () {
@@ -110,12 +112,16 @@ Device - TAB
 def device_management():
     global api
     global system_classes
-    global package_name
+    global target_package
+    global system_package
+    global no_system_package
 
     cs_file = ""
     custom_scripts = []
     packages = []
     config = read_config_file()
+    system_package=config["system_package"];
+    no_system_package=False
 
     conn_args = ""
     if config['device_type'] == 'remote':
@@ -153,35 +159,46 @@ def device_management():
         #output reset
         reset_variables_and_output()
 
-        package_name = request.values.get('package')
+        target_package = request.values.get('package')
+        #Frida Gadget support
+        if target_package=="re.frida.Gadget":
+            target_package="Gadget"
+
         mode = request.values.get('mode')
         frida_script = request.values.get('fridastartupscript')
 
-        if package_name: print("Package Name: " + package_name, file=sys.stdout)
-        if mode: print("Mode: " + mode, file=sys.stdout)
-        if frida_script: print("Frida Startup Script: \n" + frida_script, file=sys.stdout)
+        if target_package: rms_print("Package Name: " + target_package)
+        if mode: rms_print("Mode: " + mode)
+        if frida_script: rms_print("Frida Startup Script: \n" + frida_script)
 
         # main JS file
         with open(os.path.dirname(os.path.realpath(__file__)) + '/default.js') as f:
             frida_code = f.read()
 
-        # attaching a persistent process to get enumerateLoadedClasses() result
-        # before starting the target app - default process is com.android.systemui
-        session = device.attach(config["system_package"])
-        script = session.create_script(frida_code)
-        #script.set_log_handler(log_handler)
-        script.load()
-        api = script.exports
-        system_classes = api.loadclasses()
+        session = None
+        try:
+            # attaching a persistent process to get enumerateLoadedClasses() result
+            # before starting the target app - default process is com.android.systemui
+            session = device.attach(system_package)
+            script = session.create_script(frida_code)
+            #script.set_log_handler(log_handler)
+            script.load()
+            api = script.exports
+            system_classes = api.loadclasses()
+        except:
+            if (len(system_classes)==0):
+                no_system_package=True
+            rms_print(system_package+" is NOT available on your device. For a better RE experience, change it via the Config TAB!");
+            pass
 
         session = None
-        if mode == "Spawn":
-            pid = device.spawn([package_name])
+        if mode == "Spawn" and target_package!="Gadget":
+            pid = device.spawn([target_package])
             session = device.attach(pid)
-            print('[*] Process Spawned')
-        if mode == "Attach":
-            session = device.attach(package_name)
-            print('[*] Process Attached')
+            rms_print('[*] Process Spawned')
+        if mode == "Attach" or target_package=="Gadget":
+            session = device.attach(target_package)
+            rms_print('[*] Process Attached')
 
         script = session.create_script(frida_code)
         #script.set_log_handler(log_handler)
@@ -191,24 +208,26 @@ def device_management():
         # loading js api
         api = script.exports
 
-        if mode == "Spawn":
+        if mode == "Spawn" and target_package!="Gadget":
             device.resume(pid)
 
         # loading FRIDA startup script if exists
         if frida_script:
             api.loadcustomfridascript(frida_script)
-            # DEBUG print(frida_script, file=sys.stdout)
+            # DEBUG rms_print(frida_script)
 
         # automatically redirect the user to the dump classes and methods tab
         return printwebpage()
-
+    
     return render_template(
         "device.html",
         custom_script_loaded=cs_file,
         custom_scripts=custom_scripts,
         system_package_str=config["system_package"],
         device_type_str=config["device_type"],
-        package_name_str=package_name,
+        target_package=target_package,
+        system_package=system_package,
+        no_system_package=no_system_package,
         packages=packages,
         conn_args_str=conn_args
     )
@@ -318,25 +337,28 @@ Diff Classess - TAB
 def diff_analysis():
     global current_loaded_classes
     global new_loaded_classes
+    global target_package
+    global system_package
+    global no_system_package
 
     choice = request.args.get('choice')
     if choice is not None:
         choice = int(choice)
         if (choice == 1):
-            # print("Check current Loaded Classes", file=sys.stdout)
+            # rms_print("Check current Loaded Classes")
             current_loaded_classes = list(
                 set(api.loadclasses()) -
                 set(system_classes)
             )
-            # print(len(current_loaded_classes), file=sys.stdout)
+            # rms_print(len(current_loaded_classes))
         if (choice == 2):
-            # print("check NEW Loaded Classes", file=sys.stdout)
+            # rms_print("check NEW Loaded Classes")
             new_loaded_classes = list(
                 set(api.loadclasses()) -
                 set(current_loaded_classes) -
                 set(system_classes)
             )
-            # print(len(new_loaded_classes), file=sys.stdout)
+            # rms_print(len(new_loaded_classes))
 
     temp_str_1 = ""
     temp_str_2 = ""
@@ -347,11 +369,15 @@ def diff_analysis():
     for i, c in enumerate(new_loaded_classes):
         temp_str_2 = temp_str_2 + "\n" + str(i) + " - " + str(c)
 
+
     return render_template(
         "diff_classes.html",
         current_loaded_classes=temp_str_1,
         new_loaded_classes=temp_str_2,
-        package_name_str=package_name)
+        target_package=target_package,
+        system_package=system_package,
+        no_system_package=no_system_package
+        )
 
 
 ''' 
@@ -366,6 +392,9 @@ def hook_lab():
     global template_hook_lab
     global loaded_methods
     global loaded_classes
+    global target_package
+    global system_package
+    global no_system_package
     hook_template = ""
     selected_class = ""
 
@@ -390,7 +419,10 @@ def hook_lab():
         loaded_classes=loaded_classes,
         selected_class=selected_class,
         hook_template_str=hook_template,
-        package_name_str=package_name
+        target_package=target_package,
+        system_package=system_package,
+        no_system_package=no_system_package
+
     )
 
 
@@ -406,6 +438,9 @@ def heap_search():
     global template_heap_search
     global loaded_methods
     global loaded_classes
+    global target_package
+    global system_package
+    global no_system_package
     heap_template = ""
     selected_class = ""
 
@@ -430,7 +465,9 @@ def heap_search():
         loaded_classes=loaded_classes,
         selected_class=selected_class,
         heap_template_str=heap_template,
-        package_name_str=package_name
+        target_package=target_package,
+        system_package=system_package,
+        no_system_package=no_system_package
     )
 
 ''' 
@@ -441,6 +478,10 @@ API Monitor - TAB
 
 @app.route('/api_monitor', methods=['GET', 'POST'])
 def api_monitor():
+
+    global target_package
+    global system_package
+    global no_system_package
 
     api_monitor = {}
     api_selected=[]
@@ -456,21 +497,23 @@ def api_monitor():
         api.apimonitor(api_to_hook);
 
         ''' DEBUG
-        print("\nAPI Selected",file=sys.stdout)
-        print(api_selected,file=sys.stdout)
+        rms_print("\nAPI Selected")
+        rms_print(api_selected)
 
-        print("\nAPI Monitor")
+        rms_print("\nAPI Monitor")
         for e in api_monitor:
-            print(e["Category"],file=sys.stdout)
+            rms_print(e["Category"])
 
-        print("\nAPI to Hook")
+        rms_print("\nAPI to Hook")
         for c in api_to_hook:
-            print(c["Category"],file=sys.stdout)
+            rms_print(c["Category"])
         '''
 
     return render_template(
         "api_monitor.html",
-        package_name_str=package_name,
+        target_package=target_package,
+        system_package=system_package,
+        no_system_package=no_system_package,
         api_monitor=api_monitor,
         api_monitor_console_output_str=api_monitor_console_output
     )
@@ -484,6 +527,10 @@ Load Frida Script - TAB
 
 @app.route('/load_frida_script', methods=['GET', 'POST'])
 def frida_script_loader():
+    global target_package
+    global system_package
+    global no_system_package
+
     if request.method == 'POST':
         script = request.values.get('frida_custom_script')
         api.loadcustomfridascript(script)
@@ -504,7 +551,9 @@ def frida_script_loader():
 
     return render_template(
         "load_frida_script.html",
-        package_name_str=package_name,
+        target_package=target_package,
+        system_package=system_package,
+        no_system_package=no_system_package,
         custom_scripts=custom_scripts,
         custom_script_loaded=cs_file
     )
@@ -519,23 +568,28 @@ Console Output - TAB
 
 @app.route('/console_output', methods=['GET', 'POST'])
 def console_output_loader():
+    global target_package
+    global system_package
+    global no_system_package
     return render_template(
         "console_output.html",
         called_console_output_str=calls_console_output,
         hooked_console_output_str=hooks_console_output,
         global_console_output_str=global_console_output,
-        package_name_str=package_name
+        target_package=target_package,
+        system_package=system_package,
+        no_system_package=no_system_package
     )
 
 
 @socket_io.on('connect', namespace='/console')
 def ws_connect():
-    print('Client connected')
+    rms_print('Client connected')
 
 
 @socket_io.on('disconnect', namespace='/console')
 def ws_disconnect():
-    print('Client disconnected')
+    rms_print('Client disconnected')
 
 
 ''' 
@@ -547,6 +601,10 @@ Config File - TAB
 
 @app.route('/config', methods=['GET', 'POST'])
 def edit_config_file():
+    global target_package
+    global system_package
+    global no_system_package
+
     config = read_config_file()
     placeholder = {
         'host': 'IP:PORT',
@@ -584,7 +642,10 @@ def edit_config_file():
         placeholder_str=placeholder,
         is_hide=is_hide,
         printOptions=printOptions(),
-        error=error
+        error=error,
+        target_package=target_package,
+        system_package=system_package,
+        no_system_package=no_system_package
     )
 
 
@@ -619,7 +680,6 @@ Read config.json file
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '''
 
-
 def read_config_file():
     with open(os.path.dirname(os.path.realpath(__file__)) + "/config.json") as f:
         config = json.load(f)
@@ -632,13 +692,20 @@ Render Template Function - used for the sidebar and dump page
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '''
 
-
 def printwebpage():
+    global target_package
+    global system_package
+    global no_system_package
+    global loaded_classes
+    global loaded_methods
+    
     return render_template(
         "dump.html",
         loaded_classes=loaded_classes,
         loaded_methods=loaded_methods,
-        package_name_str=package_name
+        target_package=target_package,
+        system_package=system_package,
+        no_system_package=no_system_package 
     )
 
 
@@ -663,12 +730,14 @@ def on_message(message, data):
             "API Monitor" not in message['payload']):
             log_handler("global_stack",message['payload'])
 
-
 ''' 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Supplementary functions
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '''
+
+def rms_print(msg):
+    print(msg, file=sys.stdout);
 
 def reset_variables_and_output():
     global calls_count
@@ -696,7 +765,9 @@ def reset_variables_and_output():
     #diff classes variables
     current_loaded_classes = []
     new_loaded_classes = []
-
+    #package reset
+    target_package=""
+    system_package=""
 
 def log_handler(level, text):
     global calls_count
@@ -709,9 +780,9 @@ def log_handler(level, text):
         return
     '''
     if level == 'info':
-        print(text, file=sys.stdout)
+        rms_print(text)
     else:
-        print(text, file=sys.stderr)
+        rms_print(text)
     '''
     if level == 'calls_stack':
         text = "[" + str(calls_count) + "] " + text
@@ -754,7 +825,7 @@ def log_handler(level, text):
     }, 
     namespace='/console'
     )
-    print(text)
+    rms_print(text)
 
 ''' 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
