@@ -133,7 +133,10 @@ def device_management():
             for package in device.enumerate_applications():
                 packages.append(package.identifier)
         except Exception:
-            pass
+            return redirect(url_for('edit_config_file', error=True))
+        
+        if len(packages) == 0:
+            return redirect(url_for('edit_config_file', error=True))
 
         # Load frida custom scripts inside "custom_scripts" folder
         for f in os.listdir(os.path.dirname(os.path.realpath(__file__)) + "/custom_scripts"):
