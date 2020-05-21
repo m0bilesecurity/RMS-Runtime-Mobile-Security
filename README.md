@@ -78,7 +78,7 @@ Just add your .js files inside the custom_script folder and they will be automat
 ![DEMO_7](/DEMO/DEMO_7_Custom_Script.gif)
 
 ## 8. API Monitor [BETA]  ##
-More than 19 possible Categories
+via the API Monitor TAB you can easily monitor tons of Android APIs organized in 19 different Categories. Support can be easily extended by adding more classes/methods to the **api_monitor.json** file.
 ![DEMO_10](/DEMO/DEMO_10_API_Monitor.png)
 You can also monitor native functions: libc.so - open, close, read, write, unlink, remove
 ![DEMO_8](/DEMO/DEMO_8_FS_monitor.png)
