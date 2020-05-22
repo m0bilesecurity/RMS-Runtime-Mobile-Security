@@ -293,8 +293,14 @@ def home():
         loaded_methods.clear()
         # check if the user is trying to filter loaded classes
         filter = request.args.get('filter')
+
+        # Checking options
+        regex = 1 if 'regex' in request.args else 0
+        case = 1 if 'case' in request.args else 0
+        whole = 1 if 'whole' in request.args else 0
+
         if filter:
-            hooked_classes = api.loadclasseswithfilter(filter)
+            hooked_classes = api.loadclasseswithfilter(filter, regex, case, whole)
             loaded_classes.clear()
             loaded_classes = hooked_classes
         else:

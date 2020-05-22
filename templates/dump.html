@@ -30,8 +30,26 @@
               <input type="text" class="form-control" id="filter" name="filter" required="true"
                 placeholder="com.example., com.external_library, com.test,">
               <input type="hidden" name=choice value=1>
+              <div class="checkbox">
+                <label></label>
+                  <input type="checkbox" name="regex" value=1>
+                  Regex
+                </label>
+              </div>
+              <div class="checkbox">
+                <label></label>
+                  <input type="checkbox" name="case" value=1 checked>
+                  Case sensitive
+                </label>
+              </div>
+              <div class="checkbox">
+                <label></label>
+                  <input type="checkbox" name="whole" value=1>
+                  Whole word
+                </label>
+              </div>
               <small class="form-text text-muted">
-                &nbsp;&nbsp;You can insert multiple filters. Just make sure to use <b><font color=red>,</font></b> to separete the strings you want to use as a filters
+                If Regex is not checked, you can insert multiple filters. Just make sure to use <b><font color=red>,</font></b> to separete the strings you want to use as a filters
               </small>
               <br>
               <button type="submit" class="btn btn-primary mb-2">Submit</button>&nbsp;&nbsp;
