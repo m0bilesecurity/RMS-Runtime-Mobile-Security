@@ -28,22 +28,42 @@ rpc.exports = {
     })
     return loaded_classes;
   },
-  loadclasseswithfilter: function (filter) {
+  loadclasseswithfilter: function (filter, isRegex, isCase, isWhole) {
     var loaded_classes = []
     Java.perform(function () {
       Java.enumerateLoadedClasses({
         onMatch: function (className) {
+          
+          //lowercase if not case sensitive
+          className = isCase ? className : className.toLowerCase()
+          filter = isCase ? filter : filter.toLowerCase()
 
           //check if a filter exists
           if (filter != null) {
-            //check if we have multiple filters (comma separated list)
-            var filter_array = filter.split(",");
-            filter_array.forEach(function (f) {
-              //f.trim() is needed to remove possibile spaces after the comma
-              if (className.startsWith(f.trim())) {
+            //Regex
+            if (isRegex){
+              if (className.search(filter) > -1 ) {
                 loaded_classes.push(className)
               }
-            });
+            //Not regex
+            }else{
+              //check if we have multiple filters (comma separated list)
+              var filter_array = filter.split(",");
+              filter_array.forEach(function (f) {
+
+                if (isWhole){
+                  //f.trim() is needed to remove possibile spaces after the comma
+                  if (className == f.trim()) {
+                    loaded_classes.push(className)
+                  }
+                }else{
+                  //f.trim() is needed to remove possibile spaces after the comma
+                  if (className.startsWith(f.trim())) {
+                    loaded_classes.push(className)
+                  }
+                }
+              });
+            }
           }
         },
         onComplete: function () {
