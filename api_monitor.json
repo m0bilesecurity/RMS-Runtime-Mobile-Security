@@ -423,6 +423,28 @@
         ]
       },
       {
+        "Category": "Permissions",
+        "HookType": "Java",
+        "hooks": [
+          {
+            "clazz": "android.app.ContextImpl",
+            "method": "checkSelfPermission"
+          },
+          {
+            "clazz": "android.support.v4.content.ContextCompat",
+            "method": "checkSelfPermission"
+          },
+          {
+            "clazz": "android.support.v4.content.PermissionChecker",
+            "method": "checkSelfPermission"
+          },
+          {
+            "clazz": "android.support.v4.app.ActivityCompat",
+            "method": "requestPermissions"
+          }
+        ]
+      },
+      {
         "Category": "Device Info",
         "HookType": "Java",
         "hooks": [
