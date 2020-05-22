@@ -35,6 +35,7 @@ rpc.exports = {
         onMatch: function (className) {
           
           //lowercase if not case sensitive
+          var originalClassName = className
           className = isCase ? className : className.toLowerCase()
           filter = isCase ? filter : filter.toLowerCase()
 
@@ -43,7 +44,7 @@ rpc.exports = {
             //Regex
             if (isRegex){
               if (className.search(filter) > -1 ) {
-                loaded_classes.push(className)
+                loaded_classes.push(originalClassName)
               }
             //Not regex
             }else{
@@ -54,12 +55,12 @@ rpc.exports = {
                 if (isWhole){
                   //f.trim() is needed to remove possibile spaces after the comma
                   if (className == f.trim()) {
-                    loaded_classes.push(className)
+                    loaded_classes.push(originalClassName)
                   }
                 }else{
                   //f.trim() is needed to remove possibile spaces after the comma
                   if (className.startsWith(f.trim())) {
-                    loaded_classes.push(className)
+                    loaded_classes.push(originalClassName)
                   }
                 }
               });
