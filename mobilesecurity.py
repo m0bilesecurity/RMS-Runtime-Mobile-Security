@@ -5,6 +5,7 @@ import frida
 from flask_bootstrap import Bootstrap
 from flask_socketio import SocketIO, emit
 from flask import Flask, request, render_template, redirect, url_for
+import logging
 
 app = Flask(__name__)
 socket_io = SocketIO(app)
@@ -587,7 +588,7 @@ def console_output_loader():
         no_system_package=no_system_package
     )
 
-
+''' Socket LOG
 @socket_io.on('connect', namespace='/console')
 def ws_connect():
     rms_print('Client connected')
@@ -596,6 +597,7 @@ def ws_connect():
 @socket_io.on('disconnect', namespace='/console')
 def ws_disconnect():
     rms_print('Client disconnected')
+'''
 
 
 ''' 
@@ -797,7 +799,7 @@ def log_handler(level, text):
         socket_io.emit(
         'calls_stack', 
         {
-            'data': calls_console_output, 
+            'data': "\n"+text, 
             'level': level
         }, 
         namespace='/console'
@@ -807,7 +809,7 @@ def log_handler(level, text):
         socket_io.emit(
         'hooks_stack', 
         {
-            'data': hooks_console_output, 
+            'data': "\n"+text, 
             'level': level
         }, 
         namespace='/console'
@@ -817,7 +819,7 @@ def log_handler(level, text):
         socket_io.emit(
         'api_monitor', 
         {
-            'data': api_monitor_console_output, 
+            'data': "\n"+text, 
             'level': level
         }, 
         namespace='/console'
@@ -826,7 +828,7 @@ def log_handler(level, text):
     socket_io.emit(
     'global_console', 
     {
-        'data': global_console_output, 
+        'data': "\n"+text, 
         'level': level
     }, 
     namespace='/console'
@@ -849,5 +851,8 @@ if __name__ == '__main__':
     print("_________________________________________________________")
     print("")
 
+
+    log = logging.getLogger('werkzeug')
+    log.setLevel(logging.ERROR)
     # run Flask
     socket_io.run(app)

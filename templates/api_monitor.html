@@ -108,7 +108,7 @@
     const socket = io.connect('//' + document.domain + ':' + location.port + '/console');
     socket.on('api_monitor', function(msg) {
         if(msg.data.length) {
-            api_monitor_editor.setValue(msg.data);
+            api_monitor_editor.setValue(api_monitor_editor.getValue()+msg.data);
             api_monitor_editor.setCursor(api_monitor_editor.lineCount(), 0)
         }
     });
