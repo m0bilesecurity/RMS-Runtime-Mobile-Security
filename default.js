@@ -1,11 +1,13 @@
 /******************************************************************************
  * Exported APIs
  1. loadclasses
- 2. loadclasseswithfilter([filters])
- 3. loadcustomfridascript(frida_script)
- 4. loadmethods([loaded_classes])
+ 2. loadclasseswithfilter([filters], isRegex, isCase, isWhole)
+ 3. loadmethods([loaded_classes])
+ 4. loadcustomfridascript(frida_script)
  5. hookclassesandmethods([loaded_classes], [loaded_methods], template)
  6. generatehooktemplate([loaded_classes], [loaded_methods], template)
+ 7. heapsearchtemplate([loaded_classes], [loaded_methods], template)
+ 8. apimonitor([api_to_monitor])
  ******************************************************************************/
 
 rpc.exports = {
@@ -17,7 +19,10 @@ rpc.exports = {
         onMatch: function (className) {
 
           //Remove too generics
-          if (className.length > 5)
+          if (className.length > 5 && 
+              //skip androidx stuff
+              !className.includes("androidx")
+             )
             loaded_classes.push(className)
 
         },
@@ -73,12 +78,6 @@ rpc.exports = {
       });
     })
     return loaded_classes;
-  },
-  loadcustomfridascript: function (frida_script) {
-    Java.perform(function () {
-      console.log("FRIDA script LOADED")
-      eval(frida_script)
-    })
   },
   loadmethods: function (loaded_classes) {
     var loaded_methods = {};
@@ -145,6 +144,12 @@ rpc.exports = {
     //DEBUG console.log("loaded_classes.length: " + loaded_classes.length)
     //DEBUG console.log("loaded_methods.length: " + Object.keys(loaded_methods).length)
     return loaded_methods;
+  },
+  loadcustomfridascript: function (frida_script) {
+    Java.perform(function () {
+      console.log("FRIDA script LOADED")
+      eval(frida_script)
+    })
   },
   hookclassesandmethods: function (loaded_classes, loaded_methods, template) {
     Java.perform(function () {
