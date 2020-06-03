@@ -127,7 +127,28 @@ rpc.exports = {
           var args_array = args_dirty.split(",")
           var args_srt = ""
           for (var i = 0; i < args_array.length; i++) {
-            args_srt = args_srt + ("\"" + args_array[i] + "\"")
+
+            // check if the current arg is an array
+            var arg = args_array[i]
+            if(arg.includes("[]")){
+              // arg is an array --> smali notation conversion
+                  if (arg.includes(".")) arg="L"+arg+";"
+                  else if((/boolean/i).test(arg)) arg="Z"+arg.replace(/boolean/i, ""); 
+                  else if((/byte/i).test(arg)) arg="B"+arg.replace(/byte/i, ""); 
+                  else if((/char/i).test(arg)) arg="C"+arg.replace(/char/i, ""); 
+                  else if((/double/i).test(arg)) arg="D"+arg.replace(/double/i, ""); 
+                  else if((/float/i).test(arg)) arg="F"+arg.replace(/float/i, ""); 
+                  else if((/int/i).test(arg)) arg="I"+arg.replace(/int/i, ""); 
+                  else if((/long/i).test(arg)) arg="J"+arg.replace(/long/i, ""); 
+                  else if((/short/i).test(arg)) arg="S"+arg.replace(/short/i, ""); 
+                  else arg="L"+arg+";"
+              }
+              while(arg.includes("[]")){
+                  arg=arg.replace("[]", "")
+                  arg="["+arg
+              }
+
+            args_srt = args_srt + ("\"" + arg + "\"")
             //add a comma if the current item is not the last one
             if (i + 1 < args_array.length) args_srt = args_srt + ",";
           }
