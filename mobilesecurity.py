@@ -123,6 +123,7 @@ def device_management():
     config = read_config_file()
     system_package=config["system_package"];
     no_system_package=False
+    frida_crash=False
 
     conn_args = ""
     if config['device_type'] == 'remote':
@@ -136,6 +137,8 @@ def device_management():
         return redirect(url_for('edit_config_file', error=True))
 
     if request.method == 'GET':
+        #exception handling - frida crash
+        frida_crash=True if request.args.get('frida_crash') == "True" else False
         try:
             for package in device.enumerate_applications():
                 packages.append(package.identifier)
@@ -230,7 +233,8 @@ def device_management():
         system_package=system_package,
         no_system_package=no_system_package,
         packages=packages,
-        conn_args_str=conn_args
+        conn_args_str=conn_args,
+        frida_crash=frida_crash
     )
 
 def get_device(device_type="usb", device_args=None):
@@ -313,7 +317,11 @@ def home():
     if choice == 2:
         # --> Dump all methods [Loaded Classes]
         # NOTE: Load methods for more than 500 classes can crash the app
-        loaded_methods = api.loadmethods(loaded_classes)
+        try:
+            loaded_methods = api.loadmethods(loaded_classes)
+        except Exception as err:
+            rms_print("FRIDA crashed while loading methods for one or more classes selected. Try to exclude them from your search!")
+            return redirect(url_for("device_management", frida_crash=True))
         return printwebpage()
 
     if choice == 3:
@@ -413,7 +421,11 @@ def hook_lab():
         selected_class = [loaded_classes[class_index]]
         # check if methods are loaded or not
         if not loaded_methods:
-            loaded_methods = api.loadmethods(loaded_classes)
+            try:
+                loaded_methods = api.loadmethods(loaded_classes)
+            except Exception as err:
+                rms_print("FRIDA crashed while loading methods for one or more classes selected. Try to exclude them from your search!")
+                return redirect(url_for("device_management", frida_crash=True))
         # template generation
         hook_template = api.generatehooktemplate(selected_class, loaded_methods, template_hook_lab)
 
@@ -459,7 +471,11 @@ def heap_search():
         selected_class = [loaded_classes[class_index]]
         # check if methods are loaded or not
         if not loaded_methods:
-            loaded_methods = api.loadmethods(loaded_classes)
+            try:
+                loaded_methods = api.loadmethods(loaded_classes)
+            except Exception as err:
+                rms_print("FRIDA crashed while loading methods for one or more classes selected. Try to exclude them from your search!")
+                return redirect(url_for("device_management", frida_crash=True))
         # heap template generation
         heap_template = api.heapsearchtemplate(selected_class, loaded_methods, template_heap_search)
 
@@ -758,6 +774,7 @@ def reset_variables_and_output():
     global loaded_methods
     global current_loaded_classes
     global new_loaded_classes
+    global no_system_package
 
 
     #output reset
@@ -776,6 +793,8 @@ def reset_variables_and_output():
     #package reset
     target_package=""
     system_package=""
+    #error reset
+    no_system_package=False
 
 def log_handler(level, text):
     global calls_count

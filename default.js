@@ -85,6 +85,7 @@ rpc.exports = {
       loaded_classes.forEach(function (className, index) {
         var jClass;
         var classMethods_dirty;
+        var classMethods = []
 
         //catch possible issues
         try{
@@ -93,11 +94,10 @@ rpc.exports = {
         }catch(err){
           send("Exception while loading methods for "+className);
           //skip current loop
-          loaded_methods[className] = []
+          loaded_methods[className] = classMethods //is empty
           return;
         }
-        var classMethods = []
-
+        
         classMethods_dirty.forEach(function (m) {
           var method_and_args = {};
           //Cleaning up
