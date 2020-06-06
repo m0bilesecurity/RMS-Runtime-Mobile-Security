@@ -63,7 +63,7 @@ You can set another default package via the Config Tab or by simply editing the 
 
 ## 3. Hook on the fly Classes/Methods and trace their args and return values  ##
 ![DEMO_3](/DEMO/DEMO_3_Massive_Hook.gif)
-Go back to the dump page in order to have an overview of all the **hooked methods that have been executed by the app** (marked with ✅)
+Go back to the dump page in order to have an overview of all the **hooked methods that have been executed by the app** ✅
 
 ## 4. Search instances of a specific class on the Heap and call its methods [BETA]  ##
 ![DEMO_4](/DEMO/DEMO_4_Heap_Search.gif)
