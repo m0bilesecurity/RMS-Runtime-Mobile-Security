@@ -26,6 +26,8 @@ global_console_output = ""
 api_monitor_console_output = ""
 calls_count = 0
 
+methods_hooked_and_executed = []
+
 api = None
 
 target_package = ""
@@ -36,14 +38,15 @@ template_massive_hook = """
 Java.perform(function () {
     var classname = "{className}";
     var classmethod = "{classMethod}";
+    var methodsignature = "{methodSignature}";
     var hookclass = Java.use(classname);
 
     hookclass.{classMethod}.{overload}implementation = function ({args}) {
-        send("CALLED: " + classname + "." + classmethod + "()\\n");
+        send("CALLED: " +classname+" - "+methodsignature+"\\n");
         var ret = this.{classMethod}({args});
 
         var s="";
-        s=s+"HOOK: " + classname + "." + classmethod + "()\\n";
+        s=s+"HOOK: "+classname+" - "+methodsignature+"\\n";
         s=s+"IN: "+eval(args)+"\\n";
         s=s+"OUT: "+ret+"\\n";
         send(s);
@@ -57,16 +60,17 @@ template_hook_lab = """
 Java.perform(function () {
     var classname = "{className}";
     var classmethod = "{classMethod}";
+    var methodsignature = "{methodSignature}";
     var hookclass = Java.use(classname);
     
     //{methodSignature}
 
     hookclass.{classMethod}.{overload}implementation = function ({args}) {
-        send("CALLED: " + classname + "." + classmethod + "()\\n");
+        send("CALLED: " +classname+" - "+methodsignature+"\\n");
         var ret = this.{classMethod}({args});
 
         var s="";
-        s=s+"HOOK: " + classname + "." + classmethod + "()\\n";
+        s=s+"HOOK: "+classname+" - "+methodsignature+"\\n";
         s=s+"IN: "+eval({args})+"\\n";
         s=s+"OUT: "+ret+"\\n";
         //uncomment the line below to print StackTrace
@@ -82,24 +86,25 @@ template_heap_search = """
     Java.performNow(function () {
       var classname = "{className}"
       var classmethod = "{classMethod}";
+      var methodsignature = "{methodSignature}";
 
-      send("Heap Search - START ("+classname+")\\n");
+      send("[*] Heap Search - START\\n")
 
       Java.choose(classname, {
         onMatch: function (instance) {
           
           var s="";
-          s=s+"[*] Instance Found: " +instance.toString()+"\\n";
-          s=s+"Calling method: " +classmethod+"\\n";
+          s=s+"Instance Found: " +instance.toString()+"\\n";
+          s=s+"Calling method: " +classname+" - "+methodsignature+"\\n";
           
           //{methodSignature}
           var ret = instance.{classMethod}({args}); //<-- replace v[i] with the value that you want to pass
-          s=s+"Output: "+ ret + "\\n";
+          s=s+"OUT: "+ret+"\\n";
           send(s);
 
         }
       });
-      send("Heap Search - END ("+classname+")");
+      send("[*] Heap Search - END\\n")
     });
 """
 
@@ -722,6 +727,7 @@ def printwebpage():
     global no_system_package
     global loaded_classes
     global loaded_methods
+    global methods_hooked_and_executed
     
     return render_template(
         "dump.html",
@@ -729,7 +735,8 @@ def printwebpage():
         loaded_methods=loaded_methods,
         target_package=target_package,
         system_package=system_package,
-        no_system_package=no_system_package 
+        no_system_package=no_system_package,
+        methods_hooked_and_executed=methods_hooked_and_executed
     )
 
 
@@ -768,6 +775,7 @@ def reset_variables_and_output():
     global calls_console_output
     global hooks_console_output
     global global_console_output
+    global methods_hooked_and_executed
     global api_monitor_console_output
     global loaded_classes
     global system_classes
@@ -783,6 +791,7 @@ def reset_variables_and_output():
     global_console_output = ""
     api_monitor_console_output = ""
     calls_count = 0
+    methods_hooked_and_executed = []
     #variable reset
     loaded_classes = []
     system_classes = []
@@ -812,6 +821,12 @@ def log_handler(level, text):
         rms_print(text)
     '''
     if level == 'calls_stack':
+        #method hooked has been executed by the app
+        new_m_executed=(text.replace("CALLED: ","")).replace("\n","")
+        #remove duplicates
+        if new_m_executed not in methods_hooked_and_executed:
+            methods_hooked_and_executed.append(new_m_executed)
+
         text = "[" + str(calls_count) + "] " + text
         calls_console_output = calls_console_output + "\n" + text
         calls_count += 1

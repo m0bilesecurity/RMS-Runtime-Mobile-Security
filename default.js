@@ -187,6 +187,8 @@ rpc.exports = {
           t = t.replace("{classMethod}", dict["name"]);
           t = t.replace("{classMethod}", dict["name"]);
           t = t.replace("{classMethod}", dict["name"]);
+          // replace methodSignature 
+          t = t.replace("{methodSignature}", dict["ui_name"]);
 
           //check if the method has args 
           if (dict["args"] != "\"\"") {
@@ -202,7 +204,7 @@ rpc.exports = {
               else args = args + "v" + i + ",";
             }
 
-            //replace x2
+            //replace args x2
             t = t.replace("{args}", args);
             t = t.replace("{args}", args);
 
@@ -210,7 +212,7 @@ rpc.exports = {
             //Current methods has NO args 
             // no need to overload
             t = t.replace("{overload}", "overload().");
-            //replace x2 and no args
+            //replace args x2 
             t = t.replace("{args}", "");
             t = t.replace("{args}", "");
           }
@@ -238,7 +240,8 @@ rpc.exports = {
           t = t.replace("{classMethod}", dict["name"]);
           t = t.replace("{classMethod}", dict["name"]);
           t = t.replace("{classMethod}", dict["name"]);
-
+          // replace methodSignature x2
+          t = t.replace("{methodSignature}", dict["ui_name"]);
           t = t.replace("{methodSignature}", dict["ui_name"]);
 
           //check if the method has args 
@@ -255,7 +258,7 @@ rpc.exports = {
               else args = args + "v" + i + ",";
             }
 
-            //replace x3
+            //replace args x3
             t = t.replace("{args}", args);
             t = t.replace("{args}", args);
             t = t.replace("{args}", args);
@@ -263,7 +266,7 @@ rpc.exports = {
             //Current methods has NO args 
             // no need to overload
             t = t.replace("{overload}", "overload().");
-            //replace x3
+            //replace args x3
             t = t.replace("{args}", "");
             t = t.replace("{args}", "");
             t = t.replace("{args}", "\"\"");
@@ -293,7 +296,8 @@ rpc.exports = {
           // replace classMethod x2
           t = t.replace("{classMethod}", dict["name"]);
           t = t.replace("{classMethod}", dict["name"]);
-
+          // replace methodSignature x2
+          t = t.replace("{methodSignature}", dict["ui_name"]);
           t = t.replace("{methodSignature}", dict["ui_name"]);
 
           //check if the method has args 
@@ -309,13 +313,13 @@ rpc.exports = {
               else args = args + "v" + i + ",";
             }
 
-            //replace
+            //replace args
             t = t.replace("{args}", args);
 
           } else {
             //Current methods has NO args 
 
-            //replace
+            //replace args
             t = t.replace("{args}", "");
 
           }
