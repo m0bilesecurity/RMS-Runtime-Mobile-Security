@@ -62,8 +62,11 @@ You can set another default package via the Config Tab or by simply editing the 
 ![DEMO_2](/DEMO/DEMO_2_Dump.gif)
 
 ## 3. Hook on the fly Classes/Methods and trace their args and return values  ##
+![DEMO_3_a](/DEMO/DEMO_3_Massive_Hook.gif)
+
 Go back to the dump page in order to have an overview of all the **hooked methods that have been executed by the app** ✅
-![DEMO_3](/DEMO/DEMO_3_Massive_Hook.gif)
+
+![DEMO_3_b](/DEMO/DEMO_3_Overview_Methods.gif)
 
 ## 4. Search instances of a specific class on the Heap and call its methods [BETA]  ##
 ![DEMO_4](/DEMO/DEMO_4_Heap_Search.gif)
@@ -75,19 +78,27 @@ Go back to the dump page in order to have an overview of all the **hooked method
 ![DEMO_6](/DEMO/DEMO_6_Diff_Classes.gif)
 
 ## 7. Inject your favorite FRIDA CUSTOM SCRIPTS on the fly   ##
+
 Just add your .js files inside the custom_script folder and they will be automatically loaded by the web interface ready to be executed.
+
 ![DEMO_7](/DEMO/DEMO_7_Custom_Script.gif)
 
 ## 8. API Monitor [BETA]  ##
+
 via the API Monitor TAB you can easily monitor tons of Android APIs organized in 19 different Categories. Support can be easily extended by adding more classes/methods to the **api_monitor.json** file.
+
 ![DEMO_10](/DEMO/DEMO_10_API_Monitor.png)
+
 You can also monitor native functions: libc.so - open, close, read, write, unlink, remove
+
 ![DEMO_8](/DEMO/DEMO_8_FS_monitor.png)
 
 ## 9. FRIDA Script to load Stetho by Facebook [BETA]  ##
+
 Inject the FRIDA script to load the amazing [Stetho](http://facebook.github.io/stetho/).
 
 Stetho is a sophisticated debug bridge for Android applications. When enabled, developers have access to the Chrome Developer Tools feature natively part of the Chrome desktop browser. Developers can also choose to enable the optional dumpapp tool which offers a powerful command-line interface to application internals.
+
 ![DEMO_9](/DEMO/DEMO_9_Stetho.gif)
 
 
