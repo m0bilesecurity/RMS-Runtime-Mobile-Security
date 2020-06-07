@@ -2,6 +2,7 @@ import os
 import sys
 import json
 import frida
+import time
 from flask_bootstrap import Bootstrap
 from flask_socketio import SocketIO, emit
 from flask import Flask, request, render_template, redirect, url_for
@@ -702,7 +703,39 @@ def printOptions():
             temp_str = temp_str + "<option>" + str(device_type) + "</option>"
     return temp_str
 
+''' 
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+API - Print Console logs to a File
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'''
 
+@app.route('/save_console_logs', methods=['GET', 'POST'])
+def save_console_logs():
+    global target_package
+    try:
+        #check if console_logs exists
+        if not os.path.exists("console_logs"):
+            os.makedirs("console_logs")
+        #create new directory for current logs package_timestamp
+        out_path="console_logs/"+target_package+"_"+time.strftime("%Y%m%d-%H%M%S")
+        os.makedirs(out_path)
+
+        #save calls_console_output
+        textfile = open(out_path+"/calls_console_output.txt", 'w')
+        textfile.write(calls_console_output)
+        textfile.close()
+        #save hooks_console_output
+        textfile = open(out_path+"/hooks_console_output.txt", 'w')
+        textfile.write(hooks_console_output)
+        textfile.close()
+        #save global_console_output
+        textfile = open(out_path+"/global_console_output.txt", 'w')
+        textfile.write(global_console_output)
+        textfile.close()
+
+        return "print_done - "+out_path
+    except Exception as err:
+        return "print_error: "+str(err)
 ''' 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Read config.json file

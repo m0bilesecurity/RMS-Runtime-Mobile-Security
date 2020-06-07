@@ -31,7 +31,11 @@
 
         </div> <!-- row -->
         <div class="border-top my-3"></div>
-
+        <center>
+          <button class="btn btn-primary" id="save_output">
+          Save Console Output
+          </button>
+        </center>
         <br>
         <div class="row">
           <div class="col-sm-6">
@@ -125,7 +129,23 @@
         }
     });
 
-
+  </script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+  <script>
+    $(document).ready(function() {
+       $('#save_output').click(function(){
+           $.ajax({
+           url: "/save_console_logs",
+           type: "get",
+           success: function(response) {
+           if(response.includes("print_done"))
+            alert("Console logs stored in:\n"+response.replace("print_done - ",""))
+           else
+            alert("Error while saving Console logs. \nError info: "+response)
+          }
+         });
+       });
+    });
   </script>
   {% endblock %}
 
