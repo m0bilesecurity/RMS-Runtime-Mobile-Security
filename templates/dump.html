@@ -165,7 +165,12 @@
               <a role="button" href="/dump?choice=2" class="btn btn-info">Load Methods</a>
             </div>
             <div align=center class="col-sm-3 border-bottom border-right border-left">
-              <a role="button" href="/dump?choice=3" class="btn btn-danger">Hook all methods</a>
+              <form action=dump method=get>
+              <button class="btn btn-danger">Hook all methods</button>
+              <input type=hidden name=choice value=3>
+              <br />
+              <input type="checkbox" name=stacktrace value=yes> print StackTrace?</label>
+              </form>
             </div>
           </div>
         </div>

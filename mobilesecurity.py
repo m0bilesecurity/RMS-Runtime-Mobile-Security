@@ -35,6 +35,7 @@ target_package = ""
 system_package = ""
 no_system_package=False
 
+#{{stacktrace}} placeholder is managed python side
 template_massive_hook = """
 Java.perform(function () {
     var classname = "{className}";
@@ -50,6 +51,7 @@ Java.perform(function () {
         s=s+"HOOK: "+classname+" - "+methodsignature+"\\n";
         s=s+"IN: "+eval(args)+"\\n";
         s=s+"OUT: "+ret+"\\n";
+        {{stacktrace}}
         send(s);
                 
         return ret;
@@ -339,7 +341,14 @@ def home():
         className = ""
         classMethod = ""
 
-        api.hookclassesandmethods(loaded_classes, loaded_methods, template_massive_hook)
+        current_template=template_massive_hook
+        stacktrace = request.args.get('stacktrace')
+        if stacktrace == "yes":
+            current_template=current_template.replace("{{stacktrace}}", "s=s+\"StackTrace: \"+Java.use('android.util.Log').getStackTraceString(Java.use('java.lang.Exception').$new()) +\"\\n\";")
+        else:
+            current_template=current_template.replace("{{stacktrace}}", "")
+
+        api.hookclassesandmethods(loaded_classes, loaded_methods, current_template)
         # redirect the user to the console output
         return redirect(url_for('console_output_loader'))
 
