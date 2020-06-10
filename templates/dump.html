@@ -228,7 +228,7 @@
               {% endif %}
               <!-- Legenda -->
               {% for class_name in loaded_classes %}
-              <tr><td><center>[{{ loop.index0 }}]</center></td><td>{{class_name}}</td>
+              <tr><td><center>{{ loop.index0 }}</center></td><td>{{class_name}}</td>
                 <td><pre><code class=Java>{% for method_name in loaded_methods[class_name] %}{% if class_name+" - "+method_name["ui_name"] in methods_hooked_and_executed %}✅ {% endif %}{{method_name["ui_name"]}};<br>{% endfor %}</code></pre></td></tr>{% endfor %}
             </tbody>
           </table>
