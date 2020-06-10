@@ -921,7 +921,7 @@ if __name__ == '__main__':
     print("")
     print("_________________________________________________________")
     print("RMS - Runtime Mobile Security")
-    print("Version: 1.2")
+    print("Version: 1.3")
     print("by @mobilesecurity_")
     print("Twitter Profile: https://twitter.com/mobilesecurity_")
     print("_________________________________________________________")
