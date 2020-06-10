@@ -197,6 +197,8 @@ def device_management():
             script.load()
             api = script.exports
             system_classes = api.loadclasses()
+            #sort list alphabetically
+            system_classes.sort()
         except:
             if (len(system_classes)==0):
                 no_system_package=True
@@ -320,6 +322,8 @@ def home():
             loaded_classes = api.loadclasses()
             # differences between class loaded after and before the app launch
             loaded_classes = list(set(loaded_classes) - set(system_classes))
+            #sort list alphabetically
+            loaded_classes.sort()
         return printwebpage()
 
     if choice == 2:
@@ -380,6 +384,8 @@ def diff_analysis():
                 set(api.loadclasses()) -
                 set(system_classes)
             )
+            #sort list alphabetically
+            current_loaded_classes.sort()
             # rms_print(len(current_loaded_classes))
         if (choice == 2):
             # rms_print("check NEW Loaded Classes")
@@ -388,6 +394,8 @@ def diff_analysis():
                 set(current_loaded_classes) -
                 set(system_classes)
             )
+            #sort list alphabetically
+            new_loaded_classes.sort()
             # rms_print(len(new_loaded_classes))
 
     temp_str_1 = ""
