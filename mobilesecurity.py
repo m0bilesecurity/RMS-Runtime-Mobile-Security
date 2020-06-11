@@ -282,6 +282,7 @@ def home():
     global loaded_classes
     global loaded_methods
     global system_classes
+    # if needed hooked_classes can be converted in a global variable
 
     # tohook contains class selected by the user (hooking purposes)
     if request.method == 'POST':
@@ -322,8 +323,10 @@ def home():
             loaded_classes = api.loadclasses()
             # differences between class loaded after and before the app launch
             loaded_classes = list(set(loaded_classes) - set(system_classes))
-            #sort list alphabetically
-            loaded_classes.sort()
+        
+        #sort list alphabetically
+        loaded_classes.sort()
+        
         return printwebpage()
 
     if choice == 2:

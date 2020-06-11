@@ -17,7 +17,6 @@ rpc.exports = {
     Java.perform(function () {
       Java.enumerateLoadedClasses({
         onMatch: function (className) {
-
           //Remove too generics
           if (
             className.length > 5 &&
@@ -25,10 +24,10 @@ rpc.exports = {
             !className.includes("androidx")
           )
             loaded_classes.push(className)
-
         },
         onComplete: function () {
-          loaded_classes.sort()
+          //sort is managed python side
+          //loaded_classes.sort()
         }
       });
     })
@@ -46,26 +45,31 @@ rpc.exports = {
           filter = isCase ? filter : filter.toLowerCase()
 
           //check if a filter exists
-          if (filter != null) {
+          if (filter != null) 
+          {
             //Regex
-            if (isRegex) {
-              if (className.search(filter) > -1) {
+            if (isRegex) 
+            {
+              if (className.search(filter) > -1) 
+              {
                 loaded_classes.push(originalClassName)
               }
               //Not regex
-            } else {
+            } else 
+            {
               //check if we have multiple filters (comma separated list)
               var filter_array = filter.split(",");
-              filter_array.forEach(function (f) {
-
-                if (isWhole) {
-                  //f.trim() is needed to remove possibile spaces after the comma
+              filter_array.forEach(function (f) 
+              {
+                if (isWhole) 
+                { //f.trim() is needed to remove possibile spaces after the comma
                   if (className == f.trim()) {
                     loaded_classes.push(originalClassName)
                   }
-                } else {
-                  //f.trim() is needed to remove possibile spaces after the comma
-                  if (className.startsWith(f.trim())) {
+                } else 
+                { //f.trim() is needed to remove possibile spaces after the comma
+                  if (className.startsWith(f.trim())) 
+                  {
                     loaded_classes.push(originalClassName)
                   }
                 }
@@ -74,7 +78,8 @@ rpc.exports = {
           }
         },
         onComplete: function () {
-          loaded_classes.sort()
+          //sort is managed python side
+          //loaded_classes.sort()
         }
       });
     })
