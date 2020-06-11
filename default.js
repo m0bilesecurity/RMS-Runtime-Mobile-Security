@@ -19,10 +19,11 @@ rpc.exports = {
         onMatch: function (className) {
 
           //Remove too generics
-          if (className.length > 5 && 
-              //skip androidx stuff
-              !className.includes("androidx")
-             )
+          if (
+            className.length > 5 &&
+            //skip androidx stuff
+            !className.includes("androidx")
+          )
             loaded_classes.push(className)
 
         },
@@ -38,7 +39,7 @@ rpc.exports = {
     Java.perform(function () {
       Java.enumerateLoadedClasses({
         onMatch: function (className) {
-          
+
           //lowercase if not case sensitive
           var originalClassName = className
           className = isCase ? className : className.toLowerCase()
@@ -47,22 +48,22 @@ rpc.exports = {
           //check if a filter exists
           if (filter != null) {
             //Regex
-            if (isRegex){
-              if (className.search(filter) > -1 ) {
+            if (isRegex) {
+              if (className.search(filter) > -1) {
                 loaded_classes.push(originalClassName)
               }
-            //Not regex
-            }else{
+              //Not regex
+            } else {
               //check if we have multiple filters (comma separated list)
               var filter_array = filter.split(",");
               filter_array.forEach(function (f) {
 
-                if (isWhole){
+                if (isWhole) {
                   //f.trim() is needed to remove possibile spaces after the comma
                   if (className == f.trim()) {
                     loaded_classes.push(originalClassName)
                   }
-                }else{
+                } else {
                   //f.trim() is needed to remove possibile spaces after the comma
                   if (className.startsWith(f.trim())) {
                     loaded_classes.push(originalClassName)
@@ -88,16 +89,16 @@ rpc.exports = {
         var classMethods = []
 
         //catch possible issues
-        try{
+        try {
           jClass = Java.use(className);
           classMethods_dirty = jClass.class.getDeclaredMethods();
-        }catch(err){
-          send("Exception while loading methods for "+className);
+        } catch (err) {
+          send("Exception while loading methods for " + className);
           //skip current loop
           loaded_methods[className] = classMethods //is empty
           return;
         }
-        
+
         classMethods_dirty.forEach(function (m) {
           var method_and_args = {};
           //Cleaning up
@@ -130,23 +131,23 @@ rpc.exports = {
 
             // check if the current arg is an array
             var arg = args_array[i]
-            if(arg.includes("[]")){
+            if (arg.includes("[]")) {
               // arg is an array --> smali notation conversion
-                  if (arg.includes(".")) arg="L"+arg+";"
-                  else if((/boolean/i).test(arg)) arg="Z"+arg.replace(/boolean/i, ""); 
-                  else if((/byte/i).test(arg)) arg="B"+arg.replace(/byte/i, ""); 
-                  else if((/char/i).test(arg)) arg="C"+arg.replace(/char/i, ""); 
-                  else if((/double/i).test(arg)) arg="D"+arg.replace(/double/i, ""); 
-                  else if((/float/i).test(arg)) arg="F"+arg.replace(/float/i, ""); 
-                  else if((/int/i).test(arg)) arg="I"+arg.replace(/int/i, ""); 
-                  else if((/long/i).test(arg)) arg="J"+arg.replace(/long/i, ""); 
-                  else if((/short/i).test(arg)) arg="S"+arg.replace(/short/i, ""); 
-                  else arg="L"+arg+";"
-              }
-              while(arg.includes("[]")){
-                  arg=arg.replace("[]", "")
-                  arg="["+arg
-              }
+              if (arg.includes(".")) arg = "L" + arg + ";"
+              else if ((/boolean/i).test(arg)) arg = "Z" + arg.replace(/boolean/i, "");
+              else if ((/byte/i).test(arg)) arg = "B" + arg.replace(/byte/i, "");
+              else if ((/char/i).test(arg)) arg = "C" + arg.replace(/char/i, "");
+              else if ((/double/i).test(arg)) arg = "D" + arg.replace(/double/i, "");
+              else if ((/float/i).test(arg)) arg = "F" + arg.replace(/float/i, "");
+              else if ((/int/i).test(arg)) arg = "I" + arg.replace(/int/i, "");
+              else if ((/long/i).test(arg)) arg = "J" + arg.replace(/long/i, "");
+              else if ((/short/i).test(arg)) arg = "S" + arg.replace(/short/i, "");
+              else arg = "L" + arg + ";"
+            }
+            while (arg.includes("[]")) {
+              arg = arg.replace("[]", "")
+              arg = "[" + arg
+            }
 
             args_srt = args_srt + ("\"" + arg + "\"")
             //add a comma if the current item is not the last one

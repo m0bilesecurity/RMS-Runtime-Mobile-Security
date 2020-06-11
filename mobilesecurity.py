@@ -338,12 +338,7 @@ def home():
 
     if choice == 3:
         # --> Hook all loaded classes and methods
-
-        global calls_count
         global template_massive_hook
-        calls_count = 0
-        className = ""
-        classMethod = ""
 
         current_template=template_massive_hook
         stacktrace = request.args.get('stacktrace')
