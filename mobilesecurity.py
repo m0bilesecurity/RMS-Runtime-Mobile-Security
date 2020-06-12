@@ -6,7 +6,6 @@ import time
 from flask_bootstrap import Bootstrap
 from flask_socketio import SocketIO, emit
 from flask import Flask, request, render_template, redirect, url_for
-import logging
 
 app = Flask(__name__)
 socket_io = SocketIO(app)
@@ -932,9 +931,6 @@ if __name__ == '__main__':
     print("Twitter Profile: https://twitter.com/mobilesecurity_")
     print("_________________________________________________________")
     print("")
-
-
-    log = logging.getLogger('werkzeug')
-    log.setLevel(logging.ERROR)
+    
     # run Flask
     socket_io.run(app)

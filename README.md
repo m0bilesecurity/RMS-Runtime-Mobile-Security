@@ -48,6 +48,7 @@ e.g.
 1. **(optional)** Create a python virtual environment
 2. ```pip3 install -r requirements.txt```
 3. ```python3 mobilesecurity.py```
+4. Open your browser at ```http://127.0.0.1:5000/```
 
 
 # Usage
