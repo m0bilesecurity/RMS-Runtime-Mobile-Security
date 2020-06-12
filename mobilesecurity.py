@@ -24,8 +24,10 @@ calls_console_output = ""
 hooks_console_output = ""
 global_console_output = ""
 api_monitor_console_output = ""
-calls_count = 0
 
+#Global variables - call stack 
+call_count = 0
+call_count_stack={}
 methods_hooked_and_executed = []
 
 api = None
@@ -818,12 +820,15 @@ def rms_print(msg):
     print(msg, file=sys.stdout);
 
 def reset_variables_and_output():
-    global calls_count
+    global call_count
+    global call_count_stack
+    global methods_hooked_and_executed
+
     global calls_console_output
     global hooks_console_output
     global global_console_output
-    global methods_hooked_and_executed
     global api_monitor_console_output
+
     global loaded_classes
     global system_classes
     global loaded_methods
@@ -837,7 +842,9 @@ def reset_variables_and_output():
     hooks_console_output = ""
     global_console_output = ""
     api_monitor_console_output = ""
-    calls_count = 0
+    # call stack
+    call_count = 0
+    call_count_stack = {}
     methods_hooked_and_executed = []
     #variable reset
     loaded_classes = []
@@ -853,7 +860,8 @@ def reset_variables_and_output():
     no_system_package=False
 
 def log_handler(level, text):
-    global calls_count
+    global call_count
+    global call_count_stack
     global calls_console_output
     global hooks_console_output
     global global_console_output
@@ -873,10 +881,13 @@ def log_handler(level, text):
         #remove duplicates
         if new_m_executed not in methods_hooked_and_executed:
             methods_hooked_and_executed.append(new_m_executed)
-
-        text = "[" + str(calls_count) + "] " + text
+        #creating string for the console output
+        text = "[" + str(call_count) + "] " + text
         calls_console_output = calls_console_output + "\n" + text
-        calls_count += 1
+        #add the current call (method) to the call stack
+        call_count_stack[new_m_executed]=call_count
+        #increase the counter
+        call_count += 1
         socket_io.emit(
         'calls_stack', 
         {
@@ -886,6 +897,12 @@ def log_handler(level, text):
         namespace='/console'
         )
     if level == 'hooks_stack':
+        #obtain the current method TODO use a dict instead of a string
+        current_method=text.split("\n")[0].replace("HOOK: ","").replace("\n","")
+        #check the call order by looking at the stack call
+        out_index=call_count_stack[current_method]
+        #assign the correct index (stack call) to the current hooked method and relative info (IN/OUT)
+        text="INDEX: ["+str(out_index)+"]\n"+text
         hooks_console_output = hooks_console_output + "\n" + text
         socket_io.emit(
         'hooks_stack', 
