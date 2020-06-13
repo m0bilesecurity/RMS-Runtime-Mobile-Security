@@ -109,13 +109,13 @@
     calls_stack_editor.setCursor(calls_stack_editor.lineCount(), 0)
 
     const socket = io.connect('//' + document.domain + ':' + location.port + '/console');
-    socket.on('calls_stack', function(msg) {
+    socket.on('call_stack', function(msg) {
         if(msg.data.length) {
           calls_stack_editor.setValue(calls_stack_editor.getValue()+msg.data);
           calls_stack_editor.setCursor(calls_stack_editor.lineCount(), 0)
         }
     });
-    socket.on('hooks_stack', function(msg) {
+    socket.on('hook_stack', function(msg) {
         if(msg.data.length) {
           hooks_stack_editor.setValue(hooks_stack_editor.getValue()+msg.data);
           hooks_stack_editor.setCursor(hooks_stack_editor.lineCount(), 0)

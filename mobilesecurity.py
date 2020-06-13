@@ -45,13 +45,16 @@ Java.perform(function () {
     var hookclass = Java.use(classname);
 
     hookclass.{classMethod}.{overload}implementation = function ({args}) {
-        send("CALLED: " +classname+" - "+methodsignature+"\\n");
+        send("[Call_Stack]\\nClass: " +classname+"\\nMethod: "+methodsignature+"\\n");
         var ret = this.{classMethod}({args});
 
-        var s="";
-        s=s+"HOOK: "+classname+" - "+methodsignature+"\\n";
-        s=s+"IN: "+eval(args)+"\\n";
-        s=s+"OUT: "+ret+"\\n";
+        var s="";s
+        s=s+"[Hook_Stack]\\n"
+        s=s+"Class: "+classname+"\\n"
+        s=s+"Method: "+methodsignature+"\\n"
+        s=s+"Called by: "+Java.use('java.lang.Exception').$new().getStackTrace().toString().split(',')[1]+"\\n"
+        s=s+"Input: "+eval(args)+"\\n"
+        s=s+"Output: "+ret+"\\n"
         {{stacktrace}}
         send(s);
                 
@@ -70,13 +73,16 @@ Java.perform(function () {
     //{methodSignature}
 
     hookclass.{classMethod}.{overload}implementation = function ({args}) {
-        send("CALLED: " +classname+" - "+methodsignature+"\\n");
+        send("[Call_Stack]\\nClass: " +classname+"\\nMethod: "+methodsignature+"\\n");
         var ret = this.{classMethod}({args});
-
+        
         var s="";
-        s=s+"HOOK: "+classname+" - "+methodsignature+"\\n";
-        s=s+"IN: "+eval({args})+"\\n";
-        s=s+"OUT: "+ret+"\\n";
+        s=s+"[Hook_Stack]\\n"
+        s=s+"Class: " +classname+"\\n"
+        s=s+"Method: " +methodsignature+"\\n"
+        s=s+"Called by: "+Java.use('java.lang.Exception').$new().getStackTrace().toString().split(',')[1]+"\\n"
+        s=s+"Input: "+eval({args})+"\\n";
+        s=s+"Output: "+ret+"\\n";
         //uncomment the line below to print StackTrace
         //s=s+"StackTrace: "+Java.use('android.util.Log').getStackTraceString(Java.use('java.lang.Exception').$new()).replace('java.lang.Exception','') +"\\n";
         send(s);
@@ -98,12 +104,14 @@ template_heap_search = """
         onMatch: function (instance) {
           
           var s="";
-          s=s+"Instance Found: " +instance.toString()+"\\n";
-          s=s+"Calling method: " +classname+" - "+methodsignature+"\\n";
-          
+          s=s+"Instance Found: "+instance.toString()+"\\n";
+          s=s+"Calling method: \\n";
+          s=s+"Class: " +classname+"\\n"
+          s=s+"Method: " +methodsignature+"\\n"
+
           //{methodSignature}
           var ret = instance.{classMethod}({args}); //<-- replace v[i] with the value that you want to pass
-          s=s+"OUT: "+ret+"\\n";
+          s=s+"Output: "+ret+"\\n";
           send(s);
 
         }
@@ -799,15 +807,15 @@ def on_message(message, data):
 
 
     if message['type'] == 'send':
-        if "CALLED" in message['payload']:
-            log_handler("calls_stack",message['payload'])
-        if "HOOK" in message['payload']:
-            log_handler("hooks_stack",message['payload'])
-        if "API Monitor" in message['payload']:
+        if "[Call_Stack]" in message['payload']:
+            log_handler("call_stack",message['payload'])
+        if "[Hook_Stack]" in message['payload']:
+            log_handler("hook_stack",message['payload'])
+        if "[API_Monitor]" in message['payload']:
             log_handler("api_monitor",message['payload'])
-        if ("CALLED" not in message['payload'] and
-            "HOOK" not in message['payload'] and
-            "API Monitor" not in message['payload']):
+        if ("[Call_Stack]" not in message['payload'] and
+            "[Hook_Stack]" not in message['payload'] and
+            "[API_Monitor]" not in message['payload']):
             log_handler("global_stack",message['payload'])
 
 ''' 
@@ -875,37 +883,47 @@ def log_handler(level, text):
     else:
         rms_print(text)
     '''
-    if level == 'calls_stack':
+    if level == 'call_stack':
+        #clean up the string
+        text=text.replace("[Call_Stack]\n","")
         #method hooked has been executed by the app
-        new_m_executed=(text.replace("CALLED: ","")).replace("\n","")
+        new_m_executed=text #text contains Class and Method info
         #remove duplicates
         if new_m_executed not in methods_hooked_and_executed:
             methods_hooked_and_executed.append(new_m_executed)
-        #creating string for the console output
-        text = "[" + str(call_count) + "] " + text
-        calls_console_output = calls_console_output + "\n" + text
         #add the current call (method) to the call stack
         call_count_stack[new_m_executed]=call_count
+        #creating string for the console output by adding INDEX info
+        text = "-->INDEX: [" + str(call_count) + "]\n" + text
+        calls_console_output = calls_console_output + "\n" + text
         #increase the counter
         call_count += 1
+
         socket_io.emit(
-        'calls_stack', 
+        'call_stack', 
         {
             'data': "\n"+text, 
             'level': level
         }, 
         namespace='/console'
         )
-    if level == 'hooks_stack':
-        #obtain the current method TODO use a dict instead of a string
-        current_method=text.split("\n")[0].replace("HOOK: ","").replace("\n","")
+    if level == 'hook_stack':
+        #clean up the string
+        text=text.replace("[Hook_Stack]\n","")
+        #obtain current method info - first 2 lines contain Class and Method info
+        current_method=('\n'.join(text.split("\n")[:+2]))+'\n'
         #check the call order by looking at the stack call
-        out_index=call_count_stack[current_method]
+        out_index=-1 #default value if for some reasons current method is not in the stack
+        try:
+            out_index=call_count_stack[current_method]
+        except KeyError as err:
+            rms_print("Not able to assign: \n"+current_method+"to its index")
         #assign the correct index (stack call) to the current hooked method and relative info (IN/OUT)
-        text="INDEX: ["+str(out_index)+"]\n"+text
+        text="INFO for INDEX: ["+str(out_index)+"]\n"+text
+
         hooks_console_output = hooks_console_output + "\n" + text
         socket_io.emit(
-        'hooks_stack', 
+        'hook_stack', 
         {
             'data': "\n"+text, 
             'level': level

@@ -377,7 +377,7 @@ rpc.exports = {
               if (!to_print.result) to_print.result = undefined
               if (!to_print.returnValue) to_print.returnValue = undefined
 
-              send('API Monitor - ' + JSON.stringify(to_print));
+              send('[API_Monitor] - ' + JSON.stringify(to_print)+"\n");
               return realRetval;
             });
           } // end javadynamichook
@@ -401,7 +401,7 @@ function nativedynamichook(hook, category) {
           hook["method"] == "open" &&
           !file.includes("/dev/ashmem") &&
           !file.includes("/proc/"))
-          send("API Monitor - " + category + " - " + hook["clazz"] + " - " + hook["method"] + " - " + file);
+          send("[API_Monitor] - " + category + " - " + hook["clazz"] + " - " + hook["method"] + " - " + file+"\n");
       }
     }
   );
@@ -417,17 +417,17 @@ function javadynamichook(hook, category, callback) {
     try {
       if (hook.target &&
         parseInt(Java.androidVersion, 10) < hook.target) {
-        send('API Monitor - Android Version not supported - Cannot hook - ' + clazz + '.' + method)
+        send('[API_Monitor] - Android Version not supported - Cannot hook - ' + clazz + '.' + method)
         return
       }
       // Check if class and method is available
       toHook = Java.use(clazz)[method];
       if (!toHook) {
-        send('API Monitor - Cannot find ' + clazz + '.' + method);
+        send('[API_Monitor] - Cannot find ' + clazz + '.' + method);
         return
       }
     } catch (err) {
-      send('API Monitor - Cannot find ' + clazz + '.' + method);
+      send('[API_Monitor] - Cannot find ' + clazz + '.' + method);
       return
     }
     for (var i = 0; i < toHook.overloads.length; i++) {
@@ -451,6 +451,6 @@ function javadynamichook(hook, category, callback) {
       }
     }
   } catch (err) {
-    send('API Monitor - ERROR: ' + clazz + "." + method + " [\"Error\"] => " + err);
+    send('[API_Monitor] - ERROR: ' + clazz + "." + method + " [\"Error\"] => " + err);
   }
 }
