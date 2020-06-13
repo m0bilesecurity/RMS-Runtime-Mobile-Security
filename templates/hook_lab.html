@@ -46,6 +46,11 @@
                       <p>Use the search bar below to quickly filter results:</p>
                       <input class="form-control" id="UserInput_Filter" type="text" placeholder="Search..">
                       <br>
+                      <!-- Legenda -->
+                      {% if methods_hooked_and_executed|length > 0 %}
+                      <p>✅&nbsp;&nbsp;= the <b>hooked method has been executed</b> by the app - <a href="/hook_lab"><b>Refresh Page</b></a></p> 
+                      {% endif %}
+                      <!-- Legenda -->
                       {% for class_name in loaded_classes %}{% set class_loop = loop %}
                       <tr><td><center>{{ loop.index0 }}</center></td><td><a href=hook_lab?class_index={{class_loop.index0}}>{{class_name}}</a></td>
                         <td><pre><code class=Java>{% for method_name in loaded_methods[class_name] %}{% set method_loop = loop %}<a href=hook_lab?class_index={{class_loop.index0}}&method_index={{method_loop.index0}}>{% if "Class: "+class_name+"\nMethod: "+method_name["ui_name"]+"\n" in methods_hooked_and_executed %}✅ {% endif %}{{method_name["ui_name"]}};</a><br>{% endfor %}</code></pre></td></tr>{% endfor %}
