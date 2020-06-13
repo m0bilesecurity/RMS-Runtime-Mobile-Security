@@ -78,7 +78,7 @@ Java.perform(function () {
         s=s+"IN: "+eval({args})+"\\n";
         s=s+"OUT: "+ret+"\\n";
         //uncomment the line below to print StackTrace
-        //s=s+"StackTrace: "+Java.use('android.util.Log').getStackTraceString(Java.use('java.lang.Exception').$new()) +"\\n";
+        //s=s+"StackTrace: "+Java.use('android.util.Log').getStackTraceString(Java.use('java.lang.Exception').$new()).replace('java.lang.Exception','') +"\\n";
         send(s);
                 
         return ret;
@@ -347,7 +347,7 @@ def home():
         current_template=template_massive_hook
         stacktrace = request.args.get('stacktrace')
         if stacktrace == "yes":
-            current_template=current_template.replace("{{stacktrace}}", "s=s+\"StackTrace: \"+Java.use('android.util.Log').getStackTraceString(Java.use('java.lang.Exception').$new()) +\"\\n\";")
+            current_template=current_template.replace("{{stacktrace}}", "s=s+\"StackTrace: \"+Java.use('android.util.Log').getStackTraceString(Java.use('java.lang.Exception').$new()).replace('java.lang.Exception','') +\"\\n\";")
         else:
             current_template=current_template.replace("{{stacktrace}}", "")
 
