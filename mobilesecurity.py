@@ -93,49 +93,49 @@ Java.perform(function () {
 """
 
 template_heap_search = """
-    Java.performNow(function () {
-        var classname = "{className}"
-        var classmethod = "{classMethod}";
-        var methodsignature = "{methodSignature}";
+Java.performNow(function () {
+    var classname = "{className}"
+    var classmethod = "{classMethod}";
+    var methodsignature = "{methodSignature}";
 
-        Java.choose(classname, {
-            onMatch: function (instance) {
-                try 
-                {
-                    var returnValue;
-                    //{methodSignature}
-                    returnValue = instance.{classMethod}({args}); //<-- replace v[i] with the value that you want to pass
+    Java.choose(classname, {
+        onMatch: function (instance) {
+            try 
+            {
+                var returnValue;
+                //{methodSignature}
+                returnValue = instance.{classMethod}({args}); //<-- replace v[i] with the value that you want to pass
 
-                    //Output
-                    var s = "";
-                    s=s + "[*] Heap Search - START\\n"
+                //Output
+                var s = "";
+                s=s + "[*] Heap Search - START\\n"
 
-                    s=s + "Instance Found: " + instance.toString() + "\\n";
-                    s=s + "Calling method: \\n";
-                    s=s + "   Class: " + classname + "\\n"
-                    s=s + "   Method: " + methodsignature + "\\n"
-                    s=s + "-->Output: " + returnValue + "\\n";
+                s=s + "Instance Found: " + instance.toString() + "\\n";
+                s=s + "Calling method: \\n";
+                s=s + "   Class: " + classname + "\\n"
+                s=s + "   Method: " + methodsignature + "\\n"
+                s=s + "-->Output: " + returnValue + "\\n";
 
-                    s = s + "[*] Heap Search - END\\n"
+                s = s + "[*] Heap Search - END\\n"
 
-                    send(s);
-                } 
-                catch (err) 
-                {
-                    var s = "";
-                    s=s + "[*] Heap Search - START\\n"
-                    s=s + "Instance NOT Found or Exception while calling the method\\n";
-                    s=s + "   Class: " + classname + "\\n"
-                    s=s + "   Method: " + methodsignature + "\\n"
-                    s=s + "-->Exception: " + err + "\\n"
-                    s=s + "[*] Heap Search - END\\n"
-                    send(s)
-                }
-
+                send(s);
+            } 
+            catch (err) 
+            {
+                var s = "";
+                s=s + "[*] Heap Search - START\\n"
+                s=s + "Instance NOT Found or Exception while calling the method\\n";
+                s=s + "   Class: " + classname + "\\n"
+                s=s + "   Method: " + methodsignature + "\\n"
+                s=s + "-->Exception: " + err + "\\n"
+                s=s + "[*] Heap Search - END\\n"
+                send(s)
             }
-        });
 
+        }
     });
+
+});
 """
 
 ''' 
