@@ -19,7 +19,7 @@
 
       <!-- Model View -->
       <div class="modal fade" id="ModalFilterView">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-xl">
           <div class="modal-content">
 
             <!-- Modal Header -->
@@ -36,21 +36,19 @@
                   <table class="table table-sm table-dark table-bordered">
                     <thead>
                       <tr>
-                        <th style='width: 10%'> index</th>
-                        <th style='width: 90%'> classes</th>
+                        <th style='width: 3%'> index</th>
+                        <th style='width: 27%'> classes</th>
+                        <th style='width: 55%'> methods</th>
                       </tr>
                     </thead>
                     <tbody id="MainTable_Filter">
-                      <h3>Classes</h3>
+                      <h3>Classes and Methods</h3>
                       <p>Use the search bar below to quickly filter results:</p>
                       <input class="form-control" id="UserInput_Filter" type="text" placeholder="Search..">
                       <br>
-                      {% for c in loaded_classes %}
-                      <tr>
-                        <td>[{{ loop.index0 }}]</td>
-                        <td><a href=hook_lab?class_index={{ loop.index0 }}>{{ c }}</a></td>
-                      </tr>
-                      {% endfor %}
+                      {% for class_name in loaded_classes %}{% set class_loop = loop %}
+                      <tr><td><center>{{ loop.index0 }}</center></td><td><a href=hook_lab?class_index={{class_loop.index0}}>{{class_name}}</a></td>
+                        <td><pre><code class=Java>{% for method_name in loaded_methods[class_name] %}{% set method_loop = loop %}<a href=hook_lab?class_index={{class_loop.index0}}&method_index={{method_loop.index0}}>{% if "Class: "+class_name+"\nMethod: "+method_name["ui_name"]+"\n" in methods_hooked_and_executed %}✅ {% endif %}{{method_name["ui_name"]}};</a><br>{% endfor %}</code></pre></td></tr>{% endfor %}
                     </tbody>
                   </table>
                 </div>

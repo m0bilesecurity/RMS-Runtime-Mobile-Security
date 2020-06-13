@@ -22,6 +22,7 @@ new_loaded_classes = []
 # Global variables - console output
 calls_console_output = ""
 hooks_console_output = ""
+heap_console_output = ""
 global_console_output = ""
 api_monitor_console_output = ""
 
@@ -108,6 +109,7 @@ Java.performNow(function () {
 
                 //Output
                 var s = "";
+                s=s+"[Heap_Search]\\n"
                 s=s + "[*] Heap Search - START\\n"
 
                 s=s + "Instance Found: " + instance.toString() + "\\n";
@@ -123,6 +125,7 @@ Java.performNow(function () {
             catch (err) 
             {
                 var s = "";
+                s=s+"[Heap_Search]\\n"
                 s=s + "[*] Heap Search - START\\n"
                 s=s + "Instance NOT Found or Exception while calling the method\\n";
                 s=s + "   Class: " + classname + "\\n"
@@ -466,7 +469,7 @@ def hook_lab():
     if class_index is not None:
         class_index = int(class_index)
         # get methods of the selected class
-        selected_class = [loaded_classes[class_index]]
+        selected_class = loaded_classes[class_index]
         # check if methods are loaded or not
         if not loaded_methods:
             try:
@@ -474,16 +477,28 @@ def hook_lab():
             except Exception as err:
                 rms_print("FRIDA crashed while loading methods for one or more classes selected. Try to exclude them from your search!")
                 return redirect(url_for("device_management", frida_crash=True))
-        # template generation
-        hook_template = api.generatehooktemplate(selected_class, loaded_methods, template_hook_lab)
-
-    if selected_class != "":
-        selected_class = selected_class[0]
+        
+        # method_index contains the index of the loaded method selected by the user
+        method_index = request.args.get('method_index')
+        #Only class selected - load heap search template for all the methods
+        if method_index is None:
+            # hook template generation
+            hook_template = api.generatehooktemplate([selected_class], loaded_methods, template_hook_lab)
+        #class and method selected - load heap search template for selected method only
+        else:
+            selected_method={}
+            method_index=int(method_index)
+            # get method of the selected class
+            selected_method[selected_class] = [(loaded_methods[selected_class])[method_index]]
+            # hook template generation
+            hook_template = api.generatehooktemplate([selected_class], selected_method, template_hook_lab)
 
     # print hook template
     return render_template(
         "hook_lab.html",
         loaded_classes=loaded_classes,
+        loaded_methods=loaded_methods,
+        methods_hooked_and_executed=methods_hooked_and_executed,
         selected_class=selected_class,
         hook_template_str=hook_template,
         target_package=target_package,
@@ -516,7 +531,7 @@ def heap_search():
     if class_index is not None:
         class_index = int(class_index)
         # get methods of the selected class
-        selected_class = [loaded_classes[class_index]]
+        selected_class = loaded_classes[class_index]
         # check if methods are loaded or not
         if not loaded_methods:
             try:
@@ -524,21 +539,35 @@ def heap_search():
             except Exception as err:
                 rms_print("FRIDA crashed while loading methods for one or more classes selected. Try to exclude them from your search!")
                 return redirect(url_for("device_management", frida_crash=True))
-        # heap template generation
-        heap_template = api.heapsearchtemplate(selected_class, loaded_methods, template_heap_search)
+        
+        # method_index contains the index of the loaded method selected by the user
+        method_index = request.args.get('method_index')
+        #Only class selected - load heap search template for all the methods
+        if method_index is None:
+            # heap template generation
+            heap_template = api.heapsearchtemplate([selected_class], loaded_methods, template_heap_search)
+        #class and method selected - load heap search template for selected method only
+        else:
+            selected_method={}
+            method_index=int(method_index)
+            # get method of the selected class
+            selected_method[selected_class] = [(loaded_methods[selected_class])[method_index]]
+            # heap template generation
+            heap_template = api.heapsearchtemplate([selected_class], selected_method, template_heap_search)
 
-    if selected_class != "":
-        selected_class = selected_class[0]
 
     # print hook template
     return render_template(
         "heap_search.html",
         loaded_classes=loaded_classes,
+        loaded_methods=loaded_methods,
+        methods_hooked_and_executed=methods_hooked_and_executed,
         selected_class=selected_class,
         heap_template_str=heap_template,
         target_package=target_package,
         system_package=system_package,
-        no_system_package=no_system_package
+        no_system_package=no_system_package,
+        heap_search_console_output_str=heap_console_output
     )
 
 ''' 
@@ -778,6 +807,24 @@ def save_console_logs():
         return "print_done - "+out_path
     except Exception as err:
         return "print_error: "+str(err)
+
+''' 
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+API - eval frida script and redirect
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'''
+
+@app.route('/eval_script_and_redirect', methods=['GET', 'POST'])
+def eval_script_and_redirect():
+
+    if request.method == 'POST':
+        script = request.values.get('frida_custom_script')
+        redirect_url = request.values.get('redirect')
+        api.loadcustomfridascript(script)
+        # auto redirect the user to the console output page
+        return redirect(url_for(redirect_url))
+
+
 ''' 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Read config.json file
@@ -829,10 +876,13 @@ def on_message(message, data):
             log_handler("call_stack",message['payload'])
         if "[Hook_Stack]" in message['payload']:
             log_handler("hook_stack",message['payload'])
+        if "[Heap_Search]" in message['payload']:
+            log_handler("heap_search",message['payload'])
         if "[API_Monitor]" in message['payload']:
             log_handler("api_monitor",message['payload'])
         if ("[Call_Stack]" not in message['payload'] and
             "[Hook_Stack]" not in message['payload'] and
+            "[Heap_Search]" not in message['payload'] and
             "[API_Monitor]" not in message['payload']):
             log_handler("global_stack",message['payload'])
 
@@ -852,6 +902,7 @@ def reset_variables_and_output():
 
     global calls_console_output
     global hooks_console_output
+    global heap_console_output
     global global_console_output
     global api_monitor_console_output
 
@@ -866,6 +917,7 @@ def reset_variables_and_output():
     #output reset
     calls_console_output = ""
     hooks_console_output = ""
+    heap_console_output = ""
     global_console_output = ""
     api_monitor_console_output = ""
     # call stack
@@ -890,6 +942,7 @@ def log_handler(level, text):
     global call_count_stack
     global calls_console_output
     global hooks_console_output
+    global heap_console_output
     global global_console_output
     global api_monitor_console_output
 
@@ -948,6 +1001,17 @@ def log_handler(level, text):
         }, 
         namespace='/console'
         )
+    if level == 'heap_search':
+        text=text.replace("[Heap_Search]\n","")
+        heap_console_output = heap_console_output + "\n" + text
+        socket_io.emit(
+        'heap_search', 
+        {
+            'data': "\n"+text, 
+            'level': level
+        }, 
+        namespace='/console'
+        )    
     if level == 'api_monitor':
         api_monitor_console_output = api_monitor_console_output + "\n" + text
         socket_io.emit(

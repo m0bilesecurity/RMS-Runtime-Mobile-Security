@@ -4,6 +4,9 @@
 <head>
   <!-- head and css -->
   {% include 't_head.html' %}
+  <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"
+          integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous">
+  </script>
 </head>
 
 <body>
@@ -19,12 +22,12 @@
 
       <!-- Model View -->
       <div class="modal fade" id="ModalFilterView">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-xl">
           <div class="modal-content">
 
             <!-- Modal Header -->
             <div class="modal-header">
-              <h4 class="modal-title">Select a Class and start playing with its methods</h4>
+              <h4 class="modal-title">Select a Class or directly one of its methods and start playing with it</h4>
               <button type="button" class="close" data-dismiss="modal">&times;</button>
             </div>
             <!-- Modal body -->
@@ -36,21 +39,19 @@
                   <table class="table table-sm table-dark table-bordered">
                     <thead>
                       <tr>
-                        <th style='width: 10%'> index</th>
-                        <th style='width: 90%'> classes</th>
+                        <th style='width: 3%'> index</th>
+                        <th style='width: 27%'> classes</th>
+                        <th style='width: 55%'> methods</th>
                       </tr>
                     </thead>
                     <tbody id="MainTable_Filter">
-                      <h3>Classes</h3>
+                      <h3>Classes and Methods</h3>
                       <p>Use the search bar below to quickly filter results:</p>
                       <input class="form-control" id="UserInput_Filter" type="text" placeholder="Search..">
                       <br>
-                      {% for c in loaded_classes %}
-                      <tr>
-                        <td>[{{ loop.index0 }}]</td>
-                        <td><a href=heap_search?class_index={{ loop.index0 }}>{{ c }}</a></td>
-                      </tr>
-                      {% endfor %}
+                      {% for class_name in loaded_classes %}{% set class_loop = loop %}
+                      <tr><td><center>{{ loop.index0 }}</center></td><td><a href=heap_search?class_index={{class_loop.index0}}>{{class_name}}</a></td>
+                        <td><pre><code class=Java>{% for method_name in loaded_methods[class_name] %}{% set method_loop = loop %}<a href=heap_search?class_index={{class_loop.index0}}&method_index={{method_loop.index0}}>{% if "Class: "+class_name+"\nMethod: "+method_name["ui_name"]+"\n" in methods_hooked_and_executed %}✅ {% endif %}{{method_name["ui_name"]}};</a><br>{% endfor %}</code></pre></td></tr>{% endfor %}
                     </tbody>
                   </table>
                 </div>
@@ -73,38 +74,45 @@
         <br>
         <h2>Heap Search 💣 - Select a Class and call its methods 🕹</h2>
         <div class="border-top my-3"></div>
+        
+        <form action="/eval_script_and_redirect" method="post">
 
         <div class="row">
-
-          <div class="col-sm-12">
+          <div class="col-sm-2 align-self-center">
             <!-- Dropdown menu -->
+            <center>
             <button type="button" data-toggle="modal" data-target="#ModalFilterView"
               class="btn btn-danger dropdown-toggle">
               Select a Class
             </button>
             <br>
             <br>
-          </div>
-
-        </div>
-
-        <div class="row">
-          <div class="col-sm-12">
+            <input type=submit value="Execute" class="btn btn-primary">
+            </center>
+            <br>
+          </div> <!-- end col -->
+          <div class="col-sm-10">
             <!-- Textarea with overload -->
-            <h3>Heap Search Template - <font class=text-primary>{{ selected_class}}</font>
+            <h3>Heap Search Template - <font class=text-primary>{{selected_class}}</font>
             </h3>
-            <form action="/load_frida_script" method="post">
-              <input type=hidden name=choice value=4>
+            
+              <input type=hidden name=redirect value=heap_search>
 
               <textarea id=hooktable name=frida_custom_script
                 class="form-control">{{ heap_template_str|safe }}</textarea>
-              <br>
-              <center><input type=submit class="btn btn-primary"></center>
-              <br>
             </form>
-          </div>
+          </div> <!-- end col -->
 
-        </div>
+        </div> <!-- end row -->
+        <div class="row">
+          <div class="col-sm-12">
+              <h3>Heap Search - Console Output </h3>
+              <textarea id=heap_search_console 
+                        name=heap_search_console 
+                        class="form-control">{{heap_search_console_output_str|safe }}</textarea>
+              <br>
+          </div>
+      </div><!-- /#row -->
       </div>
       <!-- /#container-fluid -->
 
@@ -123,7 +131,30 @@
         mode: 'javascript',
         theme: 'dracula'
     });
-    editor.setSize("100%",550);
+    editor.setSize("100%",400);
+  </script> 
+
+  <script>
+    var heap_search_editor = CodeMirror.fromTextArea(heap_search_console, {
+        lineNumbers: true,
+        mode: 'javascript',
+        theme: 'dracula',
+        readOnly: true
+    });
+    heap_search_editor.setSize("100%",250);
+    
+  </script>
+  <script>
+    //Set cursors always at the bottom 
+    heap_search_editor.setCursor(heap_search_editor.lineCount(), 0);
+
+    const socket = io.connect('//' + document.domain + ':' + location.port + '/console');
+    socket.on('heap_search', function(msg) {
+        if(msg.data.length) {
+            heap_search_editor.setValue(heap_search_editor.getValue()+msg.data);
+            heap_search_editor.setCursor(heap_search_editor.lineCount(), 0)
+        }
+    });
   </script> 
   {% endblock %}
 
