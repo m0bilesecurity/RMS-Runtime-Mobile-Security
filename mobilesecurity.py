@@ -71,7 +71,6 @@ Java.perform(function () {
     var hookclass = Java.use(classname);
     
     //{methodSignature}
-
     hookclass.{classMethod}.{overload}implementation = function ({args}) {
         send("[Call_Stack]\\nClass: " +classname+"\\nMethod: "+methodsignature+"\\n");
         var ret = this.{classMethod}({args});
@@ -85,6 +84,7 @@ Java.perform(function () {
         s=s+"Output: "+ret+"\\n";
         //uncomment the line below to print StackTrace
         //s=s+"StackTrace: "+Java.use('android.util.Log').getStackTraceString(Java.use('java.lang.Exception').$new()).replace('java.lang.Exception','') +"\\n";
+
         send(s);
                 
         return ret;
@@ -94,29 +94,47 @@ Java.perform(function () {
 
 template_heap_search = """
     Java.performNow(function () {
-      var classname = "{className}"
-      var classmethod = "{classMethod}";
-      var methodsignature = "{methodSignature}";
+        var classname = "{className}"
+        var classmethod = "{classMethod}";
+        var methodsignature = "{methodSignature}";
 
-      send("[*] Heap Search - START\\n")
+        Java.choose(classname, {
+            onMatch: function (instance) {
+                try 
+                {
+                    var returnValue;
+                    //{methodSignature}
+                    returnValue = instance.{classMethod}({args}); //<-- replace v[i] with the value that you want to pass
 
-      Java.choose(classname, {
-        onMatch: function (instance) {
-          
-          var s="";
-          s=s+"Instance Found: "+instance.toString()+"\\n";
-          s=s+"Calling method: \\n";
-          s=s+"Class: " +classname+"\\n"
-          s=s+"Method: " +methodsignature+"\\n"
+                    //Output
+                    var s = "";
+                    s=s + "[*] Heap Search - START\\n"
 
-          //{methodSignature}
-          var ret = instance.{classMethod}({args}); //<-- replace v[i] with the value that you want to pass
-          s=s+"Output: "+ret+"\\n";
-          send(s);
+                    s=s + "Instance Found: " + instance.toString() + "\\n";
+                    s=s + "Calling method: \\n";
+                    s=s + "   Class: " + classname + "\\n"
+                    s=s + "   Method: " + methodsignature + "\\n"
+                    s=s + "-->Output: " + returnValue + "\\n";
 
-        }
-      });
-      send("[*] Heap Search - END\\n")
+                    s = s + "[*] Heap Search - END\\n"
+
+                    send(s);
+                } 
+                catch (err) 
+                {
+                    var s = "";
+                    s=s + "[*] Heap Search - START\\n"
+                    s=s + "Instance NOT Found or Exception while calling the method\\n";
+                    s=s + "   Class: " + classname + "\\n"
+                    s=s + "   Method: " + methodsignature + "\\n"
+                    s=s + "-->Exception: " + err + "\\n"
+                    s=s + "[*] Heap Search - END\\n"
+                    send(s)
+                }
+
+            }
+        });
+
     });
 """
 
