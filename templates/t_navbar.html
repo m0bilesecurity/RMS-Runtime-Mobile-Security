@@ -11,6 +11,7 @@
             <li class="nav-item active border-left border-right">
                 <a class="nav-link" href="/">Device<span class="sr-only">(current)</span></a>
             </li>
+            {% if target_package %}
             <li class="nav-item border-right">
                 <a class="nav-link" href="/dump">Dump TAB<span class="sr-only"></span></a>
             </li>
@@ -32,6 +33,7 @@
             <li class="nav-item border-right">
                 <a class="nav-link" href="/console_output">Console Output</a>
             </li>
+            {% endif %}
             <li class="nav-item border-right">
                 <a class="nav-link" href="/config">Config</a>
             </li>
