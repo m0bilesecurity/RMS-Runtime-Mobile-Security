@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- head and css -->
+  {% include 't_head.html' %}
+</head>
+
+<body>
+  <div class="d-flex" id="wrapper">
+    <!-- Sidebar -->
+    {% include 't_sidebar.html' %}
+
+    <!-- Page Content -->
+    <div id="page-content-wrapper">
+
+      <!-- Navbar -->
+      {% include 't_navbar.html' %}
+
+      <!-- 2 textarea side by side -->
+      <div class="container-fluid">
+        <br>
+        <h2>File Manager 🗂 - [BETA - use ADB to download files]</h2>
+        <div class="border-top my-3"></div>
+        <h4><font color="ff5050">{{target_package}}</font> - enviroment info:</h4>
+        <ul>
+        <li>
+          <b>mainDirectory:</b> 
+          <a href="/file_manager?path={{env.mainDirectory}}">{{env.mainDirectory}}</a>
+        </li>
+        <li>
+          <b>filesDirectory:</b> 
+          <a href="/file_manager?path={{env.filesDirectory}}">{{env.filesDirectory}}</a>
+        </li>
+        <li>
+          <b>cacheDirectory:</b> 
+          <a href="/file_manager?path={{env.cacheDirectory}}">{{env.cacheDirectory}}</a>
+        </li>
+        <li>
+          <b>externalCacheDirectory:</b> 
+          <a href="/file_manager?path={{env.externalCacheDirectory}}">{{env.externalCacheDirectory}}</a>
+        </li>
+        <li>
+          <b>codeCacheDirectory:</b> 
+          <a href="/file_manager?path={{env.codeCacheDirectory}}">{{env.codeCacheDirectory}}</a>
+        </li>
+        <li>
+          <b>obbDir:</b> 
+          <a href="/file_manager?path={{env.obbDir}}">{{env.obbDir}}</a></li>
+        <li>
+          <b>packageCodePath:</b> 
+          <a href="/file_manager?path={{env.packageCodePath}}">{{env.packageCodePath}}</a>
+        </li>
+        </ul>
+        <div class="border-top my-3"></div>
+          {% if currentPath %}
+          <h5>&nbsp;&nbsp;<font color="3399ff">Current Path:</font> {{currentPath}}</h5>
+          <br>
+          <table class="table w-auto">
+            <thead>
+              <th class="text-center">icon</th>
+              <th>filename</th>
+              <th class="text-center">isHidden</th>
+              <th class="text-center">size</th>
+              <th class="text-center">lastModified</th>
+              <th class="text-center">adb command</th>
+            </thead>
+            <tbody>
+              {% set parent = '/'.join(((files_at_path.path).split("/"))[:-1])  %}
+              {% if 
+                files_at_path.path != env.mainDirectory and 
+                files_at_path.path != env.externalCacheDirectory and 
+                files_at_path.path != env.obbDir 
+              %}
+            <tr>
+              <td><a href="/file_manager?path={{parent}}">..</a></td>
+            </tr>
+            {% endif %}
+            {% for f in files_at_path["files"] %}
+            <tr>
+              <td class="text-center">
+                {% if files_at_path.files[f].attributes.isDirectory == True %}
+                📁
+                {% else %}
+                🗳
+                {% endif %}
+              </td>
+                <td>
+                  {% if files_at_path.files[f].attributes.isDirectory %}
+                  <a href="/file_manager?path={{files_at_path.path}}/{{f}}">{{f}}</a>
+                  {% else %}
+                    {{f}}
+                  {% endif %}
+                </td>
+                <td class="text-center">
+                  {% if files_at_path.files[f].attributes.isHidden == True %}
+                  ❗️
+                  {% else %}
+                  -
+                  {% endif %}
+                </td>
+                <td class="text-center">
+                  {{files_at_path.files[f].attributes.size}}
+                </td>
+                <td class="text-center">
+                  {{files_at_path.files[f].attributes.lastModified}}
+                </td>
+                <td class="text-center">
+                  {% if files_at_path.files[f].attributes.isFile %}
+                  <button 
+                  onclick="show_adb_command('{{files_at_path.path}}','{{f}}')"
+                  class="btn btn-primary btn-sm">
+                  show
+                  </button>
+                  <button 
+                  onclick="copy_adb_command('{{files_at_path.path}}','{{f}}')"
+                  class="btn btn-warning btn-sm">
+                  copy
+                  </button>
+                  {% else %}
+                  -
+                  {% endif %}
+                </td>
+            </tr>
+            </tbody>
+            {% endfor %}
+            </table>
+          {% endif %}
+    </div>
+    <!-- /#container-fluid -->
+
+  </div>
+  <!-- /#page-content-wrapper -->
+
+  </div>
+  <!-- /#wrapper -->
+
+  <!-- Javascript loading -->
+  {% include 't_js_script.html' %}
+
+  {% block scripts %}
+  <script>
+    function show_adb_command(path,filename){ 
+      if (filename=="base.apk")
+        alert("adb pull "+path+"/"+filename+ " {{target_package}}.apk")
+      else alert("adb pull "+path+"/"+filename)
+    }
+
+    function copy_adb_command(path,filename){ 
+      var textToCopy=""
+      if (filename=="base.apk")
+        textToCopy="adb pull "+path+"/"+filename+" {{target_package}}.apk"
+      else textToCopy="adb pull "+path+"/"+filename
+
+      var inp =document.createElement('input');
+      document.body.appendChild(inp)
+      inp.value =textToCopy
+      inp.select();
+      document.execCommand('copy',false);
+      inp.remove();
+    }
+  </script>
+  {% endblock %}
+
+</body>
+
+</html>

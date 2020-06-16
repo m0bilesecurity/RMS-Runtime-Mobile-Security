@@ -7,7 +7,10 @@
  5. hookclassesandmethods([loaded_classes], [loaded_methods], template)
  6. generatehooktemplate([loaded_classes], [loaded_methods], template)
  7. heapsearchtemplate([loaded_classes], [loaded_methods], template)
- 8. apimonitor([api_to_monitor])
+ 8. checkfiletype(path)
+ 9. listfilesatpath(path)
+ 10. getappenvinfo()
+ 11. apimonitor([api_to_monitor])
  ******************************************************************************/
 
 rpc.exports = {
@@ -341,6 +344,73 @@ rpc.exports = {
     })
     // return HOOK template
     return hto;
+  },
+  checkfiletype: function (path) {
+    var filetype=""
+    Java.perform(function (){
+      var file = Java.use("java.io.File");
+      var currentPath = file.$new(path);
+      if (currentPath.isFile()) filetype="File"
+      else filetype="Directory"
+    })
+    return filetype
+  },
+  listfilesatpath: function (path) {
+    var listResult;
+    Java.perform(function (){
+      var file = Java.use("java.io.File");
+      var currentPath = file.$new(path);
+      var files;
+
+      listResult= {
+        files: {},
+        path: path,
+        readable: currentPath.canRead(),
+        writable: currentPath.canWrite(),
+      };
+
+      files = currentPath.listFiles();
+      files.forEach(function (f) {
+        listResult.files[f.getName()] = {
+          attributes: {
+            isDirectory: f.isDirectory(),
+            isFile: f.isFile(),
+            isHidden: f.isHidden(),
+            lastModified: new Date(f.lastModified()).toISOString().replace(/T/, ' ').replace(/\..+/, ''),
+            size: f.length()
+          },
+          fileName: f.getName(),
+          readable: f.canRead(),
+          writable: f.canWrite()
+        };
+      })
+      //console.log(JSON.stringify(listResult))
+    })
+    return listResult;
+  },
+  getappenvinfo: function () {
+    var env;
+    Java.perform(function (){
+      var context = null
+      var ActivityThread = Java.use('android.app.ActivityThread');
+      var targetApp = ActivityThread.currentApplication();
+  
+      if (targetApp != null) {
+          context = targetApp.getApplicationContext();
+          env = 
+          {   mainDirectory: context.getFilesDir().getParent(),
+              filesDirectory: context.getFilesDir().getAbsolutePath().toString(),
+              cacheDirectory: context.getCacheDir().getAbsolutePath().toString(),
+              externalCacheDirectory: context.getExternalCacheDir().getAbsolutePath().toString(),
+              codeCacheDirectory: 
+                  'getCodeCacheDir' in context ? 
+                  context.getCodeCacheDir().getAbsolutePath().toString() : 'N/A',
+              obbDir: context.getObbDir().getAbsolutePath().toString(),
+              packageCodePath: context.getPackageCodePath().toString().replace("/base.apk",""),
+          };
+      } else env=null
+    })
+    return env;
   },
   apimonitor: function (api_to_monitor) {
     Java.perform(function () {

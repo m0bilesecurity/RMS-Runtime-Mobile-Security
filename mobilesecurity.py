@@ -15,6 +15,9 @@ loaded_classes = []
 system_classes = []
 loaded_methods = {}
 
+# app env info
+app_env_info = {}
+
 # Global variables - diff analysis
 current_loaded_classes = []
 new_loaded_classes = []
@@ -620,6 +623,38 @@ def api_monitor():
 
 ''' 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+File Manager - TAB
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'''
+
+@app.route('/file_manager', methods=['GET', 'POST'])
+def file_manager():
+    global app_env_info
+
+    files_at_path=None
+    path=""
+    if request.method == 'GET':
+        path=request.args.get('path')
+        if path:
+            files_at_path=api.listfilesatpath(path)
+
+
+    #check if app_env_info is loaded
+    if(bool(app_env_info)==False):
+         app_env_info=api.getappenvinfo()
+
+    return render_template(
+        "file_manager.html",
+        target_package=target_package,
+        system_package=system_package,
+        no_system_package=no_system_package,
+        env=app_env_info,
+        files_at_path=files_at_path,
+        currentPath=path
+    )
+
+''' 
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Load Frida Script - TAB
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '''
@@ -912,6 +947,7 @@ def reset_variables_and_output():
     global current_loaded_classes
     global new_loaded_classes
     global no_system_package
+    global app_env_info
 
 
     #output reset
@@ -928,6 +964,8 @@ def reset_variables_and_output():
     loaded_classes = []
     system_classes = []
     loaded_methods = {}
+    #file manager
+    app_env_info = {}
     #diff classes variables
     current_loaded_classes = []
     new_loaded_classes = []

@@ -19,6 +19,7 @@ Java.perform(function() {
     if (targetApp != null) {
         context = targetApp.getApplicationContext();
         var env = {
+            mainDirectory: context.getFilesDir().getParent(),
             filesDirectory: context.getFilesDir().getAbsolutePath().toString(),
             cacheDirectory: context.getCacheDir().getAbsolutePath().toString(),
             externalCacheDirectory: context.getExternalCacheDir().getAbsolutePath().toString(),
@@ -30,6 +31,7 @@ Java.perform(function() {
         };
 
         send("******************* App Environment Info *******************")
+        send("mainDirectory: "+env.mainDirectory);
         send("filesDirectory: "+env.filesDirectory);
         send("cacheDirectory: "+env.cacheDirectory);
         send("externalCacheDirectory: "+env.externalCacheDirectory);
