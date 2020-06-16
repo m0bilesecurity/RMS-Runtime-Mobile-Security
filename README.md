@@ -94,13 +94,21 @@ You can also monitor native functions: libc.so - open, close, read, write, unlin
 
 ![DEMO_8](/DEMO/DEMO_8_FS_monitor.png)
 
-## 9. FRIDA Script to load Stetho by Facebook [BETA]  ##
+## 9. FRIDA Script to load Stetho by Facebook [BONUS]  ##
 
 Inject the FRIDA script to load the amazing [Stetho](http://facebook.github.io/stetho/).
 
 Stetho is a sophisticated debug bridge for Android applications. When enabled, developers have access to the Chrome Developer Tools feature natively part of the Chrome desktop browser. Developers can also choose to enable the optional dumpapp tool which offers a powerful command-line interface to application internals.
 
 ![DEMO_9](/DEMO/DEMO_9_Stetho.gif)
+
+## 10. File Manager [BETA]  ##
+
+A simple File Manager has been implemented to help you exploring app's private folders and files. **This feature is still in BETA.**
+
+**TODO:** In order to download needed files directly from the web page, [frida-fs](https://github.com/nowsecure/frida-fs) must be implemented. A PR or an help is more than welcome 😉. Currently, RMS is only able to create on the fly the ADB pull command that is needed to download the file via the terminal.
+
+![DEMO_11](/DEMO/DEMO_11_File_Manager.png)
 
 
 # Acknowledgements

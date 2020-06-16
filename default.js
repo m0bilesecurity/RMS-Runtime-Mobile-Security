@@ -7,10 +7,9 @@
  5. hookclassesandmethods([loaded_classes], [loaded_methods], template)
  6. generatehooktemplate([loaded_classes], [loaded_methods], template)
  7. heapsearchtemplate([loaded_classes], [loaded_methods], template)
- 8. checkfiletype(path)
- 9. listfilesatpath(path)
- 10. getappenvinfo()
- 11. apimonitor([api_to_monitor])
+ 8. listfilesatpath(path)
+ 9. getappenvinfo()
+ 10. apimonitor([api_to_monitor])
  ******************************************************************************/
 
 rpc.exports = {
@@ -344,16 +343,6 @@ rpc.exports = {
     })
     // return HOOK template
     return hto;
-  },
-  checkfiletype: function (path) {
-    var filetype=""
-    Java.perform(function (){
-      var file = Java.use("java.io.File");
-      var currentPath = file.$new(path);
-      if (currentPath.isFile()) filetype="File"
-      else filetype="Directory"
-    })
-    return filetype
   },
   listfilesatpath: function (path) {
     var listResult;
