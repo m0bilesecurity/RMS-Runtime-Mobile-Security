@@ -28,7 +28,7 @@ Do not connect more than one device at the same time. RMS is not so smart at the
 
 Refer to the official FRIDA guide for the installation: https://frida.re/docs/android/
 
-Some cool projects to **auto** install, update and run frida are:
+Some cool projects that can help to **auto** install, update and run frida are:
 * [MagiskFrida](https://github.com/ViRb3/magisk-frida)
 * [FridaLoader](https://github.com/dineshshetty/FridaLoader)
 
