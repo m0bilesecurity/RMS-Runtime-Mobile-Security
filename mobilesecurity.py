@@ -3,8 +3,7 @@ import sys
 import json
 import frida
 import time
-from flask_bootstrap import Bootstrap
-from flask_socketio import SocketIO, emit
+from flask_socketio import SocketIO
 from flask import Flask, request, render_template, redirect, url_for
 
 app = Flask(__name__)
@@ -179,7 +178,7 @@ def device_management():
 
     if request.method == 'GET':
         #exception handling - frida crash
-        frida_crash=True if request.args.get('frida_crash') == "True" else False
+        frida_crash=request.args.get('frida_crash') == "True"
         try:
             for package in device.enumerate_applications():
                 packages.append(package.identifier)
@@ -903,7 +902,7 @@ on_message stuff
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '''
 
-def on_message(message, data):
+def on_message(message, _data):
 
 
     if message['type'] == 'send':
