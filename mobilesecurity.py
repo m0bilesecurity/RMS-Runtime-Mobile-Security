@@ -203,6 +203,7 @@ def device_management():
         #output reset
         reset_variables_and_output()
 
+        system_package=config["system_package"];
         target_package = request.values.get('package')
         #Frida Gadget support
         if target_package=="re.frida.Gadget":
@@ -638,9 +639,9 @@ def file_manager():
             files_at_path=api.listfilesatpath(path)
 
 
-    #check if app_env_info is loaded
-    if(bool(app_env_info)==False):
-         app_env_info=api.getappenvinfo()
+    #check if app_env_info (dict) is empty
+    if(not bool(app_env_info)):
+        app_env_info=api.getappenvinfo()
 
     return render_template(
         "file_manager.html",
@@ -826,17 +827,17 @@ def save_console_logs():
         os.makedirs(out_path)
 
         #save calls_console_output
-        textfile = open(out_path+"/calls_console_output.txt", 'w')
-        textfile.write(calls_console_output)
-        textfile.close()
+        with open(out_path+"/calls_console_output.txt", 'w') as textfile:
+            textfile.write(calls_console_output)
+            textfile.close()
         #save hooks_console_output
-        textfile = open(out_path+"/hooks_console_output.txt", 'w')
-        textfile.write(hooks_console_output)
-        textfile.close()
+        with open(out_path+"/hooks_console_output.txt", 'w') as textfile:
+            textfile.write(hooks_console_output)
+            textfile.close()
         #save global_console_output
-        textfile = open(out_path+"/global_console_output.txt", 'w')
-        textfile.write(global_console_output)
-        textfile.close()
+        with open(out_path+"/global_console_output.txt", 'w') as textfile:
+            textfile.write(global_console_output)
+            textfile.close()
 
         return "print_done - "+out_path
     except Exception as err:
@@ -902,7 +903,7 @@ on_message stuff
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '''
 
-def on_message(message, _data):
+def on_message(message, data):
 
 
     if message['type'] == 'send':
@@ -945,9 +946,11 @@ def reset_variables_and_output():
     global loaded_methods
     global current_loaded_classes
     global new_loaded_classes
-    global no_system_package
     global app_env_info
 
+    global target_package
+    global system_package
+    global no_system_package
 
     #output reset
     calls_console_output = ""
