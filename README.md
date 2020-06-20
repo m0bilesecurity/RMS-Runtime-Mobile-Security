@@ -24,9 +24,13 @@ Do not connect more than one device at the same time. RMS is not so smart at the
 
 # Prerequisites
 
-FRIDA server up and running on the target device 
+**FRIDA server up and running on the target device**
 
 Refer to the official FRIDA guide for the installation: https://frida.re/docs/android/
+
+Some cool projects to **auto** install, update and run frida are:
+* [MagiskFrida](https://github.com/ViRb3/magisk-frida)
+* [FridaLoader](https://github.com/dineshshetty/FridaLoader)
 
 # Known issues
 * Sometime RMS fails to load complex methods. Use a filter when this happens or feel free to improve the algo (default.js).
