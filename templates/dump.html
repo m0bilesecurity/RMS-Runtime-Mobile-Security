@@ -25,13 +25,34 @@
         <div id=scrollbox>
           <div class="col-sm-12">
             <form class="form-group list-group-item list-group-item-action bg-light" action="/dump" method="get">
-              <b>Package:</b> {{package_name_str}}</p>
+              <p>
+              <b>Package:</b> {{target_package}} → 
+              <a role="button" href="/dump?choice=1&filter={{target_package}}">✅</a> 
+              </p>
               <label for="filter">Hook all classes that start with:</label>
               <input type="text" class="form-control" id="filter" name="filter" required="true"
                 placeholder="com.example., com.external_library, com.test,">
               <input type="hidden" name=choice value=1>
+              <div class="checkbox">
+                <label></label>
+                  <input type="checkbox" name="case" value=1 checked>
+                  Case sensitive
+                </label>
+              </div>
+              <div class="checkbox">
+                <label></label>
+                  <input type="checkbox" name="regex" value=1>
+                  Regex
+                </label>
+              </div>
+              <div class="checkbox">
+                <label></label>
+                  <input type="checkbox" name="whole" value=1>
+                  Whole word
+                </label>
+              </div>
               <small class="form-text text-muted">
-                &nbsp;&nbsp;You can insert multiple filters. Just make sure to use <b><font color=red>,</font></b> to separete the strings you want to use as a filters
+                If Regex is not checked, you can insert multiple filters. Just make sure to use <b><font color=red>,</font></b> to separete the strings you want to use as a filters
               </small>
               <br>
               <button type="submit" class="btn btn-primary mb-2">Submit</button>&nbsp;&nbsp;
@@ -144,13 +165,18 @@
               <a role="button" href="/dump?choice=2" class="btn btn-info">Load Methods</a>
             </div>
             <div align=center class="col-sm-3 border-bottom border-right border-left">
-              <a role="button" href="/dump?choice=3" class="btn btn-danger">Hook all methods</a>
+              <form action=dump method=get>
+              <button class="btn btn-danger">Hook all methods</button>
+              <input type=hidden name=choice value=3>
+              <br />
+              <input type="checkbox" name=stacktrace value=yes> print StackTrace?</label>
+              </form>
             </div>
           </div>
         </div>
         <br>
         <!-- Buttons -->
-
+        
         <!-- Search Bar and Table -->
         <div class="col-sm-12 
                     form-group 
@@ -168,10 +194,42 @@
             </thead>
             <tbody id="MainTable">
               <h3>Classes</h3>
-              <p>Use the search bar below to quickly filter results:</p>
+              <p>Use the search bar below to quickly filter results: 
+                {% if loaded_methods|length > 1 %}
+                {% if methods_hooked_and_executed|length > 1 %}
+                <button 
+                   onclick="apply_filter('executed')"
+                   class="btn btn-success btn-sm">
+                   Executed ✅
+                </button>
+                {% endif %}
+                <button 
+                   onclick="apply_filter('native')"
+                   class="btn btn-danger btn-sm">
+                   Native
+                </button>
+                <button 
+                   onclick="apply_filter('boolean')"
+                   class="btn btn-info btn-sm">
+                   Boolean
+                </button>
+                <button 
+                   onclick="apply_filter('clear')"
+                   class="btn btn-dark btn-sm">
+                   Clear
+                </button>
+              {% endif %}
+              </p>
               <input class="form-control" id="UserInput" type="text" placeholder="Search..">
               <br>
-              {{ loaded_classes_str|safe }}
+              <!-- Legenda -->
+              {% if methods_hooked_and_executed|length > 0 %}
+              <p>✅&nbsp;&nbsp;= the <b>hooked method has been executed</b> by the app - <a href="/dump"><b>Refresh Page</b></a></p> 
+              {% endif %}
+              <!-- Legenda -->
+              {% for class_name in loaded_classes %}
+              <tr><td><center>{{ loop.index0 }}</center></td><td>{{class_name}}</td>
+                <td><pre><code class=Java>{% for method_name in loaded_methods[class_name] %}{% if "Class: "+class_name+"\nMethod: "+method_name["ui_name"]+"\n" in methods_hooked_and_executed %}✅ {% endif %}{{method_name["ui_name"]}};<br>{% endfor %}</code></pre></td></tr>{% endfor %}
             </tbody>
           </table>
         </div>
@@ -185,6 +243,23 @@
   <!-- /#wrapper -->
 
   <!-- Javascript loading -->
+  {% block scripts %}
+  <script>
+    function apply_filter(filter){ 
+      if(filter=="executed") 
+        document.getElementById("UserInput").value = "✅";
+      if(filter=="native") 
+        document.getElementById("UserInput").value = "native";
+      if(filter=="boolean") 
+        document.getElementById("UserInput").value = "boolean";
+      if(filter=="clear")
+        document.getElementById("UserInput").value = "";
+      
+      //simulate keyup
+      $('#UserInput').keyup();
+    }
+  </script>
+  {% endblock %}  
   {% include 't_js_script.html' %}
 
 </body>

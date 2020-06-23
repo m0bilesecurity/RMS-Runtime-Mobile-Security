@@ -31,11 +31,15 @@
 
         </div> <!-- row -->
         <div class="border-top my-3"></div>
-
+        <center>
+          <button class="btn btn-primary" id="save_output">
+          Save Console Output
+          </button>
+        </center>
         <br>
         <div class="row">
           <div class="col-sm-6">
-            <h3 align=center>Calls Stack Hooked methods</h3>
+            <h3 align=center>Call Stack Hooked methods</h3>
             <textarea id=calls_stack name=console_output
               class="form-control">{{ called_console_output_str|safe }}</textarea>
           </div>
@@ -105,27 +109,43 @@
     calls_stack_editor.setCursor(calls_stack_editor.lineCount(), 0)
 
     const socket = io.connect('//' + document.domain + ':' + location.port + '/console');
-    socket.on('calls_stack', function(msg) {
+    socket.on('call_stack', function(msg) {
         if(msg.data.length) {
-          calls_stack_editor.setValue(msg.data);
+          calls_stack_editor.setValue(calls_stack_editor.getValue()+msg.data);
           calls_stack_editor.setCursor(calls_stack_editor.lineCount(), 0)
         }
     });
-    socket.on('hooks_stack', function(msg) {
+    socket.on('hook_stack', function(msg) {
         if(msg.data.length) {
-          hooks_stack_editor.setValue(msg.data);
+          hooks_stack_editor.setValue(hooks_stack_editor.getValue()+msg.data);
           hooks_stack_editor.setCursor(hooks_stack_editor.lineCount(), 0)
         }
     });
 
     socket.on('global_console', function(msg) {
         if(msg.data.length) {
-          global_console_editor.setValue(msg.data);
+          global_console_editor.setValue(global_console_editor.getValue()+msg.data);
           global_console_editor.setCursor(global_console_editor.lineCount(), 0)
         }
     });
 
-
+  </script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+  <script>
+    $(document).ready(function() {
+       $('#save_output').click(function(){
+           $.ajax({
+           url: "/save_console_logs",
+           type: "get",
+           success: function(response) {
+           if(response.includes("print_done"))
+            alert("Console logs stored in:\n"+response.replace("print_done - ",""))
+           else
+            alert("Error while saving Console logs. \nError info: "+response)
+          }
+         });
+       });
+    });
   </script>
   {% endblock %}
 

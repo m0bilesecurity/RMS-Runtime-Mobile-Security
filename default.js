@@ -1,11 +1,15 @@
 /******************************************************************************
  * Exported APIs
  1. loadclasses
- 2. loadclasseswithfilter([filters])
- 3. loadcustomfridascript(frida_script)
- 4. loadmethods([loaded_classes])
+ 2. loadclasseswithfilter([filters], isRegex, isCase, isWhole)
+ 3. loadmethods([loaded_classes])
+ 4. loadcustomfridascript(frida_script)
  5. hookclassesandmethods([loaded_classes], [loaded_methods], template)
  6. generatehooktemplate([loaded_classes], [loaded_methods], template)
+ 7. heapsearchtemplate([loaded_classes], [loaded_methods], template)
+ 8. listfilesatpath(path)
+ 9. getappenvinfo()
+ 10. apimonitor([api_to_monitor])
  ******************************************************************************/
 
 rpc.exports = {
@@ -15,58 +19,92 @@ rpc.exports = {
     Java.perform(function () {
       Java.enumerateLoadedClasses({
         onMatch: function (className) {
-
           //Remove too generics
-          if (className.length > 5)
+          if (
+            className.length > 5 &&
+            //skip androidx stuff
+            !className.includes("androidx")
+          )
             loaded_classes.push(className)
-
         },
         onComplete: function () {
-          loaded_classes.sort()
+          //sort is managed python side
+          //loaded_classes.sort()
         }
       });
     })
     return loaded_classes;
   },
-  loadclasseswithfilter: function (filter) {
+  loadclasseswithfilter: function (filter, isRegex, isCase, isWhole) {
     var loaded_classes = []
     Java.perform(function () {
       Java.enumerateLoadedClasses({
         onMatch: function (className) {
 
+          //lowercase if not case sensitive
+          var originalClassName = className
+          className = isCase ? className : className.toLowerCase()
+          filter = isCase ? filter : filter.toLowerCase()
+
           //check if a filter exists
-          if (filter != null) {
-            //check if we have multiple filters (comma separated list)
-            var filter_array = filter.split(",");
-            filter_array.forEach(function (f) {
-              //f.trim() is needed to remove possibile spaces after the comma
-              if (className.startsWith(f.trim())) {
-                loaded_classes.push(className)
+          if (filter != null) 
+          {
+            //Regex
+            if (isRegex) 
+            {
+              if (className.search(filter) > -1) 
+              {
+                loaded_classes.push(originalClassName)
               }
-            });
+              //Not regex
+            } else 
+            {
+              //check if we have multiple filters (comma separated list)
+              var filter_array = filter.split(",");
+              filter_array.forEach(function (f) 
+              {
+                if (isWhole) 
+                { //f.trim() is needed to remove possibile spaces after the comma
+                  if (className == f.trim()) {
+                    loaded_classes.push(originalClassName)
+                  }
+                } else 
+                { //f.trim() is needed to remove possibile spaces after the comma
+                  if (className.startsWith(f.trim())) 
+                  {
+                    loaded_classes.push(originalClassName)
+                  }
+                }
+              });
+            }
           }
         },
         onComplete: function () {
-          loaded_classes.sort()
+          //sort is managed python side
+          //loaded_classes.sort()
         }
       });
     })
     return loaded_classes;
   },
-  loadcustomfridascript: function (frida_script) {
-    Java.perform(function () {
-      console.log("FRIDA script LOADED")
-      eval(frida_script)
-    })
-  },
   loadmethods: function (loaded_classes) {
     var loaded_methods = {};
     Java.perform(function () {
       loaded_classes.forEach(function (className, index) {
-
-        var jClass = Java.use(className);
-        var classMethods_dirty = jClass.class.getDeclaredMethods();
+        var jClass;
+        var classMethods_dirty;
         var classMethods = []
+
+        //catch possible issues
+        try {
+          jClass = Java.use(className);
+          classMethods_dirty = jClass.class.getDeclaredMethods();
+        } catch (err) {
+          send("Exception while loading methods for " + className);
+          //skip current loop
+          loaded_methods[className] = classMethods //is empty
+          return;
+        }
 
         classMethods_dirty.forEach(function (m) {
           var method_and_args = {};
@@ -97,7 +135,28 @@ rpc.exports = {
           var args_array = args_dirty.split(",")
           var args_srt = ""
           for (var i = 0; i < args_array.length; i++) {
-            args_srt = args_srt + ("\"" + args_array[i] + "\"")
+
+            // check if the current arg is an array
+            var arg = args_array[i]
+            if (arg.includes("[]")) {
+              // arg is an array --> smali notation conversion
+              if (arg.includes(".")) arg = "L" + arg + ";"
+              else if ((/boolean/i).test(arg)) arg = "Z" + arg.replace(/boolean/i, "");
+              else if ((/byte/i).test(arg)) arg = "B" + arg.replace(/byte/i, "");
+              else if ((/char/i).test(arg)) arg = "C" + arg.replace(/char/i, "");
+              else if ((/double/i).test(arg)) arg = "D" + arg.replace(/double/i, "");
+              else if ((/float/i).test(arg)) arg = "F" + arg.replace(/float/i, "");
+              else if ((/int/i).test(arg)) arg = "I" + arg.replace(/int/i, "");
+              else if ((/long/i).test(arg)) arg = "J" + arg.replace(/long/i, "");
+              else if ((/short/i).test(arg)) arg = "S" + arg.replace(/short/i, "");
+              else arg = "L" + arg + ";"
+            }
+            while (arg.includes("[]")) {
+              arg = arg.replace("[]", "")
+              arg = "[" + arg
+            }
+
+            args_srt = args_srt + ("\"" + arg + "\"")
             //add a comma if the current item is not the last one
             if (i + 1 < args_array.length) args_srt = args_srt + ",";
           }
@@ -115,6 +174,12 @@ rpc.exports = {
     //DEBUG console.log("loaded_methods.length: " + Object.keys(loaded_methods).length)
     return loaded_methods;
   },
+  loadcustomfridascript: function (frida_script) {
+    Java.perform(function () {
+      console.log("FRIDA script LOADED")
+      eval(frida_script)
+    })
+  },
   hookclassesandmethods: function (loaded_classes, loaded_methods, template) {
     Java.perform(function () {
 
@@ -130,6 +195,8 @@ rpc.exports = {
           t = t.replace("{classMethod}", dict["name"]);
           t = t.replace("{classMethod}", dict["name"]);
           t = t.replace("{classMethod}", dict["name"]);
+          // replace methodSignature 
+          t = t.replace("{methodSignature}", dict["ui_name"]);
 
           //check if the method has args 
           if (dict["args"] != "\"\"") {
@@ -145,7 +212,7 @@ rpc.exports = {
               else args = args + "v" + i + ",";
             }
 
-            //replace x2
+            //replace args x2
             t = t.replace("{args}", args);
             t = t.replace("{args}", args);
 
@@ -153,7 +220,7 @@ rpc.exports = {
             //Current methods has NO args 
             // no need to overload
             t = t.replace("{overload}", "overload().");
-            //replace x2 and no args
+            //replace args x2 
             t = t.replace("{args}", "");
             t = t.replace("{args}", "");
           }
@@ -181,7 +248,8 @@ rpc.exports = {
           t = t.replace("{classMethod}", dict["name"]);
           t = t.replace("{classMethod}", dict["name"]);
           t = t.replace("{classMethod}", dict["name"]);
-
+          // replace methodSignature x2
+          t = t.replace("{methodSignature}", dict["ui_name"]);
           t = t.replace("{methodSignature}", dict["ui_name"]);
 
           //check if the method has args 
@@ -198,7 +266,7 @@ rpc.exports = {
               else args = args + "v" + i + ",";
             }
 
-            //replace x3
+            //replace args x3
             t = t.replace("{args}", args);
             t = t.replace("{args}", args);
             t = t.replace("{args}", args);
@@ -206,7 +274,7 @@ rpc.exports = {
             //Current methods has NO args 
             // no need to overload
             t = t.replace("{overload}", "overload().");
-            //replace x3
+            //replace args x3
             t = t.replace("{args}", "");
             t = t.replace("{args}", "");
             t = t.replace("{args}", "\"\"");
@@ -236,7 +304,8 @@ rpc.exports = {
           // replace classMethod x2
           t = t.replace("{classMethod}", dict["name"]);
           t = t.replace("{classMethod}", dict["name"]);
-
+          // replace methodSignature x2
+          t = t.replace("{methodSignature}", dict["ui_name"]);
           t = t.replace("{methodSignature}", dict["ui_name"]);
 
           //check if the method has args 
@@ -252,13 +321,13 @@ rpc.exports = {
               else args = args + "v" + i + ",";
             }
 
-            //replace
+            //replace args
             t = t.replace("{args}", args);
 
           } else {
             //Current methods has NO args 
 
-            //replace
+            //replace args
             t = t.replace("{args}", "");
 
           }
@@ -275,84 +344,172 @@ rpc.exports = {
     // return HOOK template
     return hto;
   },
-  filesystemmonitor: function (m_open, m_close, m_read, m_write, m_unlink, m_remove) {
+  listfilesatpath: function (path) {
+    var listResult;
+    Java.perform(function (){
+      var file = Java.use("java.io.File");
+      var currentPath = file.$new(path);
+      var files;
+
+      listResult= {
+        files: {},
+        path: path,
+        readable: currentPath.canRead(),
+        writable: currentPath.canWrite(),
+      };
+
+      files = currentPath.listFiles();
+      files.forEach(function (f) {
+        listResult.files[f.getName()] = {
+          attributes: {
+            isDirectory: f.isDirectory(),
+            isFile: f.isFile(),
+            isHidden: f.isHidden(),
+            lastModified: new Date(f.lastModified()).toISOString().replace(/T/, ' ').replace(/\..+/, ''),
+            size: f.length()
+          },
+          fileName: f.getName(),
+          readable: f.canRead(),
+          writable: f.canWrite()
+        };
+      })
+      //console.log(JSON.stringify(listResult))
+    })
+    return listResult;
+  },
+  getappenvinfo: function () {
+    var env;
+    Java.perform(function (){
+      var context = null
+      var ActivityThread = Java.use('android.app.ActivityThread');
+      var targetApp = ActivityThread.currentApplication();
+  
+      if (targetApp != null) {
+          context = targetApp.getApplicationContext();
+          env = 
+          {   mainDirectory: context.getFilesDir().getParent(),
+              filesDirectory: context.getFilesDir().getAbsolutePath().toString(),
+              cacheDirectory: context.getCacheDir().getAbsolutePath().toString(),
+              externalCacheDirectory: context.getExternalCacheDir().getAbsolutePath().toString(),
+              codeCacheDirectory: 
+                  'getCodeCacheDir' in context ? 
+                  context.getCodeCacheDir().getAbsolutePath().toString() : 'N/A',
+              obbDir: context.getObbDir().getAbsolutePath().toString(),
+              packageCodePath: context.getPackageCodePath().toString().replace("/base.apk",""),
+          };
+      } else env=null
+    })
+    return env;
+  },
+  apimonitor: function (api_to_monitor) {
     Java.perform(function () {
-      if (m_open == "True") Java.performNow(monitor_open);
-      if (m_close == "True") Java.performNow(monitor_close);
-      if (m_read == "True") Java.performNow(monitor_read);
-      if (m_write == "True") Java.performNow(monitor_write);
-      if (m_unlink == "True") Java.performNow(monitor_unlink);
-      if (m_remove == "True") Java.performNow(monitor_remove);   
+      /* DEBUG
+      api_to_monitor.forEach(function (e) {
+        console.log(e["Category"]);
+        e["hooks"].forEach(function (hook) {
+          console.log("--> "+hook["clazz"]+" - "+hook["method"]);
+        });
+      });
+      */
+      api_to_monitor.forEach(function (e) {
+        e["hooks"].forEach(function (hook) {
+          // Java or Native Hook?
+
+          // Native - File System only at the moment
+          if (e["HookType"] == "Native") {
+            nativedynamichook(hook, e["Category"]);
+          }
+
+          // Java 
+          if (e["HookType"] == "Java") {
+            javadynamichook(hook, e["Category"], function (realRetval, to_print) {
+              to_print.returnValue = realRetval
+
+              //check if type object if yes convert it to string
+              if (realRetval && typeof realRetval === 'object') {
+                var retval_string = [];
+                for (var k = 0, l = realRetval.length; k < l; k++) {
+                  retval_string.push(realRetval[k]);
+                }
+                to_print.returnValue = '' + retval_string.join('');
+              }
+              if (!to_print.result) to_print.result = undefined
+              if (!to_print.returnValue) to_print.returnValue = undefined
+
+              send('[API_Monitor] - ' + JSON.stringify(to_print)+"\n");
+              return realRetval;
+            });
+          } // end javadynamichook
+
+        });
+
+      });
+
     })
   }
 };
 
-
-var monitor_open = function () {
+function nativedynamichook(hook, category) {
+  // File System monitor only - libc.so
   Interceptor.attach(
-    Module.findExportByName("libc.so", "open"), {
+    Module.findExportByName(hook["clazz"], hook["method"]), {
       onEnter: function (args) {
         var file = Memory.readCString(args[0]);
-        if (!file.includes("/dev/ashmem") && !file.includes("/proc/"))
-          send("FS Monitor |   action: open   | file: " + file);
+        //bypass ashem and prod if libc.so - open
+        if (hook["clazz"] == "libc.so" &&
+          hook["method"] == "open" &&
+          !file.includes("/dev/ashmem") &&
+          !file.includes("/proc/"))
+          send("[API_Monitor] - " + category + " - " + hook["clazz"] + " - " + hook["method"] + " - " + file+"\n");
       }
     }
   );
 }
 
-var monitor_close = function () {
-  Interceptor.attach(
-    Module.findExportByName("libc.so", "close"), {
-      onEnter: function (args) {
-        var file = Memory.readCString(args[0]);
-        send("FS Monitor |   action: close  | file: " + file);
+function javadynamichook(hook, category, callback) {
+  var Exception = Java.use('java.lang.Exception');
+  var toHook;
+  try {
+    var clazz = hook.clazz;
+    var method = hook.method;
+
+    try {
+      if (hook.target &&
+        parseInt(Java.androidVersion, 10) < hook.target) {
+        send('[API_Monitor] - Android Version not supported - Cannot hook - ' + clazz + '.' + method)
+        return
+      }
+      // Check if class and method is available
+      toHook = Java.use(clazz)[method];
+      if (!toHook) {
+        send('[API_Monitor] - Cannot find ' + clazz + '.' + method);
+        return
+      }
+    } catch (err) {
+      send('[API_Monitor] - Cannot find ' + clazz + '.' + method);
+      return
+    }
+    for (var i = 0; i < toHook.overloads.length; i++) {
+      toHook.overloads[i].implementation = function () {
+        var args = [].slice.call(arguments);
+        // Call original method
+        var retval = this[method].apply(this, arguments);
+        if (callback) {
+          var calledFrom = Exception.$new().getStackTrace().toString().split(',')[1];
+          var to_print = {
+            category: category,
+            class: clazz,
+            method: method,
+            args: args,
+            calledFrom: calledFrom
+            //result: retval ? retval.toString() : null,
+          };
+          retval = callback(retval, to_print);
+        }
+        return retval;
       }
     }
-  );
-
-}
-
-var monitor_read = function () {
-  Interceptor.attach(
-    Module.findExportByName("libc.so", "read"), {
-      onEnter: function (args) {
-        var file = Memory.readCString(args[0]);
-        send("FS Monitor |   action: read   | file: " + file);
-      }
-    }
-  );
-
-}
-
-var monitor_write = function () {
-  Interceptor.attach(
-    Module.findExportByName("libc.so", "write"), {
-      onEnter: function (args) {
-        var file = Memory.readCString(args[0]);
-        send("FS Monitor |   action: write  | write: " + file);
-      }
-    }
-  );
-}
-
-var monitor_unlink = function () {
-  Interceptor.attach(
-    Module.findExportByName("libc.so", "unlink"), {
-      onEnter: function (args) {
-        var file = Memory.readCString(args[0]);
-        send("FS Monitor |   action: unlink | file: " + file);
-      }
-    }
-  );
-}
-
-var monitor_remove = function () {
-  Interceptor.attach(
-    Module.findExportByName("libc.so", "remove"), {
-      onEnter: function (args) {
-        var file = Memory.readCString(args[0]);
-        send("FS Monitor |   action: remove | file: " + file);
-      }
-    }
-  );
+  } catch (err) {
+    send('[API_Monitor] - ERROR: ' + clazz + "." + method + " [\"Error\"] => " + err);
+  }
 }

@@ -1,6 +1,7 @@
 /bin
 /include
 /lib
+/console_logs
 /.Python
 .DS_Store
 .vscode

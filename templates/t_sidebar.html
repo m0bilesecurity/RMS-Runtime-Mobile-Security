@@ -6,12 +6,26 @@
         <br>
         <font size=3><b>🔥 Runtime Mobile Security 🔥</b></font>
         <a href="https://twitter.com/mobilesecurity_" alt="Mobile Security Twitter Account">
-          <center>@mobilesecurity_</center>
+          <center><b>@mobilesecurity_</b></center>
         </a>
       </div>
       <div class="list-group list-group-flush">
         <p class="list-group-item list-group-item-action bg-light">
-          <b>Package:</b> {{package_name_str}}</p>
+          {% if target_package and system_package %}
+          <b>Target Package:</b> {{target_package}} <br>
+          <b>System Package: </b> {{system_package}} <br>
+          {% endif %}
+          {% if no_system_package==True %}
+          <br>
+            <b><font color=red>{{system_package}} is NOT available on your device!</font></b> <br><br>
+            <b><font color=red>For a better RE experience, Click <a href="/config">here</a> to change it!</font></b>
+          {% endif %}
+          {% if frida_crash==True %}
+          <br>
+            <b><font color=red>FRIDA crashed while loading methods for one or more classes selected!</font></b> <br><br>
+            <b><font color=red>Try to exclude them from your search!</font></b>
+          {% endif %}
+        </p>
       </div>
     </div>
     <!-- /#sidebar-wrapper -->

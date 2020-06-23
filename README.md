@@ -24,9 +24,13 @@ Do not connect more than one device at the same time. RMS is not so smart at the
 
 # Prerequisites
 
-FRIDA server up and running on the target device 
+**FRIDA server up and running on the target device**
 
 Refer to the official FRIDA guide for the installation: https://frida.re/docs/android/
+
+Some cool projects that can help to **auto** install, update and run frida are:
+* [MagiskFrida](https://github.com/ViRb3/magisk-frida)
+* [FridaLoader](https://github.com/dineshshetty/FridaLoader)
 
 # Known issues
 * Sometime RMS fails to load complex methods. Use a filter when this happens or feel free to improve the algo (default.js).
@@ -34,6 +38,7 @@ Refer to the official FRIDA guide for the installation: https://frida.re/docs/an
 
 # Improvements
 * iOS support
+* Frida Gadget is currently NOT supported
 * Feel free to send me your best JS sript via a Pull request. I'll be happy to bundle all the best as default scripts in the next RMS release.
 e.g.
 	* root detection bypass
@@ -42,12 +47,12 @@ e.g.
 	* etc...
 
 
-
 # Installation
 
 1. **(optional)** Create a python virtual environment
 2. ```pip3 install -r requirements.txt```
 3. ```python3 mobilesecurity.py```
+4. Open your browser at ```http://127.0.0.1:5000/```
 
 
 # Usage
@@ -56,27 +61,58 @@ e.g.
 **NOTE** RMS attachs a persistence process called **com.android.systemui** to get the list of all the classes that are already loaded in memory before the launch of the target app. If you have an issue with it, try to find a different package that works well on your device. 
 You can set another default package via the Config Tab or by simply editing the config.json file.
 
-![DEMO_1](/DEMO/GIF/DEMO_1_Device.gif)
+![DEMO_1](/DEMO/DEMO_1_Device.gif)
 
 ## 2. Check which Classes and Methods have been loaded in memory  ##
-![DEMO_2](/DEMO/GIF/DEMO_2_Dump.gif)
+![DEMO_2](/DEMO/DEMO_2_Dump.gif)
 
 ## 3. Hook on the fly Classes/Methods and trace their args and return values  ##
-![DEMO_3](/DEMO/GIF/DEMO_3_Massive_Hook.gif)
+![DEMO_3_a](/DEMO/DEMO_3_Massive_Hook.gif)
+
+Go back to the dump page in order to have an overview of all the **hooked methods that have been executed by the app** ✅
+
+![DEMO_3_b](/DEMO/DEMO_3_Overview_Methods.gif)
 
 ## 4. Search instances of a specific class on the Heap and call its methods [BETA]  ##
-![DEMO_4](/DEMO/GIF/DEMO_4_Heap_Search.gif)
+![DEMO_4](/DEMO/DEMO_4_Heap_Search.gif)
 
 ## 5. Select a Class and generate on the fly an Hook template for all its methods  ##
-![DEMO_5](/DEMO/GIF/DEMO_5_Hook_Hack.gif)
+![DEMO_5](/DEMO/DEMO_5_Hook_Hack.gif)
 
 ## 6. Easily detect new classes that have been loaded in memory   ##
-![DEMO_6](/DEMO/GIF/DEMO_6_Diff_Classes.gif)
+![DEMO_6](/DEMO/DEMO_6_Diff_Classes.gif)
 
 ## 7. Inject your favorite FRIDA CUSTOM SCRIPTS on the fly   ##
+
 Just add your .js files inside the custom_script folder and they will be automatically loaded by the web interface ready to be executed.
 
-![DEMO_7](/DEMO/GIF/DEMO_7_Custom_Script.gif)
+![DEMO_7](/DEMO/DEMO_7_Custom_Script.gif)
+
+## 8. API Monitor [BETA]  ##
+
+via the API Monitor TAB you can easily monitor tons of Android APIs organized in 19 different Categories. Support can be easily extended by adding more classes/methods to the **api_monitor.json** file.
+
+![DEMO_10](/DEMO/DEMO_10_API_Monitor.png)
+
+You can also monitor native functions: libc.so - open, close, read, write, unlink, remove
+
+![DEMO_8](/DEMO/DEMO_8_FS_monitor.png)
+
+## 9. FRIDA Script to load Stetho by Facebook [BONUS]  ##
+
+Inject the FRIDA script to load the amazing [Stetho](http://facebook.github.io/stetho/).
+
+Stetho is a sophisticated debug bridge for Android applications. When enabled, developers have access to the Chrome Developer Tools feature natively part of the Chrome desktop browser. Developers can also choose to enable the optional dumpapp tool which offers a powerful command-line interface to application internals.
+
+![DEMO_9](/DEMO/DEMO_9_Stetho.gif)
+
+## 10. File Manager [BETA]  ##
+
+A simple File Manager has been implemented to help you exploring app's private folders and files. **This feature is still in BETA.**
+
+**TODO:** In order to download needed files directly from the web page, [frida-fs](https://github.com/nowsecure/frida-fs) must be implemented. A PR or an help is more than welcome 😉. Currently, RMS is only able to create on the fly the ADB pull command that is needed to download the file via the terminal.
+
+![DEMO_11](/DEMO/DEMO_11_File_Manager.png)
 
 
 # Acknowledgements
@@ -84,6 +120,7 @@ Special thanks to the following Open Source projects for the inspiration:
 * [FRIDA](https://github.com/frida/frida)
 * [Objection](https://github.com/sensepost/objection)
 * [House](https://github.com/nccgroup/house)
+* [MobSF](https://github.com/MobSF/Mobile-Security-Framework-MobSF)
 
 ### DEMO apps:
 

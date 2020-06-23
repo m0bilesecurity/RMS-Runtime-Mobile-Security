@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- head and css -->
+  {% include 't_head.html' %}
+  <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"
+          integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous">
+  </script>
+</head>
+
+<body>
+  <div class="d-flex" id="wrapper">
+    <!-- Sidebar -->
+    {% include 't_sidebar.html' %}
+
+    <!-- Page Content -->
+    <div id="page-content-wrapper">
+
+      <!-- Navbar -->
+      {% include 't_navbar.html' %}
+
+      <div class="container-fluid">
+
+        <br>
+        <h3>API Monitor 🗳</h3>
+        <div class="border-top my-3"></div>
+        <!-- Textarea for injecting the custom script -->
+        <div class="row">
+
+          <div class="col-sm-12">
+            <h4>What do you want to monitor?</h4>
+            <small class="form-text text-muted">
+              <font color=red><b></b>NOTE:</b></font> You can easily add more monitors by simply editing the json file called <b>api_monitor.json</b>
+            </small>
+            <br>
+            <form class="form-group 
+            list-group-item 
+            list-group-item-action 
+            bg-light
+            rounded" action="/api_monitor" method=POST>
+            <br/>
+            <div class="row">
+              
+              
+              <div class="col-sm-6">
+                {% for e in api_monitor %}
+                {% if loop.index<=10 %}
+                <div class="checkbox">
+                  <label><input type="checkbox" name="api_selected" value="{{e["Category"]}}">  {{ loop.index }}. {{e["Category"]}} {% if e["Comment"] is defined  %} <font color=red>&#8594;</font> {{e["Comment"]}} {% endif %}</label>
+                </div>
+                {% endif %}
+                {% endfor %}
+              </div>
+
+              <div class="col-sm-6">
+                {% for e in api_monitor %}
+                {% if loop.index>10 and loop.index<=20  %}
+                <div class="checkbox">
+                 <label><input type="checkbox" name="api_selected" value="{{e["Category"]}}">  {{ loop.index }}. {{e["Category"]}} {% if e["Comment"] is defined  %} <font color=red>&#8594;</font> {{e["Comment"]}} {% endif %}</label>
+                </div>
+                {% endif %}
+                {% endfor %}
+              </div>
+          
+              </div> <!-- end row -->
+
+
+              <br/>
+
+            <center><input type=submit class="btn btn-primary"></center>
+
+
+        <br>
+        <div class="row">
+            <div class="col-sm-12">
+                <textarea id=api_monitor_console name=api_monitor_console class="form-control">{{ api_monitor_console_output_str|safe }}</textarea>
+                <br>
+            </div>
+        </div><!-- /#row -->
+
+      </div>
+      <!-- /#container-fluid -->
+
+    </div>
+    <!-- /#page-content-wrapper -->
+
+  </div>
+  <!-- /#wrapper -->
+
+  <!-- Javascript loading -->
+  {% include 't_js_script.html' %}
+  {% block scripts %}
+  <script>
+    var api_monitor_editor = CodeMirror.fromTextArea(api_monitor_console, {
+        lineNumbers: true,
+        mode: 'javascript',
+        theme: 'dracula',
+        readOnly: true
+    });
+    api_monitor_editor.setSize("100%",500);
+    
+  </script>
+  <script>
+    //Set cursors always at the bottom 
+    api_monitor_editor.setCursor(api_monitor_editor.lineCount(), 0);
+
+    const socket = io.connect('//' + document.domain + ':' + location.port + '/console');
+    socket.on('api_monitor', function(msg) {
+        if(msg.data.length) {
+            api_monitor_editor.setValue(api_monitor_editor.getValue()+msg.data);
+            api_monitor_editor.setCursor(api_monitor_editor.lineCount(), 0)
+        }
+    });
+  </script> 
+  {% endblock %}
+
+</body>
+
+</html>

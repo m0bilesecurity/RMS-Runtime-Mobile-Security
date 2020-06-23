@@ -2,8 +2,8 @@ import os
 import sys
 import json
 import frida
-from flask_bootstrap import Bootstrap
-from flask_socketio import SocketIO, emit
+import time
+from flask_socketio import SocketIO
 from flask import Flask, request, render_template, redirect, url_for
 
 app = Flask(__name__)
@@ -14,6 +14,9 @@ loaded_classes = []
 system_classes = []
 loaded_methods = {}
 
+# app env info
+app_env_info = {}
+
 # Global variables - diff analysis
 current_loaded_classes = []
 new_loaded_classes = []
@@ -21,28 +24,41 @@ new_loaded_classes = []
 # Global variables - console output
 calls_console_output = ""
 hooks_console_output = ""
+heap_console_output = ""
 global_console_output = ""
-fs_monitor_console_output = ""
-calls_count = 0
+api_monitor_console_output = ""
+
+#Global variables - call stack 
+call_count = 0
+call_count_stack={}
+methods_hooked_and_executed = []
 
 api = None
 
-package_name = ""
+target_package = ""
+system_package = ""
+no_system_package=False
 
+#{{stacktrace}} placeholder is managed python side
 template_massive_hook = """
 Java.perform(function () {
     var classname = "{className}";
     var classmethod = "{classMethod}";
+    var methodsignature = "{methodSignature}";
     var hookclass = Java.use(classname);
 
     hookclass.{classMethod}.{overload}implementation = function ({args}) {
-        send("CALLED: " + classname + "." + classmethod + "()\\n");
+        send("[Call_Stack]\\nClass: " +classname+"\\nMethod: "+methodsignature+"\\n");
         var ret = this.{classMethod}({args});
 
-        var s="";
-        s=s+"HOOK: " + classname + "." + classmethod + "()\\n";
-        s=s+"IN: "+eval(args)+"\\n";
-        s=s+"OUT: "+ret+"\\n";
+        var s="";s
+        s=s+"[Hook_Stack]\\n"
+        s=s+"Class: "+classname+"\\n"
+        s=s+"Method: "+methodsignature+"\\n"
+        s=s+"Called by: "+Java.use('java.lang.Exception').$new().getStackTrace().toString().split(',')[1]+"\\n"
+        s=s+"Input: "+eval(args)+"\\n"
+        s=s+"Output: "+ret+"\\n"
+        {{stacktrace}}
         send(s);
                 
         return ret;
@@ -54,20 +70,24 @@ template_hook_lab = """
 Java.perform(function () {
     var classname = "{className}";
     var classmethod = "{classMethod}";
+    var methodsignature = "{methodSignature}";
     var hookclass = Java.use(classname);
     
     //{methodSignature}
-
     hookclass.{classMethod}.{overload}implementation = function ({args}) {
-        send("CALLED: " + classname + "." + classmethod + "()\\n");
+        send("[Call_Stack]\\nClass: " +classname+"\\nMethod: "+methodsignature+"\\n");
         var ret = this.{classMethod}({args});
-
+        
         var s="";
-        s=s+"HOOK: " + classname + "." + classmethod + "()\\n";
-        s=s+"IN: "+eval({args})+"\\n";
-        s=s+"OUT: "+ret+"\\n";
+        s=s+"[Hook_Stack]\\n"
+        s=s+"Class: " +classname+"\\n"
+        s=s+"Method: " +methodsignature+"\\n"
+        s=s+"Called by: "+Java.use('java.lang.Exception').$new().getStackTrace().toString().split(',')[1]+"\\n"
+        s=s+"Input: "+eval({args})+"\\n";
+        s=s+"Output: "+ret+"\\n";
         //uncomment the line below to print StackTrace
-        //s=s+"StackTrace: "+Java.use('android.util.Log').getStackTraceString(Java.use('java.lang.Exception').$new()) +"\\n";
+        //s=s+"StackTrace: "+Java.use('android.util.Log').getStackTraceString(Java.use('java.lang.Exception').$new()).replace('java.lang.Exception','') +"\\n";
+
         send(s);
                 
         return ret;
@@ -76,28 +96,51 @@ Java.perform(function () {
 """
 
 template_heap_search = """
-    Java.performNow(function () {
-      var classname = "{className}"
-      var classmethod = "{classMethod}";
+Java.performNow(function () {
+    var classname = "{className}"
+    var classmethod = "{classMethod}";
+    var methodsignature = "{methodSignature}";
 
-      send("Heap Search - START ("+classname+")\\n");
-
-      Java.choose(classname, {
+    Java.choose(classname, {
         onMatch: function (instance) {
-          
-          var s="";
-          s=s+"[*] Instance Found: " +instance.toString()+"\\n";
-          s=s+"Calling method: " +classmethod+"\\n";
-          
-          //{methodSignature}
-          var ret = instance.{classMethod}({args}); //<-- replace v[i] with the value that you want to pass
-          s=s+"Output: "+ ret + "\\n";
-          send(s);
+            try 
+            {
+                var returnValue;
+                //{methodSignature}
+                returnValue = instance.{classMethod}({args}); //<-- replace v[i] with the value that you want to pass
+
+                //Output
+                var s = "";
+                s=s+"[Heap_Search]\\n"
+                s=s + "[*] Heap Search - START\\n"
+
+                s=s + "Instance Found: " + instance.toString() + "\\n";
+                s=s + "Calling method: \\n";
+                s=s + "   Class: " + classname + "\\n"
+                s=s + "   Method: " + methodsignature + "\\n"
+                s=s + "-->Output: " + returnValue + "\\n";
+
+                s = s + "[*] Heap Search - END\\n"
+
+                send(s);
+            } 
+            catch (err) 
+            {
+                var s = "";
+                s=s+"[Heap_Search]\\n"
+                s=s + "[*] Heap Search - START\\n"
+                s=s + "Instance NOT Found or Exception while calling the method\\n";
+                s=s + "   Class: " + classname + "\\n"
+                s=s + "   Method: " + methodsignature + "\\n"
+                s=s + "-->Exception: " + err + "\\n"
+                s=s + "[*] Heap Search - END\\n"
+                send(s)
+            }
 
         }
-      });
-      send("Heap Search - END ("+classname+")");
     });
+
+});
 """
 
 ''' 
@@ -110,12 +153,17 @@ Device - TAB
 def device_management():
     global api
     global system_classes
-    global package_name
+    global target_package
+    global system_package
+    global no_system_package
 
     cs_file = ""
     custom_scripts = []
     packages = []
     config = read_config_file()
+    system_package=config["system_package"];
+    no_system_package=False
+    frida_crash=False
 
     conn_args = ""
     if config['device_type'] == 'remote':
@@ -129,11 +177,16 @@ def device_management():
         return redirect(url_for('edit_config_file', error=True))
 
     if request.method == 'GET':
+        #exception handling - frida crash
+        frida_crash=request.args.get('frida_crash') == "True"
         try:
             for package in device.enumerate_applications():
                 packages.append(package.identifier)
         except Exception:
-            pass
+            return redirect(url_for('edit_config_file', error=True))
+        
+        if len(packages) == 0:
+            return redirect(url_for('edit_config_file', error=True))
 
         # Load frida custom scripts inside "custom_scripts" folder
         for f in os.listdir(os.path.dirname(os.path.realpath(__file__)) + "/custom_scripts"):
@@ -150,35 +203,49 @@ def device_management():
         #output reset
         reset_variables_and_output()
 
-        package_name = request.values.get('package')
+        system_package=config["system_package"];
+        target_package = request.values.get('package')
+        #Frida Gadget support
+        if target_package=="re.frida.Gadget":
+            target_package="Gadget"
+
         mode = request.values.get('mode')
         frida_script = request.values.get('fridastartupscript')
 
-        if package_name: print("Package Name: " + package_name, file=sys.stdout)
-        if mode: print("Mode: " + mode, file=sys.stdout)
-        if frida_script: print("Frida Startup Script: \n" + frida_script, file=sys.stdout)
+        if target_package: rms_print("Package Name: " + target_package)
+        if mode: rms_print("Mode: " + mode)
+        if frida_script: rms_print("Frida Startup Script: \n" + frida_script)
 
         # main JS file
         with open(os.path.dirname(os.path.realpath(__file__)) + '/default.js') as f:
             frida_code = f.read()
 
-        # attaching a persistent process to get enumerateLoadedClasses() result
-        # before starting the target app - default process is com.android.systemui
-        session = device.attach(config["system_package"])
-        script = session.create_script(frida_code)
-        #script.set_log_handler(log_handler)
-        script.load()
-        api = script.exports
-        system_classes = api.loadclasses()
+        session = None
+        try:
+            # attaching a persistent process to get enumerateLoadedClasses() result
+            # before starting the target app - default process is com.android.systemui
+            session = device.attach(system_package)
+            script = session.create_script(frida_code)
+            #script.set_log_handler(log_handler)
+            script.load()
+            api = script.exports
+            system_classes = api.loadclasses()
+            #sort list alphabetically
+            system_classes.sort()
+        except:
+            if (len(system_classes)==0):
+                no_system_package=True
+            rms_print(system_package+" is NOT available on your device. For a better RE experience, change it via the Config TAB!");
+            pass
 
         session = None
-        if mode == "Spawn":
-            pid = device.spawn([package_name])
+        if mode == "Spawn" and target_package!="Gadget":
+            pid = device.spawn([target_package])
             session = device.attach(pid)
-            print('[*] Process Spawned')
-        if mode == "Attach":
-            session = device.attach(package_name)
-            print('[*] Process Attached')
+            rms_print('[*] Process Spawned')
+        if mode == "Attach" or target_package=="Gadget":
+            session = device.attach(target_package)
+            rms_print('[*] Process Attached')
 
         script = session.create_script(frida_code)
         #script.set_log_handler(log_handler)
@@ -188,26 +255,29 @@ def device_management():
         # loading js api
         api = script.exports
 
-        if mode == "Spawn":
+        if mode == "Spawn" and target_package!="Gadget":
             device.resume(pid)
 
         # loading FRIDA startup script if exists
         if frida_script:
             api.loadcustomfridascript(frida_script)
-            # DEBUG print(frida_script, file=sys.stdout)
+            # DEBUG rms_print(frida_script)
 
         # automatically redirect the user to the dump classes and methods tab
         return printwebpage()
-
+    
     return render_template(
         "device.html",
         custom_script_loaded=cs_file,
         custom_scripts=custom_scripts,
         system_package_str=config["system_package"],
         device_type_str=config["device_type"],
-        package_name_str=package_name,
+        target_package=target_package,
+        system_package=system_package,
+        no_system_package=no_system_package,
         packages=packages,
-        conn_args_str=conn_args
+        conn_args_str=conn_args,
+        frida_crash=frida_crash
     )
 
 def get_device(device_type="usb", device_args=None):
@@ -245,6 +315,7 @@ def home():
     global loaded_classes
     global loaded_methods
     global system_classes
+    # if needed hooked_classes can be converted in a global variable
 
     # tohook contains class selected by the user (hooking purposes)
     if request.method == 'POST':
@@ -271,32 +342,48 @@ def home():
         loaded_methods.clear()
         # check if the user is trying to filter loaded classes
         filter = request.args.get('filter')
+
+        # Checking options
+        regex = 1 if 'regex' in request.args else 0
+        case = 1 if 'case' in request.args else 0
+        whole = 1 if 'whole' in request.args else 0
+
         if filter:
-            hooked_classes = api.loadclasseswithfilter(filter)
+            hooked_classes = api.loadclasseswithfilter(filter, regex, case, whole)
             loaded_classes.clear()
             loaded_classes = hooked_classes
         else:
             loaded_classes = api.loadclasses()
             # differences between class loaded after and before the app launch
             loaded_classes = list(set(loaded_classes) - set(system_classes))
+        
+        #sort list alphabetically
+        loaded_classes.sort()
+        
         return printwebpage()
 
     if choice == 2:
         # --> Dump all methods [Loaded Classes]
         # NOTE: Load methods for more than 500 classes can crash the app
-        loaded_methods = api.loadmethods(loaded_classes)
+        try:
+            loaded_methods = api.loadmethods(loaded_classes)
+        except Exception as err:
+            rms_print("FRIDA crashed while loading methods for one or more classes selected. Try to exclude them from your search!")
+            return redirect(url_for("device_management", frida_crash=True))
         return printwebpage()
 
     if choice == 3:
         # --> Hook all loaded classes and methods
-
-        global calls_count
         global template_massive_hook
-        calls_count = 0
-        className = ""
-        classMethod = ""
 
-        api.hookclassesandmethods(loaded_classes, loaded_methods, template_massive_hook)
+        current_template=template_massive_hook
+        stacktrace = request.args.get('stacktrace')
+        if stacktrace == "yes":
+            current_template=current_template.replace("{{stacktrace}}", "s=s+\"StackTrace: \"+Java.use('android.util.Log').getStackTraceString(Java.use('java.lang.Exception').$new()).replace('java.lang.Exception','') +\"\\n\";")
+        else:
+            current_template=current_template.replace("{{stacktrace}}", "")
+
+        api.hookclassesandmethods(loaded_classes, loaded_methods, current_template)
         # redirect the user to the console output
         return redirect(url_for('console_output_loader'))
 
@@ -315,25 +402,32 @@ Diff Classess - TAB
 def diff_analysis():
     global current_loaded_classes
     global new_loaded_classes
+    global target_package
+    global system_package
+    global no_system_package
 
     choice = request.args.get('choice')
     if choice is not None:
         choice = int(choice)
         if (choice == 1):
-            # print("Check current Loaded Classes", file=sys.stdout)
+            # rms_print("Check current Loaded Classes")
             current_loaded_classes = list(
                 set(api.loadclasses()) -
                 set(system_classes)
             )
-            # print(len(current_loaded_classes), file=sys.stdout)
+            #sort list alphabetically
+            current_loaded_classes.sort()
+            # rms_print(len(current_loaded_classes))
         if (choice == 2):
-            # print("check NEW Loaded Classes", file=sys.stdout)
+            # rms_print("check NEW Loaded Classes")
             new_loaded_classes = list(
                 set(api.loadclasses()) -
                 set(current_loaded_classes) -
                 set(system_classes)
             )
-            # print(len(new_loaded_classes), file=sys.stdout)
+            #sort list alphabetically
+            new_loaded_classes.sort()
+            # rms_print(len(new_loaded_classes))
 
     temp_str_1 = ""
     temp_str_2 = ""
@@ -344,11 +438,15 @@ def diff_analysis():
     for i, c in enumerate(new_loaded_classes):
         temp_str_2 = temp_str_2 + "\n" + str(i) + " - " + str(c)
 
+
     return render_template(
         "diff_classes.html",
         current_loaded_classes=temp_str_1,
         new_loaded_classes=temp_str_2,
-        package_name_str=package_name)
+        target_package=target_package,
+        system_package=system_package,
+        no_system_package=no_system_package
+        )
 
 
 ''' 
@@ -363,6 +461,9 @@ def hook_lab():
     global template_hook_lab
     global loaded_methods
     global loaded_classes
+    global target_package
+    global system_package
+    global no_system_package
     hook_template = ""
     selected_class = ""
 
@@ -371,23 +472,42 @@ def hook_lab():
     if class_index is not None:
         class_index = int(class_index)
         # get methods of the selected class
-        selected_class = [loaded_classes[class_index]]
+        selected_class = loaded_classes[class_index]
         # check if methods are loaded or not
         if not loaded_methods:
-            loaded_methods = api.loadmethods(loaded_classes)
-        # template generation
-        hook_template = api.generatehooktemplate(selected_class, loaded_methods, template_hook_lab)
-
-    if selected_class != "":
-        selected_class = selected_class[0]
+            try:
+                loaded_methods = api.loadmethods(loaded_classes)
+            except Exception as err:
+                rms_print("FRIDA crashed while loading methods for one or more classes selected. Try to exclude them from your search!")
+                return redirect(url_for("device_management", frida_crash=True))
+        
+        # method_index contains the index of the loaded method selected by the user
+        method_index = request.args.get('method_index')
+        #Only class selected - load heap search template for all the methods
+        if method_index is None:
+            # hook template generation
+            hook_template = api.generatehooktemplate([selected_class], loaded_methods, template_hook_lab)
+        #class and method selected - load heap search template for selected method only
+        else:
+            selected_method={}
+            method_index=int(method_index)
+            # get method of the selected class
+            selected_method[selected_class] = [(loaded_methods[selected_class])[method_index]]
+            # hook template generation
+            hook_template = api.generatehooktemplate([selected_class], selected_method, template_hook_lab)
 
     # print hook template
     return render_template(
         "hook_lab.html",
         loaded_classes=loaded_classes,
+        loaded_methods=loaded_methods,
+        methods_hooked_and_executed=methods_hooked_and_executed,
         selected_class=selected_class,
         hook_template_str=hook_template,
-        package_name_str=package_name
+        target_package=target_package,
+        system_package=system_package,
+        no_system_package=no_system_package
+
     )
 
 
@@ -403,6 +523,9 @@ def heap_search():
     global template_heap_search
     global loaded_methods
     global loaded_classes
+    global target_package
+    global system_package
+    global no_system_package
     heap_template = ""
     selected_class = ""
 
@@ -411,48 +534,123 @@ def heap_search():
     if class_index is not None:
         class_index = int(class_index)
         # get methods of the selected class
-        selected_class = [loaded_classes[class_index]]
+        selected_class = loaded_classes[class_index]
         # check if methods are loaded or not
         if not loaded_methods:
-            loaded_methods = api.loadmethods(loaded_classes)
-        # heap template generation
-        heap_template = api.heapsearchtemplate(selected_class, loaded_methods, template_heap_search)
+            try:
+                loaded_methods = api.loadmethods(loaded_classes)
+            except Exception as err:
+                rms_print("FRIDA crashed while loading methods for one or more classes selected. Try to exclude them from your search!")
+                return redirect(url_for("device_management", frida_crash=True))
+        
+        # method_index contains the index of the loaded method selected by the user
+        method_index = request.args.get('method_index')
+        #Only class selected - load heap search template for all the methods
+        if method_index is None:
+            # heap template generation
+            heap_template = api.heapsearchtemplate([selected_class], loaded_methods, template_heap_search)
+        #class and method selected - load heap search template for selected method only
+        else:
+            selected_method={}
+            method_index=int(method_index)
+            # get method of the selected class
+            selected_method[selected_class] = [(loaded_methods[selected_class])[method_index]]
+            # heap template generation
+            heap_template = api.heapsearchtemplate([selected_class], selected_method, template_heap_search)
 
-    if selected_class != "":
-        selected_class = selected_class[0]
 
     # print hook template
     return render_template(
         "heap_search.html",
         loaded_classes=loaded_classes,
+        loaded_methods=loaded_methods,
+        methods_hooked_and_executed=methods_hooked_and_executed,
         selected_class=selected_class,
         heap_template_str=heap_template,
-        package_name_str=package_name
+        target_package=target_package,
+        system_package=system_package,
+        no_system_package=no_system_package,
+        heap_search_console_output_str=heap_console_output
     )
 
 ''' 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-File System Monitor - TAB
+API Monitor - TAB
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '''
 
-@app.route('/file_system_monitor', methods=['GET', 'POST'])
-def file_system_monitor():
+@app.route('/api_monitor', methods=['GET', 'POST'])
+def api_monitor():
+
+    global target_package
+    global system_package
+    global no_system_package
+
+    api_monitor = {}
+    api_selected=[]
+
+    with open(os.path.dirname(os.path.realpath(__file__)) + "/api_monitor.json") as f:
+        api_monitor = json.load(f)
+
+
     if request.method == 'POST':
-        m_open = request.values.get('monitor_open')
-        m_close = request.values.get('monitor_close')
-        m_read = request.values.get('monitor_read')
-        m_write = request.values.get('monitor_write')
-        m_unlink = request.values.get('monitor_unlink')
-        m_remove = request.values.get('monitor_remove')
-        api.filesystemmonitor(m_open,m_close,m_read,m_write,m_unlink,m_remove);
+        api_selected = request.values.getlist('api_selected')
+        api_filter = [e for e in api_monitor if e['Category'] in api_selected]
+        api_to_hook = json.loads(json.dumps(api_filter))
+        api.apimonitor(api_to_hook);
 
+        ''' DEBUG
+        rms_print("\nAPI Selected")
+        rms_print(api_selected)
 
+        rms_print("\nAPI Monitor")
+        for e in api_monitor:
+            rms_print(e["Category"])
+
+        rms_print("\nAPI to Hook")
+        for c in api_to_hook:
+            rms_print(c["Category"])
+        '''
 
     return render_template(
-        "file_system_monitor.html",
-        package_name_str=package_name,
-        fs_monitor_console_output_str=fs_monitor_console_output
+        "api_monitor.html",
+        target_package=target_package,
+        system_package=system_package,
+        no_system_package=no_system_package,
+        api_monitor=api_monitor,
+        api_monitor_console_output_str=api_monitor_console_output
+    )
+
+''' 
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+File Manager - TAB
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'''
+
+@app.route('/file_manager', methods=['GET', 'POST'])
+def file_manager():
+    global app_env_info
+
+    files_at_path=None
+    path=""
+    if request.method == 'GET':
+        path=request.args.get('path')
+        if path:
+            files_at_path=api.listfilesatpath(path)
+
+
+    #check if app_env_info (dict) is empty
+    if(not bool(app_env_info)):
+        app_env_info=api.getappenvinfo()
+
+    return render_template(
+        "file_manager.html",
+        target_package=target_package,
+        system_package=system_package,
+        no_system_package=no_system_package,
+        env=app_env_info,
+        files_at_path=files_at_path,
+        currentPath=path
     )
 
 ''' 
@@ -464,6 +662,10 @@ Load Frida Script - TAB
 
 @app.route('/load_frida_script', methods=['GET', 'POST'])
 def frida_script_loader():
+    global target_package
+    global system_package
+    global no_system_package
+
     if request.method == 'POST':
         script = request.values.get('frida_custom_script')
         api.loadcustomfridascript(script)
@@ -484,7 +686,9 @@ def frida_script_loader():
 
     return render_template(
         "load_frida_script.html",
-        package_name_str=package_name,
+        target_package=target_package,
+        system_package=system_package,
+        no_system_package=no_system_package,
         custom_scripts=custom_scripts,
         custom_script_loaded=cs_file
     )
@@ -499,23 +703,29 @@ Console Output - TAB
 
 @app.route('/console_output', methods=['GET', 'POST'])
 def console_output_loader():
+    global target_package
+    global system_package
+    global no_system_package
     return render_template(
         "console_output.html",
         called_console_output_str=calls_console_output,
         hooked_console_output_str=hooks_console_output,
         global_console_output_str=global_console_output,
-        package_name_str=package_name
+        target_package=target_package,
+        system_package=system_package,
+        no_system_package=no_system_package
     )
 
-
+''' Socket LOG
 @socket_io.on('connect', namespace='/console')
 def ws_connect():
-    print('Client connected')
+    rms_print('Client connected')
 
 
 @socket_io.on('disconnect', namespace='/console')
 def ws_disconnect():
-    print('Client disconnected')
+    rms_print('Client disconnected')
+'''
 
 
 ''' 
@@ -527,6 +737,10 @@ Config File - TAB
 
 @app.route('/config', methods=['GET', 'POST'])
 def edit_config_file():
+    global target_package
+    global system_package
+    global no_system_package
+
     config = read_config_file()
     placeholder = {
         'host': 'IP:PORT',
@@ -535,7 +749,7 @@ def edit_config_file():
 
     error = False
     if request.values.get('error'):
-        error = "Device not connected. Please, modify the settings and try again."
+        error = True
 
     if request.method == 'POST':
         new_config = {}
@@ -564,7 +778,10 @@ def edit_config_file():
         placeholder_str=placeholder,
         is_hide=is_hide,
         printOptions=printOptions(),
-        error_str=error
+        error=error,
+        target_package=target_package,
+        system_package=system_package,
+        no_system_package=no_system_package
     )
 
 
@@ -592,13 +809,62 @@ def printOptions():
             temp_str = temp_str + "<option>" + str(device_type) + "</option>"
     return temp_str
 
+''' 
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+API - Print Console logs to a File
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'''
+
+@app.route('/save_console_logs', methods=['GET', 'POST'])
+def save_console_logs():
+    global target_package
+    try:
+        #check if console_logs exists
+        if not os.path.exists("console_logs"):
+            os.makedirs("console_logs")
+        #create new directory for current logs package_timestamp
+        out_path="console_logs/"+target_package+"_"+time.strftime("%Y%m%d-%H%M%S")
+        os.makedirs(out_path)
+
+        #save calls_console_output
+        with open(out_path+"/calls_console_output.txt", 'w') as textfile:
+            textfile.write(calls_console_output)
+            textfile.close()
+        #save hooks_console_output
+        with open(out_path+"/hooks_console_output.txt", 'w') as textfile:
+            textfile.write(hooks_console_output)
+            textfile.close()
+        #save global_console_output
+        with open(out_path+"/global_console_output.txt", 'w') as textfile:
+            textfile.write(global_console_output)
+            textfile.close()
+
+        return "print_done - "+out_path
+    except Exception as err:
+        return "print_error: "+str(err)
+
+''' 
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+API - eval frida script and redirect
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'''
+
+@app.route('/eval_script_and_redirect', methods=['GET', 'POST'])
+def eval_script_and_redirect():
+
+    if request.method == 'POST':
+        script = request.values.get('frida_custom_script')
+        redirect_url = request.values.get('redirect')
+        api.loadcustomfridascript(script)
+        # auto redirect the user to the console output page
+        return redirect(url_for(redirect_url))
+
 
 ''' 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Read config.json file
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '''
-
 
 def read_config_file():
     with open(os.path.dirname(os.path.realpath(__file__)) + "/config.json") as f:
@@ -612,30 +878,23 @@ Render Template Function - used for the sidebar and dump page
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '''
 
-
 def printwebpage():
+    global target_package
+    global system_package
+    global no_system_package
+    global loaded_classes
+    global loaded_methods
+    global methods_hooked_and_executed
+    
     return render_template(
         "dump.html",
-        loaded_classes_str=printClassesMethods(),
-        package_name_str=package_name,
-        loaded_classes=loaded_classes
+        loaded_classes=loaded_classes,
+        loaded_methods=loaded_methods,
+        target_package=target_package,
+        system_package=system_package,
+        no_system_package=no_system_package,
+        methods_hooked_and_executed=methods_hooked_and_executed
     )
-
-
-# Support print function
-def printClassesMethods():
-    temp_str = ""
-    for index, class_name in enumerate(loaded_classes):
-        temp_str = temp_str + "<tr><td><center>[" + str(index) + "]</center></td>" + "<td>" + class_name + "</td>"
-        # print(str(index)+" Class: "+class_name, file=sys.stdout);
-        temp_str = temp_str + "<td><pre><code class=Java>"
-        if loaded_methods:
-            # if(class_name in loaded_methods):
-            for index, method_name in enumerate(loaded_methods[class_name]):
-                m = method_name
-                temp_str = temp_str + m["ui_name"] + ";<br>"
-        temp_str = temp_str + "</code></pre></td></tr>"
-    return temp_str
 
 
 ''' 
@@ -648,17 +907,19 @@ def on_message(message, data):
 
 
     if message['type'] == 'send':
-        if "CALLED" in message['payload']:
-            log_handler("calls_stack",message['payload'])
-        if "HOOK" in message['payload']:
-            log_handler("hooks_stack",message['payload'])
-        if "FS Monitor" in message['payload']:
-            log_handler("fs_monitor",message['payload'])
-        if ("CALLED" not in message['payload'] and
-            "HOOK" not in message['payload'] and
-            "FS Monitor" not in message['payload']):
+        if "[Call_Stack]" in message['payload']:
+            log_handler("call_stack",message['payload'])
+        if "[Hook_Stack]" in message['payload']:
+            log_handler("hook_stack",message['payload'])
+        if "[Heap_Search]" in message['payload']:
+            log_handler("heap_search",message['payload'])
+        if "[API_Monitor]" in message['payload']:
+            log_handler("api_monitor",message['payload'])
+        if ("[Call_Stack]" not in message['payload'] and
+            "[Hook_Stack]" not in message['payload'] and
+            "[Heap_Search]" not in message['payload'] and
+            "[API_Monitor]" not in message['payload']):
             log_handler("global_stack",message['payload'])
-
 
 ''' 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -666,77 +927,137 @@ Supplementary functions
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '''
 
+def rms_print(msg):
+    print(msg, file=sys.stdout);
+
 def reset_variables_and_output():
-    global calls_count
+    global call_count
+    global call_count_stack
+    global methods_hooked_and_executed
+
     global calls_console_output
     global hooks_console_output
+    global heap_console_output
     global global_console_output
-    global fs_monitor_console_output
+    global api_monitor_console_output
+
     global loaded_classes
     global system_classes
     global loaded_methods
     global current_loaded_classes
     global new_loaded_classes
+    global app_env_info
 
+    global target_package
+    global system_package
+    global no_system_package
 
     #output reset
     calls_console_output = ""
     hooks_console_output = ""
+    heap_console_output = ""
     global_console_output = ""
-    fs_monitor_console_output = ""
-    calls_count = 0
+    api_monitor_console_output = ""
+    # call stack
+    call_count = 0
+    call_count_stack = {}
+    methods_hooked_and_executed = []
     #variable reset
     loaded_classes = []
     system_classes = []
     loaded_methods = {}
+    #file manager
+    app_env_info = {}
     #diff classes variables
     current_loaded_classes = []
     new_loaded_classes = []
-
+    #package reset
+    target_package=""
+    system_package=""
+    #error reset
+    no_system_package=False
 
 def log_handler(level, text):
-    global calls_count
+    global call_count
+    global call_count_stack
     global calls_console_output
     global hooks_console_output
+    global heap_console_output
     global global_console_output
-    global fs_monitor_console_output
+    global api_monitor_console_output
 
     if not text:
         return
     '''
     if level == 'info':
-        print(text, file=sys.stdout)
+        rms_print(text)
     else:
-        print(text, file=sys.stderr)
+        rms_print(text)
     '''
-    if level == 'calls_stack':
-        text = "[" + str(calls_count) + "] " + text
+    if level == 'call_stack':
+        #clean up the string
+        text=text.replace("[Call_Stack]\n","")
+        #method hooked has been executed by the app
+        new_m_executed=text #text contains Class and Method info
+        #remove duplicates
+        if new_m_executed not in methods_hooked_and_executed:
+            methods_hooked_and_executed.append(new_m_executed)
+        #add the current call (method) to the call stack
+        call_count_stack[new_m_executed]=call_count
+        #creating string for the console output by adding INDEX info
+        text = "-->INDEX: [" + str(call_count) + "]\n" + text
         calls_console_output = calls_console_output + "\n" + text
-        calls_count += 1
+        #increase the counter
+        call_count += 1
+
         socket_io.emit(
-        'calls_stack', 
+        'call_stack', 
         {
-            'data': calls_console_output, 
+            'data': "\n"+text, 
             'level': level
         }, 
         namespace='/console'
         )
-    if level == 'hooks_stack':
+    if level == 'hook_stack':
+        #clean up the string
+        text=text.replace("[Hook_Stack]\n","")
+        #obtain current method info - first 2 lines contain Class and Method info
+        current_method=('\n'.join(text.split("\n")[:+2]))+'\n'
+        #check the call order by looking at the stack call
+        out_index=-1 #default value if for some reasons current method is not in the stack
+        try:
+            out_index=call_count_stack[current_method]
+        except KeyError as err:
+            rms_print("Not able to assign: \n"+current_method+"to its index")
+        #assign the correct index (stack call) to the current hooked method and relative info (IN/OUT)
+        text="INFO for INDEX: ["+str(out_index)+"]\n"+text
+
         hooks_console_output = hooks_console_output + "\n" + text
         socket_io.emit(
-        'hooks_stack', 
+        'hook_stack', 
         {
-            'data': hooks_console_output, 
+            'data': "\n"+text, 
             'level': level
         }, 
         namespace='/console'
         )
-    if level == 'fs_monitor':
-        fs_monitor_console_output = fs_monitor_console_output + "\n" + text
+    if level == 'heap_search':
+        text=text.replace("[Heap_Search]\n","")
+        heap_console_output = heap_console_output + "\n" + text
         socket_io.emit(
-        'fs_monitor', 
+        'heap_search', 
         {
-            'data': fs_monitor_console_output, 
+            'data': "\n"+text, 
+            'level': level
+        }, 
+        namespace='/console'
+        )    
+    if level == 'api_monitor':
+        api_monitor_console_output = api_monitor_console_output + "\n" + text
+        socket_io.emit(
+        'api_monitor', 
+        {
+            'data': "\n"+text, 
             'level': level
         }, 
         namespace='/console'
@@ -745,12 +1066,12 @@ def log_handler(level, text):
     socket_io.emit(
     'global_console', 
     {
-        'data': global_console_output, 
+        'data': "\n"+text, 
         'level': level
     }, 
     namespace='/console'
     )
-    print(text)
+    rms_print(text)
 
 ''' 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -762,11 +1083,11 @@ if __name__ == '__main__':
     print("")
     print("_________________________________________________________")
     print("RMS - Runtime Mobile Security")
-    print("Version: 1.0.4")
+    print("Version: 1.3.2")
     print("by @mobilesecurity_")
     print("Twitter Profile: https://twitter.com/mobilesecurity_")
     print("_________________________________________________________")
     print("")
-
+    
     # run Flask
     socket_io.run(app)
