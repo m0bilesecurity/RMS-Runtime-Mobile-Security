@@ -81,10 +81,17 @@
 
           <div class="col-sm-12">
             <!-- Dropdown menu -->
-            <button type="button" data-toggle="modal" data-target="#ModalFilterView"
-              class="btn btn-danger dropdown-toggle">
-              Select a Class
+            <form action="/load_frida_script" method="post">
+            <button type="button" 
+                    data-toggle="modal" 
+                    data-target="#ModalFilterView"
+                    class="btn btn-danger dropdown-toggle">
+              Select a Class 
             </button>
+            &nbsp;→&nbsp;
+            <input type=submit 
+                    value="Run Hook" 
+                    class="btn btn-success">
             <br>
             <br>
           </div>
@@ -94,15 +101,12 @@
         <div class="row">
           <div class="col-sm-12">
             <!-- Textarea with overload -->
-            <h3>Hook Template - <font class=text-primary>{{ selected_class}}</font>
-            </h3>
-            <form action="/load_frida_script" method="post">
+            <h3>Hook Template - <font class=text-primary>{{ selected_class}}</font></h3>
+            
               <input type=hidden name=choice value=4>
 
               <textarea id=hooktable name=frida_custom_script
                 class="form-control">{{ hook_template_str|safe }}</textarea>
-              <br>
-              <center><input type=submit class="btn btn-primary"></center>
               <br>
             </form>
           </div>
