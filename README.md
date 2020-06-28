@@ -122,6 +122,14 @@ Special thanks to the following Open Source projects for the inspiration:
 * [House](https://github.com/nccgroup/house)
 * [MobSF](https://github.com/MobSF/Mobile-Security-Framework-MobSF)
 
+### FRIDA Custom Scripts bundled in RMS - Credits:
+* [Runtime Mobile Security (RMS)](https://github.com/m0bilesecurity/RMS-Runtime-Mobile-Security)
+* [FSecureLABS](https://github.com/FSecureLABS/android-keystore-audit)
+* [Mediaservice](https://techblog.mediaservice.net/)
+* [iddoeldor](https://github.com/iddoeldor)
+* [dzonerzy](https://codeshare.frida.re/@dzonerzy/fridantiroot/)
+* [Maurizio Siddu](https://github.com/akabe1/my-FRIDA-scripts)
+
 ### DEMO apps:
 
 [RootBeer Sample](https://play.google.com/store/apps/details?id=com.scottyab.rootbeer.sample) is the DEMO app used to show how RMS works.

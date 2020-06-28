@@ -45,7 +45,7 @@
             <div class="list-group">
               {% for cs in custom_scripts %}
               <a href="load_frida_script?cs={{ cs }}" class="list-group-item list-group-item-action">
-                [{{ loop.index0 }}] - {{ cs }}
+                [{{ loop.index }}] - {{ cs }}
               </a>
               {% endfor %}
             </div>
