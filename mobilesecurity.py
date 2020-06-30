@@ -4,10 +4,12 @@ import json
 import frida
 import time
 from flask_socketio import SocketIO
-from flask import Flask, request, render_template, redirect, url_for
+from flask import Flask, request, render_template, redirect, url_for, Response
 
 app = Flask(__name__)
 socket_io = SocketIO(app)
+
+BETA=False
 
 # Global variables
 loaded_classes = []
@@ -156,6 +158,7 @@ def device_management():
     global target_package
     global system_package
     global no_system_package
+    global BETA
 
     cs_file = ""
     custom_scripts = []
@@ -217,8 +220,19 @@ def device_management():
         if frida_script: rms_print("Frida Startup Script: \n" + frida_script)
 
         # main JS file
-        with open(os.path.dirname(os.path.realpath(__file__)) + '/default.js') as f:
-            frida_code = f.read()
+        frida_agent="/agent/rms_core.js"
+        #BETA - compiled version with frida-fs (File Manager - Download file enabled)
+        #make sure to compile the core via frida-compile 
+        #run "npm install" directly inside the "agent" folder
+        if(BETA==True): frida_agent="/agent/_rms_core_BETA.js"
+        try:
+            with open(os.path.dirname(os.path.realpath(__file__)) + frida_agent) as f:
+                frida_code = f.read()
+        except:
+            rms_print("_rms_core_BETA.js not found!")
+            rms_print("Compile the core via frida-compile!") 
+            rms_print("run \"npm install\" directly inside the \"agent\" folder")
+            exit()
 
         session = None
         try:
@@ -635,6 +649,16 @@ def file_manager():
     path=""
     if request.method == 'GET':
         path=request.args.get('path')
+        download=request.args.get('download')
+        if download:
+            file=''.join(map(chr, (api.downloadfileatpath(download))["data"])) 
+            filename=os.path.basename(os.path.normpath(download))
+            rms_print(filename)
+            return Response(
+            file,
+            headers={
+                "Content-disposition":
+                "attachment; filename="+filename})
         if path:
             files_at_path=api.listfilesatpath(path)
 
@@ -650,7 +674,8 @@ def file_manager():
         no_system_package=no_system_package,
         env=app_env_info,
         files_at_path=files_at_path,
-        currentPath=path
+        currentPath=path,
+        BETA=BETA
     )
 
 ''' 

@@ -6,3 +6,5 @@
 .DS_Store
 .vscode
 __pycache__
+node_modules/
+_rms_core_BETA.js

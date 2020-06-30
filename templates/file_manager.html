@@ -64,6 +64,9 @@
               <th class="text-center">size</th>
               <th class="text-center">lastModified</th>
               <th class="text-center">adb command</th>
+              {% if BETA == True %}
+              <th class="text-center">download</th>
+              {% endif %}
             </thead>
             <tbody>
               {% set parent = '/'.join(((files_at_path.path).split("/"))[:-1])  %}
@@ -121,6 +124,19 @@
                   -
                   {% endif %}
                 </td>
+                {% if BETA == True %}
+                <td class="text-center">
+                  {% if files_at_path.files[f].attributes.isFile %}
+                  <a
+                  role="button"
+                  class="btn btn-danger btn-sm"
+                  href="/file_manager?download={{files_at_path.path}}/{{f}}">Download
+                </a>
+                  {% else %}
+                  -
+                  {% endif %}
+                </td>
+                {% endif %}
             </tr>
             </tbody>
             {% endfor %}

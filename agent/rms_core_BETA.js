@@ -7,10 +7,13 @@
  5. hookclassesandmethods([loaded_classes], [loaded_methods], template)
  6. generatehooktemplate([loaded_classes], [loaded_methods], template)
  7. heapsearchtemplate([loaded_classes], [loaded_methods], template)
- 8. listfilesatpath(path)
- 9. getappenvinfo()
- 10. apimonitor([api_to_monitor])
+ 8. getappenvinfo()
+ 9. listfilesatpath(path)
+ 10. downloadfilesatpath(path)
+ 11. apimonitor([api_to_monitor])
  ******************************************************************************/
+
+const fs = require('frida-fs');
 
 rpc.exports = {
   loadclasses: function () {
@@ -344,6 +347,30 @@ rpc.exports = {
     // return HOOK template
     return hto;
   },
+  getappenvinfo: function () {
+    var env;
+    Java.perform(function (){
+      var context = null
+      var ActivityThread = Java.use('android.app.ActivityThread');
+      var targetApp = ActivityThread.currentApplication();
+  
+      if (targetApp != null) {
+          context = targetApp.getApplicationContext();
+          env = 
+          {   mainDirectory: context.getFilesDir().getParent(),
+              filesDirectory: context.getFilesDir().getAbsolutePath().toString(),
+              cacheDirectory: context.getCacheDir().getAbsolutePath().toString(),
+              externalCacheDirectory: context.getExternalCacheDir().getAbsolutePath().toString(),
+              codeCacheDirectory: 
+                  'getCodeCacheDir' in context ? 
+                  context.getCodeCacheDir().getAbsolutePath().toString() : 'N/A',
+              obbDir: context.getObbDir().getAbsolutePath().toString(),
+              packageCodePath: context.getPackageCodePath().toString().replace("/base.apk",""),
+          };
+      } else env=null
+    })
+    return env;
+  },
   listfilesatpath: function (path) {
     var listResult;
     Java.perform(function (){
@@ -377,29 +404,12 @@ rpc.exports = {
     })
     return listResult;
   },
-  getappenvinfo: function () {
-    var env;
+  downloadfileatpath: function (path) {
+    var file;
     Java.perform(function (){
-      var context = null
-      var ActivityThread = Java.use('android.app.ActivityThread');
-      var targetApp = ActivityThread.currentApplication();
-  
-      if (targetApp != null) {
-          context = targetApp.getApplicationContext();
-          env = 
-          {   mainDirectory: context.getFilesDir().getParent(),
-              filesDirectory: context.getFilesDir().getAbsolutePath().toString(),
-              cacheDirectory: context.getCacheDir().getAbsolutePath().toString(),
-              externalCacheDirectory: context.getExternalCacheDir().getAbsolutePath().toString(),
-              codeCacheDirectory: 
-                  'getCodeCacheDir' in context ? 
-                  context.getCodeCacheDir().getAbsolutePath().toString() : 'N/A',
-              obbDir: context.getObbDir().getAbsolutePath().toString(),
-              packageCodePath: context.getPackageCodePath().toString().replace("/base.apk",""),
-          };
-      } else env=null
+      file=fs.readFileSync(path)
     })
-    return env;
+    return file;
   },
   apimonitor: function (api_to_monitor) {
     Java.perform(function () {
