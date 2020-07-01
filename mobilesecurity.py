@@ -229,10 +229,14 @@ def device_management():
             with open(os.path.dirname(os.path.realpath(__file__)) + frida_agent) as f:
                 frida_code = f.read()
         except:
-            rms_print("_rms_core_BETA.js not found!")
-            rms_print("Compile the core via frida-compile!") 
-            rms_print("run \"npm install\" directly inside the \"agent\" folder")
-            exit()
+            err_message="\nERROR!!!\n"
+            err_message=err_message+"_rms_core_BETA.js not found!\n"
+            err_message=err_message+"Compile the core via frida-compile!\n"
+            err_message=err_message+"run \"npm install\" directly inside the \"agent\" folder\n"
+            err_message=err_message+"Restart RMS!\n"
+            
+            rms_print(err_message)
+            return err_message.replace("\n","<br>")
 
         session = None
         try:

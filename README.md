@@ -110,7 +110,12 @@ Stetho is a sophisticated debug bridge for Android applications. When enabled, d
 
 A simple File Manager has been implemented to help you exploring app's private folders and files. **This feature is still in BETA.**
 
-**TODO:** In order to download needed files directly from the web page, [frida-fs](https://github.com/nowsecure/frida-fs) must be implemented. A PR or an help is more than welcome 😉. Currently, RMS is only able to create on the fly the ADB pull command that is needed to download the file via the terminal.
+[frida-fs](https://github.com/nowsecure/frida-fs) has been implemented to enable files download directly from the browser (File Manager TAB).
+
+In order to enable the download button, follow the steps below:
+1. Open the file called "**mobilesecurity.py**" and set the **BETA** variable to **True**
+2. Compile the "**RMS_Core.js**" agent via frida-compile! Just run the command ```npm install``` directly from the **agent** folder. A file called "**_RMS_Core_BETA.js**" will be generated.
+3. Run RMS!
 
 ![DEMO_11](/DEMO/DEMO_11_File_Manager.png)
 

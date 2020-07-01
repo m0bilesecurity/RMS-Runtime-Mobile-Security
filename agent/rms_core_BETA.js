@@ -9,7 +9,7 @@
  7. heapsearchtemplate([loaded_classes], [loaded_methods], template)
  8. getappenvinfo()
  9. listfilesatpath(path)
- 10. downloadfilesatpath(path)
+ 10. downloadfileatpath(path)
  11. apimonitor([api_to_monitor])
  ******************************************************************************/
 
