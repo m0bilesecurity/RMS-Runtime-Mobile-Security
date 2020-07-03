@@ -195,8 +195,8 @@
             <tbody id="MainTable">
               <h3>Classes</h3>
               <p>Use the search bar below to quickly filter results: 
-                {% if loaded_methods|length > 1 %}
-                {% if methods_hooked_and_executed|length > 1 %}
+                {% if loaded_methods|length > 0 %}
+                {% if methods_hooked_and_executed|length > 0 %}
                 <button 
                    onclick="apply_filter('executed')"
                    class="btn btn-success btn-sm">
@@ -243,6 +243,8 @@
   <!-- /#wrapper -->
 
   <!-- Javascript loading -->
+  {% include 't_js_script.html' %}
+
   {% block scripts %}
   <script>
     function apply_filter(filter){ 
@@ -260,7 +262,6 @@
     }
   </script>
   {% endblock %}  
-  {% include 't_js_script.html' %}
 
 </body>
 
