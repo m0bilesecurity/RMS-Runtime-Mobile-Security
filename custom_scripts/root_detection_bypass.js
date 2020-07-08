@@ -63,13 +63,11 @@ Java.perform(function() {
     var StringBuffer = Java.use('java.lang.StringBuffer');
     var loaded_classes = Java.enumerateLoadedClassesSync();
 
-    send("Loaded " + loaded_classes.length + " classes!");
+    send("Root Detection Bypass - Frida script is running!");
 
     var useKeyInfo = false;
-
     var useProcessManager = false;
 
-    send("loaded: " + loaded_classes.indexOf('java.lang.ProcessManager'));
 
     if (loaded_classes.indexOf('java.lang.ProcessManager') != -1) {
         try {
@@ -98,8 +96,8 @@ Java.perform(function() {
     PackageManager.getPackageInfo.implementation = function(pname, flags) {
         var shouldFakePackage = (RootPackages.indexOf(pname) > -1);
         if (shouldFakePackage) {
-            send("Bypass root check for package: " + pname);
-            pname = "set.package.name.to.a.fake.one.so.we.can.bypass.it";
+            send("Root Bypass - app is looking for package: " + pname);
+            pname = "com.app.root.bypass";
         }
         return this.getPackageInfo.call(this, pname, flags);
     };
@@ -108,7 +106,7 @@ Java.perform(function() {
         var name = NativeFile.getName.call(this);
         var shouldFakeReturn = (RootBinaries.indexOf(name) > -1);
         if (shouldFakeReturn) {
-            send("Bypass return value for binary: " + name);
+            send("Root Bypass - app is looking for binary: " + name);
             return false;
         } else {
             return this.exists.call(this);
@@ -123,14 +121,19 @@ Java.perform(function() {
     var exec5 = Runtime.exec.overload('java.lang.String', '[Ljava.lang.String;', 'java.io.File');
 
     exec5.implementation = function(cmd, env, dir) {
-        if (cmd.indexOf("getprop") != -1 || cmd == "mount" || cmd.indexOf("build.prop") != -1 || cmd == "id" || cmd == "sh") {
+        if (cmd.indexOf("getprop") != -1 || 
+            cmd == "mount" || 
+            cmd.indexOf("build.prop") != -1 || 
+            cmd == "id" || 
+            cmd == "sh") 
+        {
             var fakeCmd = "grep";
-            send("Bypass " + cmd + " command");
+            send("Root Bypass - app is looking for command: " + cmd);
             return exec1.call(this, fakeCmd);
         }
         if (cmd == "su") {
-            var fakeCmd = "justafakecommandthatcannotexistsusingthisshouldthowanexceptionwheneversuiscalled";
-            send("Bypass " + cmd + " command");
+            var fakeCmd = "fakeCommand";
+            send("Root Bypass - app is looking for command: " + cmd);
             return exec1.call(this, fakeCmd);
         }
         return exec5.call(this, cmd, env, dir);
@@ -139,15 +142,19 @@ Java.perform(function() {
     exec4.implementation = function(cmdarr, env, file) {
         for (var i = 0; i < cmdarr.length; i = i + 1) {
             var tmp_cmd = cmdarr[i];
-            if (tmp_cmd.indexOf("getprop") != -1 || tmp_cmd == "mount" || tmp_cmd.indexOf("build.prop") != -1 || tmp_cmd == "id" || tmp_cmd == "sh") {
+            if (tmp_cmd.indexOf("getprop") != -1 || 
+                tmp_cmd == "mount" || 
+                tmp_cmd.indexOf("build.prop") != -1 || 
+                tmp_cmd == "id" || 
+                tmp_cmd == "sh") 
+            {
                 var fakeCmd = "grep";
-                send("Bypass " + cmdarr + " command");
+                send("Root Bypass - app is looking for command: " + cmdarr);
                 return exec1.call(this, fakeCmd);
             }
-
             if (tmp_cmd == "su") {
-                var fakeCmd = "justafakecommandthatcannotexistsusingthisshouldthowanexceptionwheneversuiscalled";
-                send("Bypass " + cmdarr + " command");
+                var fakeCmd = "fakeCommand";
+                send("Root Bypass - app is looking for command: " + cmdarr);
                 return exec1.call(this, fakeCmd);
             }
         }
@@ -157,15 +164,19 @@ Java.perform(function() {
     exec3.implementation = function(cmdarr, envp) {
         for (var i = 0; i < cmdarr.length; i = i + 1) {
             var tmp_cmd = cmdarr[i];
-            if (tmp_cmd.indexOf("getprop") != -1 || tmp_cmd == "mount" || tmp_cmd.indexOf("build.prop") != -1 || tmp_cmd == "id" || tmp_cmd == "sh") {
+            if (tmp_cmd.indexOf("getprop") != -1 || 
+                tmp_cmd == "mount" || 
+                tmp_cmd.indexOf("build.prop") != -1 || 
+                tmp_cmd == "id" || 
+                tmp_cmd == "sh") 
+            {
                 var fakeCmd = "grep";
-                send("Bypass " + cmdarr + " command");
+                send("Root Bypass - app is looking for command: " + cmdarr);
                 return exec1.call(this, fakeCmd);
             }
-
             if (tmp_cmd == "su") {
-                var fakeCmd = "justafakecommandthatcannotexistsusingthisshouldthowanexceptionwheneversuiscalled";
-                send("Bypass " + cmdarr + " command");
+                var fakeCmd = "fakeCommand";
+                send("Root Bypass - app is looking for command: " + cmdarr);
                 return exec1.call(this, fakeCmd);
             }
         }
@@ -173,14 +184,19 @@ Java.perform(function() {
     };
 
     exec2.implementation = function(cmd, env) {
-        if (cmd.indexOf("getprop") != -1 || cmd == "mount" || cmd.indexOf("build.prop") != -1 || cmd == "id" || cmd == "sh") {
+        if (cmd.indexOf("getprop") != -1 || 
+            cmd == "mount" || 
+            cmd.indexOf("build.prop") != -1 || 
+            cmd == "id" || 
+            cmd == "sh") 
+        {
             var fakeCmd = "grep";
-            send("Bypass " + cmd + " command");
+            send("Root Bypass - app is looking for command: " + cmd);
             return exec1.call(this, fakeCmd);
         }
         if (cmd == "su") {
-            var fakeCmd = "justafakecommandthatcannotexistsusingthisshouldthowanexceptionwheneversuiscalled";
-            send("Bypass " + cmd + " command");
+            var fakeCmd = "fakeCommand";
+            send("Root Bypass - app is looking for command: " + cmd);
             return exec1.call(this, fakeCmd);
         }
         return exec2.call(this, cmd, env);
@@ -189,15 +205,19 @@ Java.perform(function() {
     exec.implementation = function(cmd) {
         for (var i = 0; i < cmd.length; i = i + 1) {
             var tmp_cmd = cmd[i];
-            if (tmp_cmd.indexOf("getprop") != -1 || tmp_cmd == "mount" || tmp_cmd.indexOf("build.prop") != -1 || tmp_cmd == "id" || tmp_cmd == "sh") {
+            if (tmp_cmd.indexOf("getprop") != -1 || 
+                tmp_cmd == "mount" || 
+                tmp_cmd.indexOf("build.prop") != -1 || 
+                tmp_cmd == "id" || 
+                tmp_cmd == "sh") 
+            {
                 var fakeCmd = "grep";
-                send("Bypass " + cmd + " command");
+                send("Root Bypass - app is looking for command: " + cmd);
                 return exec1.call(this, fakeCmd);
             }
-
             if (tmp_cmd == "su") {
-                var fakeCmd = "justafakecommandthatcannotexistsusingthisshouldthowanexceptionwheneversuiscalled";
-                send("Bypass " + cmd + " command");
+                var fakeCmd = "fakeCommand";
+                send("Root Bypass - app is looking for command: " + cmd);
                 return exec1.call(this, fakeCmd);
             }
         }
@@ -206,14 +226,19 @@ Java.perform(function() {
     };
 
     exec1.implementation = function(cmd) {
-        if (cmd.indexOf("getprop") != -1 || cmd == "mount" || cmd.indexOf("build.prop") != -1 || cmd == "id" || cmd == "sh") {
+        if (cmd.indexOf("getprop") != -1 || 
+            cmd == "mount" || 
+            cmd.indexOf("build.prop") != -1 || 
+            cmd == "id" || 
+            cmd == "sh") 
+        {
             var fakeCmd = "grep";
-            send("Bypass " + cmd + " command");
+            send("Root Bypass - app is looking for command: " + cmd);
             return exec1.call(this, fakeCmd);
         }
         if (cmd == "su") {
-            var fakeCmd = "justafakecommandthatcannotexistsusingthisshouldthowanexceptionwheneversuiscalled";
-            send("Bypass " + cmd + " command");
+            var fakeCmd = "fakeCommand";
+            send("Root Bypass - app is looking for command: " + cmd);
             return exec1.call(this, fakeCmd);
         }
         return exec1.call(this, cmd);
@@ -221,7 +246,7 @@ Java.perform(function() {
 
     String.contains.implementation = function(name) {
         if (name == "test-keys") {
-            send("Bypass test-keys check");
+            send("Root Bypass - app is looking for test-keys");
             return false;
         }
         return this.contains.call(this, name);
@@ -231,7 +256,7 @@ Java.perform(function() {
 
     get.implementation = function(name) {
         if (RootPropertiesKeys.indexOf(name) != -1) {
-            send("Bypass " + name);
+            send("Root Bypass - app is looking for SystemProperties: "+name);
             return RootProperties[name];
         }
         return this.get.call(this, name);
@@ -245,7 +270,7 @@ Java.perform(function() {
             var shouldFakeReturn = (RootBinaries.indexOf(executable) > -1)
             if (shouldFakeReturn) {
                 Memory.writeUtf8String(args[0], "/notexists");
-                send("Bypass native fopen");
+                send("Root Bypass - app is looking for native fopen");
             }
         },
         onLeave: function(retval) {
@@ -257,13 +282,14 @@ Java.perform(function() {
         onEnter: function(args) {
             var cmd = Memory.readCString(args[0]);
             send("SYSTEM CMD: " + cmd);
-            if (cmd.indexOf("getprop") != -1 || cmd == "mount" || cmd.indexOf("build.prop") != -1 || cmd == "id") {
-                send("Bypass native system: " + cmd);
+            if (cmd.indexOf("getprop") != -1 || cmd == "mount" || cmd.indexOf("build.prop") != -1 || cmd == "id") 
+            {
+                send("Root Bypass - app is looking for native system: "+cmd);
                 Memory.writeUtf8String(args[0], "grep");
             }
             if (cmd == "su") {
-                send("Bypass native system: " + cmd);
-                Memory.writeUtf8String(args[0], "justafakecommandthatcannotexistsusingthisshouldthowanexceptionwheneversuiscalled");
+                send("Root Bypass - app is looking for native system: "+cmd);
+                Memory.writeUtf8String(args[0], "fakeCommand");
             }
         },
         onLeave: function(retval) {
@@ -273,7 +299,7 @@ Java.perform(function() {
 
     /*
 
-    TO IMPLEMENT:
+    TODO:
 
     Exec Family
 
@@ -296,7 +322,7 @@ Java.perform(function() {
         } else {
             var shouldFakeRead = (text.indexOf("ro.build.tags=test-keys") > -1);
             if (shouldFakeRead) {
-                send("Bypass build.prop file read");
+                send("Root Bypass - app is looking for build.prop test-keys");
                 text = text.replace("ro.build.tags=test-keys", "ro.build.tags=release-keys");
             }
         }
@@ -310,18 +336,22 @@ Java.perform(function() {
         var shouldModifyCommand = false;
         for (var i = 0; i < cmd.size(); i = i + 1) {
             var tmp_cmd = cmd.get(i).toString();
-            if (tmp_cmd.indexOf("getprop") != -1 || tmp_cmd.indexOf("mount") != -1 || tmp_cmd.indexOf("build.prop") != -1 || tmp_cmd.indexOf("id") != -1) {
+            if (tmp_cmd.indexOf("getprop") != -1 || 
+                tmp_cmd.indexOf("mount") != -1 || 
+                tmp_cmd.indexOf("build.prop") != -1 || 
+                tmp_cmd.indexOf("id") != -1)
+            {
                 shouldModifyCommand = true;
             }
         }
         if (shouldModifyCommand) {
-            send("Bypass ProcessBuilder " + cmd);
+            send("Root Bypass - app is looking for ProcessBuilder: "+cmd);
             this.command.call(this, ["grep"]);
             return this.start.call(this);
         }
         if (cmd.indexOf("su") != -1) {
-            send("Bypass ProcessBuilder " + cmd);
-            this.command.call(this, ["justafakecommandthatcannotexistsusingthisshouldthowanexceptionwheneversuiscalled"]);
+            send("Root Bypass - app is looking for ProcessBuilder: "+cmd);
+            this.command.call(this, ["fakeCommand"]);
             return this.start.call(this);
         }
 
@@ -336,14 +366,18 @@ Java.perform(function() {
             var fake_cmd = cmd;
             for (var i = 0; i < cmd.length; i = i + 1) {
                 var tmp_cmd = cmd[i];
-                if (tmp_cmd.indexOf("getprop") != -1 || tmp_cmd == "mount" || tmp_cmd.indexOf("build.prop") != -1 || tmp_cmd == "id") {
+                if (tmp_cmd.indexOf("getprop") != -1 || 
+                    tmp_cmd == "mount" || 
+                    tmp_cmd.indexOf("build.prop") != -1 || 
+                    tmp_cmd == "id") 
+                {
                     var fake_cmd = ["grep"];
-                    send("Bypass " + cmdarr + " command");
+                    send("Root Bypass - app is looking for command: "+cmdarr);
                 }
 
                 if (tmp_cmd == "su") {
-                    var fake_cmd = ["justafakecommandthatcannotexistsusingthisshouldthowanexceptionwheneversuiscalled"];
-                    send("Bypass " + cmdarr + " command");
+                    var fake_cmd = ["fakeCommand"];
+                    send("Root Bypass - app is looking for command: "+cmdarr);
                 }
             }
             return ProcManExec.call(this, fake_cmd, env, workdir, redirectstderr);
@@ -353,14 +387,18 @@ Java.perform(function() {
             var fake_cmd = cmd;
             for (var i = 0; i < cmd.length; i = i + 1) {
                 var tmp_cmd = cmd[i];
-                if (tmp_cmd.indexOf("getprop") != -1 || tmp_cmd == "mount" || tmp_cmd.indexOf("build.prop") != -1 || tmp_cmd == "id") {
+                if (tmp_cmd.indexOf("getprop") != -1 || 
+                    tmp_cmd == "mount" || 
+                    tmp_cmd.indexOf("build.prop") != -1 || 
+                    tmp_cmd == "id") 
+                {
                     var fake_cmd = ["grep"];
-                    send("Bypass " + cmdarr + " command");
+                    send("Root Bypass - app is looking for command: "+cmdarr);
                 }
 
                 if (tmp_cmd == "su") {
-                    var fake_cmd = ["justafakecommandthatcannotexistsusingthisshouldthowanexceptionwheneversuiscalled"];
-                    send("Bypass " + cmdarr + " command");
+                    var fake_cmd = ["fakeCommand"];
+                    send("Root Bypass - app is looking for command: "+cmdarr);
                 }
             }
             return ProcManExecVariant.call(this, fake_cmd, env, directory, stdin, stdout, stderr, redirect);
@@ -369,7 +407,7 @@ Java.perform(function() {
 
     if (useKeyInfo) {
         KeyInfo.isInsideSecureHardware.implementation = function() {
-            send("Bypass isInsideSecureHardware");
+            send("Root Bypass - app is looking for isInsideSecureHardware");
             return true;
         }
     }
