@@ -603,7 +603,10 @@ function load_classes_iOS()
 {
   var loaded_classes = []
   for (var className in ObjC.classes) {
-    if (className.length > 5)
+    if (
+        ObjC.classes.hasOwnProperty(className) &&
+        className.length > 5
+      )
         loaded_classes.push(className)
   }
   
@@ -664,7 +667,8 @@ function load_methods_iOS(loaded_classes){
     var classMethods = []
 
     try{
-      classMethods_dirty=ObjC.classes[className].$ownMethods;
+      if (ObjC.classes.hasOwnProperty(className))
+        classMethods_dirty=ObjC.classes[className].$ownMethods;
       
     } catch (err) {
       send("Exception while loading methods for " + className);
@@ -684,7 +688,8 @@ function load_methods_iOS(loaded_classes){
         retValue=null
       }
       try{
-        args=(ObjC.classes[className][m].argumentTypes).shift(2)
+        args=(ObjC.classes[className][m].argumentTypes)
+        args.shift(2) //remove args[0] = self, args[1] = selector
       }
       catch(err){
         args=null

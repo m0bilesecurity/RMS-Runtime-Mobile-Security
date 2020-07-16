@@ -54,7 +54,7 @@ Java.perform(function () {
         send("[Call_Stack]\\nClass: " +classname+"\\nMethod: "+methodsignature+"\\n");
         var ret = this.{classMethod}({args});
 
-        var s="";s
+        var s="";
         s=s+"[Hook_Stack]\\n"
         s=s+"Class: "+classname+"\\n"
         s=s+"Method: "+methodsignature+"\\n"
@@ -73,23 +73,42 @@ template_massive_hook_iOS = """
 var classname = "{className}";
 var classmethod = "{classMethod}";
 var methodsignature = "{methodSignature}";
+try {
+  var hook = eval('ObjC.classes.' + classname + '["' + classmethod + '"]');
 
-try{
-    var hook = eval('ObjC.classes.'+classname+'["'+classmethod+'"]');
-    
-    Interceptor.attach(hook.implementation, {
-        onEnter: function (args) {
-            send("[Call_Stack]\\nClass: "+classname+"\\nMethod: "+methodsignature+"\\n");
-            send("args dump: "+args);
-        },
-        onLeave: function (retval) {
-            send("\t[-] Type of return value: " + typeof retval);
-            send("\t[-] Original Return Value: " + retval);;
+  Interceptor.attach(hook.implementation, {
+    onEnter: function (args) {
+      send("[Call_Stack]\\nClass: " + classname + "\\nMethod: " + methodsignature + "\\n");
+      this.s = ""
+      this.s = this.s + "[Hook_Stack]\\n"
+      this.s = this.s + "Class: " + classname + "\\n"
+      this.s = this.s + "Method: " + methodsignature + "\\n"
+      if (classmethod.indexOf(":") !== -1) {
+        var params = classmethod.split(":");
+        params[0] = params[0].split(" ")[1];
+        for (var i = 0; i < params.length - 1; i++) {
+          try {
+            this.s = this.s + "Input: " + params[i] + ": " + new ObjC.Object(args[2 + i]).toString() + "\\n";
+          } catch (e) {
+            this.s = this.s + "Input: " + params[i] + ": " + args[2 + i].toString() + "\\n";
+          }
         }
-    });
-}catch(err){
-    send("[!] Exception: " + err.message);
-    send("Not able to hook \\nClass: "+classname+"\\nMethod: "+methodsignature+"\\n");
+      }
+    },
+
+    onLeave: function (retval) {
+      try {
+        this.s = this.s + "Output: " + new ObjC.Object(retval).toString() + "\\n";
+      } catch (e) {
+        this.s = this.s + "Output: " + retval.toString() + "\\n";
+      } 
+      {{stacktrace}}
+      send(this.s);
+    }
+  });
+} catch (err) {
+  send("[!] Exception: " + err.message);
+  send("Not able to hook \\nClass: " + classname + "\\nMethod: " + methodsignature + "\\n");
 }
 """
 
@@ -126,17 +145,45 @@ template_hook_lab_iOS = """
 var classname = "{className}";
 var classmethod = "{classMethod}";
 var methodsignature = "{methodSignature}";
-var hook = eval('ObjC.classes.'+classname+'["'+classmethod+'"]');
+try {
+  var hook = eval('ObjC.classes.' + classname + '["' + classmethod + '"]');
 
-Interceptor.attach(hook.implementation, {
+  Interceptor.attach(hook.implementation, {
     onEnter: function (args) {
-        send("[Call_Stack]\\nClass: " +classname+"\\nMethod: "+methodsignature+"\\n");
+      send("[Call_Stack]\\nClass: " + classname + "\\nMethod: " + methodsignature + "\\n");
+      this.s = ""
+      this.s = this.s + "[Hook_Stack]\\n"
+      this.s = this.s + "Class: " + classname + "\\n"
+      this.s = this.s + "Method: " + methodsignature + "\\n"
+      if (classmethod.indexOf(":") !== -1) {
+        var params = classmethod.split(":");
+        params[0] = params[0].split(" ")[1];
+        for (var i = 0; i < params.length - 1; i++) {
+          try {
+            this.s = this.s + "Input: " + params[i] + ": " + new ObjC.Object(args[2 + i]).toString() + "\\n";
+          } catch (e) {
+            this.s = this.s + "Input: " + params[i] + ": " + args[2 + i].toString() + "\\n";
+          }
+        }
+      }
     },
+
     onLeave: function (retval) {
-        console.log("\t[-] Type of return value: " + typeof retval);
-        console.log("\t[-] Original Return Value: " + retval);;
+      try {
+        this.s = this.s + "Output: " + new ObjC.Object(retval).toString() + "\\n";
+      } catch (e) {
+        this.s = this.s + "Output: " + retval.toString() + "\\n";
+      }
+
+      //uncomment the line below to print StackTrace
+      this.s = this.s + "StackTrace: \\n" + Thread.backtrace(this.context, Backtracer.ACCURATE).map(DebugSymbol.fromAddress).join('\\n') + "\\n";
+      send(this.s);
     }
   });
+} catch (err) {
+  send("[!] Exception: " + err.message);
+  send("Not able to hook \\nClass: " + classname + "\\nMethod: " + methodsignature + "\\n");
+}
 """
 
 
@@ -188,6 +235,14 @@ Java.performNow(function () {
 
 });
 """
+template_heap_search_iOS = """
+var classname = "{className}";
+var classmethod = "{classMethod}";
+var methodsignature = "{methodSignature}";
+
+
+"""
+
 
 ''' 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -260,8 +315,9 @@ def device_management():
         
 
         system_package=config["system_package"];
-        #TODO inserire dentro le conf
-        if mobile_OS=="iOS": system_package="com.apple.Preferences"
+        #for iOS device it's easy, we can attach the SpringBoard
+        #TODO insert it inside config file
+        if mobile_OS=="iOS": system_package="SpringBoard"
 
         target_package = request.values.get('package')
         #Frida Gadget support
@@ -299,19 +355,10 @@ def device_management():
             # attaching a persistent process to get enumerateLoadedClasses() result
             # before starting the target app - default process is com.android.systemui
             session=None
-            if(mobile_OS=="iOS"):
-                #TODO not able to attach the process if not in foreground :(
-                pid = device.spawn([system_package])
-                session = device.attach(pid)
-            else:
-                session = device.attach(system_package)
+            session = device.attach(system_package)
             script = session.create_script(frida_code)
             #script.set_log_handler(log_handler)
             script.load()
-
-            if(mobile_OS=="iOS"):
-                device.resume(pid)
-
             api = script.exports
             system_classes = api.loadclasses()
             #sort list alphabetically
@@ -388,6 +435,28 @@ def get_device(device_type="usb", device_args=None):
         return device_manager.get_remote_device(**device_args)
 
     return device_manager.enumerate_devices()[0]
+
+''' 
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Static Analysis - TAB (iOS only)
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'''
+
+@app.route('/static_analysis', methods=['GET'])
+def static_analysis():
+    static_analysis_str="STUB"
+
+    return render_template(
+    "static_analysis.html",
+    mobile_OS=mobile_OS,
+    static_analysis_str=static_analysis_str,
+    target_package=target_package,
+    system_package=system_package,
+    no_system_package=no_system_package
+    )
+
+
+
 
 ''' 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -471,12 +540,14 @@ def home():
         else: 
             current_template=template_massive_hook_iOS
 
-        if mobile_OS=="Android":    
-            stacktrace = request.args.get('stacktrace')
-            if stacktrace == "yes":
+        stacktrace = request.args.get('stacktrace')
+        if stacktrace == "yes":
+            if mobile_OS=="Android": 
                 current_template=current_template.replace("{{stacktrace}}", "s=s+\"StackTrace: \"+Java.use('android.util.Log').getStackTraceString(Java.use('java.lang.Exception').$new()).replace('java.lang.Exception','') +\"\\n\";")
             else:
-                current_template=current_template.replace("{{stacktrace}}", "")
+                current_template=current_template.replace("{{stacktrace}}", "this.s=this.s+\"StackTrace: \\n\"+Thread.backtrace(this.context, Backtracer.ACCURATE).map(DebugSymbol.fromAddress).join('\\n') +\"\\n\";")
+        else:
+            current_template=current_template.replace("{{stacktrace}}", "")
 
         api.hookclassesandmethods(loaded_classes, loaded_methods, current_template)
         # redirect the user to the console output
@@ -631,11 +702,17 @@ Heap Search - TAB
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '''
 
+def get_heap_search_template(mobile_OS):
+    if mobile_OS=="Android":
+        return template_heap_search_Android
+    else:
+        return template_heap_search_iOS
 
 @app.route('/heap_search', methods=['GET', 'POST'])
 def heap_search():
     global mobile_OS
     global template_heap_search_Android
+    global template_heap_search_iOS
     global loaded_methods
     global loaded_classes
     global target_package
@@ -663,7 +740,11 @@ def heap_search():
         #Only class selected - load heap search template for all the methods
         if method_index is None:
             # heap template generation
-            heap_template = api.heapsearchtemplate([selected_class], loaded_methods, template_heap_search_Android)
+            heap_template = api.heapsearchtemplate(
+                [selected_class], 
+                loaded_methods, 
+                get_heap_search_template(mobile_OS)
+                )
         #class and method selected - load heap search template for selected method only
         else:
             selected_method={}
@@ -671,7 +752,11 @@ def heap_search():
             # get method of the selected class
             selected_method[selected_class] = [(loaded_methods[selected_class])[method_index]]
             # heap template generation
-            heap_template = api.heapsearchtemplate([selected_class], selected_method, template_heap_search_Android)
+            heap_template = api.heapsearchtemplate(
+                [selected_class], 
+                selected_method, 
+                get_heap_search_template(mobile_OS)
+                )
 
 
     # print hook template
