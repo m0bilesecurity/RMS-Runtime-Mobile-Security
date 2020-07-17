@@ -766,16 +766,90 @@ function heap_search_template_iOS(loaded_classes, loaded_methods, template)
 function get_app_env_info_iOS()
 {
   var env;
-
+  const NSUserDomainMask = 1
+  const NSLibraryDirectory = 5
+  const NSDocumentDirectory = 9
+  const NSCachesDirectory = 13
+  
+  var NSBundle = ObjC.classes.NSBundle.mainBundle()
+  var NSFileManager = ObjC.classes.NSFileManager.defaultManager();
+  
+  var env = {
+      mainDirectory: (NSFileManager.URLsForDirectory_inDomains_(NSLibraryDirectory, NSUserDomainMask).lastObject().path().toString()).replace("Library",""),
+      BundlePath: NSBundle.bundlePath().toString(),
+      CachesDirectory: NSFileManager.URLsForDirectory_inDomains_(NSCachesDirectory, NSUserDomainMask).lastObject().path().toString(),
+      DocumentDirectory: NSFileManager.URLsForDirectory_inDomains_(NSDocumentDirectory, NSUserDomainMask).lastObject().path().toString(),
+      LibraryDirectory: NSFileManager.URLsForDirectory_inDomains_(NSLibraryDirectory, NSUserDomainMask).lastObject().path().toString()
+  };
   return env;
 }
 
 function list_files_at_path_iOS(path)
 {
-  var listResult;
+    var NSFileManager = ObjC.classes.NSFileManager.defaultManager(); 
+    var currentPath = ObjC.classes.NSString.stringWithString_(path); 
 
-  return listResult;
+    var listResult= {
+        files: {},
+        path: path,
+        readable: NSFileManager.isReadableFileAtPath_(currentPath),
+        writable: NSFileManager.isWritableFileAtPath_(currentPath),
+      };
+
+    if (!listResult.readable) { return listResult; }
+
+    var pathContents = NSFileManager.contentsOfDirectoryAtPath_error_(path, NULL);
+    var fileCount = pathContents.count();
+
+    for (var i = 0; i < fileCount; i++) {
+      const file = pathContents.objectAtIndex_(i);
+
+      var files = {
+        attributes: {},
+        fileName: file.toString(),
+        readable: undefined,
+        writable: undefined,
+      };      
+
+      const filePath = [path, "/", file].join("");
+      const currentFilePath = ObjC.classes.NSString.stringWithString_(filePath);
+
+      files.readable = NSFileManager.isReadableFileAtPath_(currentFilePath);
+      files.writable = NSFileManager.isWritableFileAtPath_(currentFilePath);
+
+      // obtain attributes
+      const attributes = NSFileManager.attributesOfItemAtPath_error_(currentFilePath, NULL);
+
+      if (attributes) {
+        const enumerator = attributes.keyEnumerator();
+        var key;
+        while ((key = enumerator.nextObject()) !== null) {
+          const value = attributes.objectForKey_(key);
+          if (key=="NSFileExtensionHidden")
+            files.attributes["isHidden"] = value.toString();
+          if (key=="NSFileModificationDate")
+            files.attributes["lastModified"] = value.toString();
+          if (key=="NSFileSize")
+            files.attributes["size"] = value.toString();
+          if (key=="NSFileType")
+            if(value.toString()=="NSFileTypeDirectory"){
+              files.attributes["isDirectory"] = true
+              files.attributes["isFile"] = false
+            }
+            else{
+              files.attributes["isDirectory"] = false
+              files.attributes["isFile"] = true
+            }
+        }
+      }
+      // add the file to the listResult
+      listResult.files[file] = files;
+    }
+    //DEBUG console.log(JSON.stringify(listResult))
+    return listResult;
 }
+
+
 
 function api_monitor_iOS(api_to_monitor) 
 {

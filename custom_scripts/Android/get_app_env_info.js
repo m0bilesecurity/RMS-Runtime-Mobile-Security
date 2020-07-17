@@ -4,6 +4,7 @@
  * Author: @mobilesecurity_
  * Source: https://github.com/m0bilesecurity
  * Info: 
+    * mainDirectory  
     * filesDirectory
     * cacheDirectory and externalCacheDirectory
     * codeCacheDirectory

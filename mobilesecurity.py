@@ -265,7 +265,12 @@ def device_management():
     custom_scripts_iOS = []
     packages = []
     config = read_config_file()
-    system_package=config["system_package"];
+
+    if mobile_OS=="Android":
+        system_package=config["system_package_android"];
+    else: 
+        system_package=config["system_package_iOS"];
+
     no_system_package=False
     frida_crash=False
 
@@ -314,10 +319,10 @@ def device_management():
         mobile_OS = request.values.get('mobile_OS')
         
 
-        system_package=config["system_package"];
-        #for iOS device it's easy, we can attach the SpringBoard
-        #TODO insert it inside config file
-        if mobile_OS=="iOS": system_package="SpringBoard"
+        if mobile_OS=="Android":
+            system_package=config["system_package_android"];
+        else: 
+            system_package=config["system_package_iOS"];
 
         target_package = request.values.get('package')
         #Frida Gadget support
@@ -403,7 +408,8 @@ def device_management():
         custom_script_loaded=cs_file,
         custom_scripts_Android=custom_scripts_Android,
         custom_scripts_iOS=custom_scripts_iOS,
-        system_package_str=config["system_package"],
+        system_package_Android=config["system_package_Android"],
+        system_package_iOS=config["system_package_iOS"],
         device_type_str=config["device_type"],
         target_package=target_package,
         system_package=system_package,
@@ -976,14 +982,16 @@ def edit_config_file():
         new_config = {}
 
         device_type = request.values.get('device-type')
-        system_package = request.values.get('system_package')
+        system_package_Android = request.values.get('system_package_Android')
+        system_package_iOS = request.values.get('system_package_iOS')
         device_args_keys = request.values.getlist('key[]')
         device_args_values = request.values.getlist('value[]')
 
         device_args = dict(zip(device_args_keys, device_args_values))
 
         if device_type: new_config['device_type'] = device_type.lower()
-        if system_package: new_config['system_package'] = system_package.strip()
+        if system_package_Android: new_config['system_package_Android'] = system_package_Android.strip()
+        if system_package_iOS: new_config['system_package_iOS'] = system_package_iOS.strip()
         if device_args: new_config['device_args'] = device_args
 
         with open(os.path.dirname(os.path.realpath(__file__)) + "/config.json", "w") as f:
@@ -994,7 +1002,8 @@ def edit_config_file():
     return render_template(
         "config.html",
         mobile_OS=mobile_OS,
-        system_package_str=config['system_package'],
+        system_package_Android=config["system_package_Android"],
+        system_package_iOS=config["system_package_iOS"],
         device_type_str=config['device_type'],
         args=config['device_args'],
         placeholder_str=placeholder,
