@@ -30,7 +30,7 @@ hooks_console_output = ""
 heap_console_output = ""
 global_console_output = ""
 api_monitor_console_output = ""
-
+static_analysis_console_output = ""
 #Global variables - call stack 
 call_count = 0
 call_count_stack={}
@@ -338,9 +338,9 @@ def device_management():
                 custom_scripts_iOS.append(f)
 
         cs = request.args.get('cs')
-        mobile_os = request.args.get('os')
+        mobile_os_get = request.args.get('os')
         if cs is not None and os is not None:
-            with open(os.path.dirname(os.path.realpath(__file__)) + "/custom_scripts/"+ mobile_os +"/" + cs) as f:
+            with open(os.path.dirname(os.path.realpath(__file__)) + "/custom_scripts/"+ mobile_os_get +"/" + cs) as f:
                 cs_file = f.read()
 
     if request.method == 'POST':
@@ -481,12 +481,21 @@ Static Analysis - TAB (iOS only)
 
 @app.route('/static_analysis', methods=['GET'])
 def static_analysis():
-    static_analysis_str="STUB"
+    global mobile_OS
+    global static_analysis_console_output
+
+    script_path="/custom_scripts/"+ mobile_OS +"/static_analysis.js"
+
+    static_analysis_script = ""
+    with open(os.path.dirname(os.path.realpath(__file__)) + script_path) as f:
+        static_analysis_script = f.read()
+
+    api.loadcustomfridascript(static_analysis_script)
 
     return render_template(
     "static_analysis.html",
     mobile_OS=mobile_OS,
-    static_analysis_str=static_analysis_str,
+    static_analysis_console_output=static_analysis_console_output,
     target_package=target_package,
     system_package=system_package,
     no_system_package=no_system_package
@@ -1178,10 +1187,13 @@ def on_message(message, data):
             log_handler("heap_search",message['payload'])
         if "[API_Monitor]" in message['payload']:
             log_handler("api_monitor",message['payload'])
+        if "[Static_Analysis]" in message['payload']:
+            log_handler("static_analysis",message['payload'])            
         if ("[Call_Stack]" not in message['payload'] and
             "[Hook_Stack]" not in message['payload'] and
             "[Heap_Search]" not in message['payload'] and
-            "[API_Monitor]" not in message['payload']):
+            "[API_Monitor]" not in message['payload'] and
+            "[Static_Analysis]" not in message['payload']):
             log_handler("global_stack",message['payload'])
 
 ''' 
@@ -1203,6 +1215,7 @@ def reset_variables_and_output():
     global heap_console_output
     global global_console_output
     global api_monitor_console_output
+    global static_analysis_console_output
 
     global loaded_classes
     global system_classes
@@ -1224,6 +1237,7 @@ def reset_variables_and_output():
     heap_console_output = ""
     global_console_output = ""
     api_monitor_console_output = ""
+    static_analysis_console_output = ""
     # call stack
     call_count = 0
     call_count_stack = {}
@@ -1251,6 +1265,7 @@ def log_handler(level, text):
     global heap_console_output
     global global_console_output
     global api_monitor_console_output
+    global static_analysis_console_output
 
     if not text:
         return
@@ -1328,6 +1343,10 @@ def log_handler(level, text):
         }, 
         namespace='/console'
         )
+    if level == 'static_analysis':
+        text=text.replace("[Static_Analysis]\n","")
+        static_analysis_console_output=text
+
     global_console_output = global_console_output + "\n" + text
     socket_io.emit(
     'global_console', 
