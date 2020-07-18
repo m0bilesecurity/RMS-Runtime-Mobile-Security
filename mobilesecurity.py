@@ -97,11 +97,7 @@ try {
     },
 
     onLeave: function (retval) {
-      try {
-        this.s = this.s + "Output: " + new ObjC.Object(retval).toString() + "\\n";
-      } catch (e) {
-        this.s = this.s + "Output: " + retval.toString() + "\\n";
-      } 
+      this.s = this.s + "Output: " + retval.toString() + "\\n";
       {{stacktrace}}
       send(this.s);
     }
@@ -147,7 +143,8 @@ var classmethod = "{classMethod}";
 var methodsignature = "{methodSignature}";
 try {
   var hook = eval('ObjC.classes.' + classname + '["' + classmethod + '"]');
-
+ 
+  //{methodSignature}
   Interceptor.attach(hook.implementation, {
     onEnter: function (args) {
       send("[Call_Stack]\\nClass: " + classname + "\\nMethod: " + methodsignature + "\\n");
@@ -168,15 +165,14 @@ try {
       }
     },
 
+    //{methodSignature}
     onLeave: function (retval) {
-      try {
-        this.s = this.s + "Output: " + new ObjC.Object(retval).toString() + "\\n";
-      } catch (e) {
-        this.s = this.s + "Output: " + retval.toString() + "\\n";
-      }
+      this.s = this.s + "Output: " + retval.toString() + "\\n";
+      //uncomment the lines below to replace retvalue
+      //retval.replace(0);  
 
       //uncomment the line below to print StackTrace
-      this.s = this.s + "StackTrace: \\n" + Thread.backtrace(this.context, Backtracer.ACCURATE).map(DebugSymbol.fromAddress).join('\\n') + "\\n";
+      //this.s = this.s + "StackTrace: \\n" + Thread.backtrace(this.context, Backtracer.ACCURATE).map(DebugSymbol.fromAddress).join('\\n') + "\\n";
       send(this.s);
     }
   });
@@ -185,8 +181,6 @@ try {
   send("Not able to hook \\nClass: " + classname + "\\nMethod: " + methodsignature + "\\n");
 }
 """
-
-
 
 template_heap_search_Android = """
 Java.performNow(function () {
@@ -235,12 +229,49 @@ Java.performNow(function () {
 
 });
 """
+
+
 template_heap_search_iOS = """
 var classname = "{className}";
 var classmethod = "{classMethod}";
 var methodsignature = "{methodSignature}";
 
+ObjC.choose(ObjC.classes[classname], {
+  onMatch: function (instance) {
+    try
+    {   
+        var returnValue;
+        //{methodSignature}
+        returnValue = instance[classmethod](); //<-- insert args if needed
 
+        var s=""
+        s=s+"[Heap_Search]\\n"
+        s=s + "[*] Heap Search - START\\n"
+        s=s+"Instance Found: " + instance.toString() + "\\n";
+        s=s+"Calling method: \\n";
+        s=s+"   Class: " + classname + "\\n"
+        s=s+"   Method: " + methodsignature + "\\n"
+        s=s+"-->Output: " + returnValue + "\\n";
+
+        s=s+"[*] Heap Search - END\\n"
+        send(s);
+        
+    }catch(err)
+    {
+        var s = "";
+        s=s+"[Heap_Search]\\n"
+        s=s + "[*] Heap Search - START\\n"
+        s=s + "Instance NOT Found or Exception while calling the method\\n";
+        s=s + "   Class: " + classname + "\\n"
+        s=s + "   Method: " + methodsignature + "\\n"
+        s=s + "-->Exception: " + err + "\\n"
+        s=s + "[*] Heap Search - END\\n"
+        send(s)
+    }
+  },
+  onComplete: function () {
+  }
+});
 """
 
 

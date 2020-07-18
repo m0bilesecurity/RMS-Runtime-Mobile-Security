@@ -301,6 +301,7 @@ function hook_classes_and_methods_Android(loaded_classes, loaded_methods, templa
         //Debug - print FRIDA template
         //send(t);
 
+        console.log(clazz+" "+dict["name"]+" hooked!")
         // ready to eval!
         eval(t);
       });
@@ -369,7 +370,7 @@ function generate_hook_template_Android (loaded_classes, loaded_methods, templat
 
 function heap_search_template_Android(loaded_classes, loaded_methods, template)
 {
-  var hto = "" //hto stands for hooks template output
+  var hto = "" //hto stands for heap template output
   Java.perform(function () {
     loaded_classes.forEach(function (clazz) {
       loaded_methods[clazz].forEach(function (dict) {
@@ -411,13 +412,13 @@ function heap_search_template_Android(loaded_classes, loaded_methods, template)
         //Debug - print FRIDA template
         //send(t);
 
-        // hooks concat
+        // heap search templates concat
         hto = hto + t;
       });
     });
 
   })
-  // return HOOK template
+  // return Heap Search template
   return hto;
 }
 
@@ -727,6 +728,7 @@ function hook_classes_and_methods_iOS(loaded_classes, loaded_methods, template)
       // replace methodSignature 
       t = t.replace("{methodSignature}", dict["ui_name"]);
 
+      console.log(clazz+" "+dict["name"]+" hooked!")
       eval(t)
     });
   });
@@ -744,9 +746,12 @@ function generate_hook_template_iOS (loaded_classes, loaded_methods, template)
       t = t.replace("{className}", clazz);
       // replace classMethod 
       t = t.replace("{classMethod}", dict["name"]);
-      // replace methodSignature 
+      // replace methodSignature x3
+      t = t.replace("{methodSignature}", dict["ui_name"]);
+      t = t.replace("{methodSignature}", dict["ui_name"]);
       t = t.replace("{methodSignature}", dict["ui_name"]);
 
+      //hook templates concat
       hto = hto + t;
     });
   });
@@ -756,10 +761,24 @@ function generate_hook_template_iOS (loaded_classes, loaded_methods, template)
 
 function heap_search_template_iOS(loaded_classes, loaded_methods, template)
 {
-  var hto = "" //hto stands for hooks template output
+  var hto = "" //hto stands for heap template output
+  loaded_classes.forEach(function (clazz) {
+    loaded_methods[clazz].forEach(function (dict) {
+      var t = template //template2
 
-
-  // return HOOK template
+      // replace className
+      t = t.replace("{className}", clazz);
+      // replace classMethod x1
+      t = t.replace("{classMethod}", dict["name"]);
+      // replace methodSignature x2
+      t = t.replace("{methodSignature}", dict["ui_name"]);
+      t = t.replace("{methodSignature}", dict["ui_name"]);
+      
+      //heap search templates concat
+      hto = hto + t;
+    });
+  });
+  // return Heap Search template
   return hto;
 }
 
