@@ -298,7 +298,7 @@ def device_management():
     config = read_config_file()
 
     if mobile_OS=="Android":
-        system_package=config["system_package_android"];
+        system_package=config["system_package_Android"];
     else: 
         system_package=config["system_package_iOS"];
 
@@ -351,7 +351,7 @@ def device_management():
         
 
         if mobile_OS=="Android":
-            system_package=config["system_package_android"];
+            system_package=config["system_package_Android"];
         else: 
             system_package=config["system_package_iOS"];
 

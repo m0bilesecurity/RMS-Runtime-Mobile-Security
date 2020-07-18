@@ -63,7 +63,11 @@
                        rounded" action="/" method=post>
             <div class="form-group">
               <label for="mode">Mobile OS</label>
-              <select class="form-control" id="mobile_OS" name="mobile_OS">
+              <select class="form-control" 
+                      id="mobile_OS" 
+                      name="mobile_OS"
+                      required=true>
+                <option disabled selected value> -- select an option -- </option>
                 <option>Android</option>
                 <option>iOS</option>
               </select>
@@ -115,7 +119,7 @@
               <button type="submit" class="btn btn-success mb-2">Start RMS</button>
               <button class="btn btn-danger mb-2 float-right" type="button" data-toggle="collapse"
                 data-target="#collapseViewCFS" aria-expanded="true" aria-controls="collapseView">
-                Custom Frida Script
+                Load favorite Frida Scripts
               </button>
             </div>
             <!-- Custom Frida Script - Toggle -->
