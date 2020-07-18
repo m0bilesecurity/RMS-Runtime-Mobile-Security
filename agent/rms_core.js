@@ -1,6 +1,6 @@
 /******************************************************************************
  * Exported APIs
- 1. loadclasses
+ 1. loadclasses()
  2. loadclasseswithfilter([filters], isRegex, isCase, isWhole)
  3. loadmethods([loaded_classes])
  4. loadcustomfridascript(frida_script)
@@ -16,7 +16,6 @@ rpc.exports = {
   checkmobileos: function(){
     if (Java.available) return "Android"
     if (ObjC.available) return "iOS"
-
     return "N/A"
   },
   loadclasses: function () {
@@ -83,7 +82,9 @@ rpc.exports = {
 
 
 /*
-  Android - Stuff
+***********************************************************************
+*************************** Android - Stuff ***************************
+***********************************************************************             
 */
 
 function load_classes_Android()
@@ -597,7 +598,9 @@ function javadynamichook(hook, category, callback) {
 }
 
 /*
-  iOS - Stuff
+***********************************************************************
+***************************** iOS - Stuff *****************************
+***********************************************************************             
 */
 
 function load_classes_iOS()

@@ -1,8 +1,8 @@
 /************************************************************************
  * Name: Bypass Touch ID
  * OS: iOS
- * Author: @r3ggi
- * Source: https://gist.github.com/r3ggi/
+ * Author: @FSecureLABS
+ * Source: https://github.com/FSecureLABS/needle
 *************************************************************************/
 
 send("Bypass Touch ID - Script Loaded!")

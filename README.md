@@ -61,42 +61,42 @@ e.g.
 **NOTE** RMS attachs a persistence process called **com.android.systemui** to get the list of all the classes that are already loaded in memory before the launch of the target app. If you have an issue with it, try to find a different package that works well on your device. 
 You can set another default package via the Config Tab or by simply editing the config.json file.
 
-![DEMO_1](/DEMO/DEMO_1_Device.gif)
+![DEMO_1](/DEMO/Android/DEMO_1_Device.gif)
 
 ## 2. Check which Classes and Methods have been loaded in memory  ##
-![DEMO_2](/DEMO/DEMO_2_Dump.gif)
+![DEMO_2](/DEMO/Android/DEMO_2_Dump.gif)
 
 ## 3. Hook on the fly Classes/Methods and trace their args and return values  ##
-![DEMO_3_a](/DEMO/DEMO_3_Massive_Hook.gif)
+![DEMO_3_a](/DEMO/Android/DEMO_3_Massive_Hook.gif)
 
 Go back to the dump page in order to have an overview of all the **hooked methods that have been executed by the app** ✅
 
-![DEMO_3_b](/DEMO/DEMO_3_Overview_Methods.gif)
+![DEMO_3_b](/DEMO/Android/DEMO_3_Overview_Methods.gif)
 
 ## 4. Search instances of a specific class on the Heap and call its methods [BETA]  ##
-![DEMO_4](/DEMO/DEMO_4_Heap_Search.gif)
+![DEMO_4](/DEMO/Android/DEMO_4_Heap_Search.gif)
 
 ## 5. Select a Class and generate on the fly an Hook template for all its methods  ##
-![DEMO_5](/DEMO/DEMO_5_Hook_Hack.gif)
+![DEMO_5](/DEMO/Android/DEMO_5_Hook_Hack.gif)
 
 ## 6. Easily detect new classes that have been loaded in memory   ##
-![DEMO_6](/DEMO/DEMO_6_Diff_Classes.gif)
+![DEMO_6](/DEMO/Android/DEMO_6_Diff_Classes.gif)
 
 ## 7. Inject your favorite FRIDA CUSTOM SCRIPTS on the fly   ##
 
 Just add your .js files inside the custom_script folder and they will be automatically loaded by the web interface ready to be executed.
 
-![DEMO_7](/DEMO/DEMO_7_Custom_Script.gif)
+![DEMO_7](/DEMO/Android/DEMO_7_Custom_Script.gif)
 
 ## 8. API Monitor [BETA]  ##
 
 via the API Monitor TAB you can easily monitor tons of Android APIs organized in 19 different Categories. Support can be easily extended by adding more classes/methods to the **api_monitor.json** file.
 
-![DEMO_10](/DEMO/DEMO_10_API_Monitor.png)
+![DEMO_10](/DEMO/Android/DEMO_10_API_Monitor.png)
 
 You can also monitor native functions: libc.so - open, close, read, write, unlink, remove
 
-![DEMO_8](/DEMO/DEMO_8_FS_monitor.png)
+![DEMO_8](/DEMO/Android/DEMO_8_FS_monitor.png)
 
 ## 9. FRIDA Script to load Stetho by Facebook [BONUS]  ##
 
@@ -104,7 +104,7 @@ Inject the FRIDA script to load the amazing [Stetho](http://facebook.github.io/s
 
 Stetho is a sophisticated debug bridge for Android applications. When enabled, developers have access to the Chrome Developer Tools feature natively part of the Chrome desktop browser. Developers can also choose to enable the optional dumpapp tool which offers a powerful command-line interface to application internals.
 
-![DEMO_9](/DEMO/DEMO_9_Stetho.gif)
+![DEMO_9](/DEMO/Android/DEMO_9_Stetho.gif)
 
 ## 10. File Manager [BETA]  ##
 
@@ -117,7 +117,7 @@ In order to enable the download button, follow the steps below:
 2. Compile the "**RMS_Core.js**" agent via frida-compile! Just run the command ```npm install``` directly from the **agent** folder. A file called "**_RMS_Core_BETA.js**" will be generated.
 3. Run RMS!
 
-![DEMO_11](/DEMO/DEMO_11_File_Manager.png)
+![DEMO_11](/DEMO/Android/DEMO_11_File_Manager.png)
 
 
 # Acknowledgements
@@ -129,7 +129,7 @@ Special thanks to the following Open Source projects for the inspiration:
 
 ### FRIDA Custom Scripts bundled in RMS - Credits:
 * [Runtime Mobile Security (RMS)](https://github.com/m0bilesecurity/RMS-Runtime-Mobile-Security)
-* [FSecureLABS](https://github.com/FSecureLABS/android-keystore-audit)
+* [FSecureLABS](https://github.com/FSecureLABS/)
 * [Mediaservice](https://techblog.mediaservice.net/)
 * [iddoeldor](https://github.com/iddoeldor)
 * [dzonerzy](https://github.com/dzonerzy)
@@ -138,9 +138,10 @@ Special thanks to the following Open Source projects for the inspiration:
 * [int3rf3r3nc3](https://github.com/interference-security/frida-scripts)
 * [dki](https://codeshare.frida.re/@dki/ios10-ssl-bypass/)
 * [ay-kay](https://codeshare.frida.re/@ay-kay/ios-dataprotection/)
-* [r3ggi](https://gist.github.com/r3ggi/)
 * [chaitin](https://github.com/chaitin/passionfruit)
 * [lich4](https://codeshare.frida.re/@lichao890427/dump-ios/)
+* [fadeevab](https://codeshare.frida.re/@fadeevab/intercept-android-apk-crypto-operations/)
+* [federicodotta](https://github.com/federicodotta/Brida)
 
 ### DEMO apps:
 

@@ -1,8 +1,9 @@
 /********************************************************************************
- * Name: iOS Data Protecion
+ * Name: Dump iOS Data Protection Keys
  * OS: iOS
  * Author: @ay-kay
- * Source: List iOS file data protection classes (NSFileProtectionKey) of an app
+ * Source: https://codeshare.frida.re/@ay-kay/ios-dataprotection/
+ * Info: List iOS file data protection classes (NSFileProtectionKey) of an app
  *********************************************************************************/
 
 function listDirectoryContentsAtPath(path) {

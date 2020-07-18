@@ -92,7 +92,11 @@
               <th class="text-center">isHidden</th>
               <th class="text-center">size</th>
               <th class="text-center">lastModified</th>
+              {% if mobile_OS == "Android" %}
               <th class="text-center">adb command</th>
+              {% else %}
+              <th class="text-center">file path</th>
+              {% endif %}
               {% if BETA == True %}
               <th class="text-center">download</th>
               {% endif %}
@@ -155,12 +159,12 @@
                 <td class="text-center">
                   {% if files_at_path.files[f].attributes.isFile %}
                   <button 
-                  onclick="show_adb_command('{{files_at_path.path}}','{{f}}')"
+                  onclick="show_adb_command('{{files_at_path.path}}','{{f}}','{{mobile_OS}}')"
                   class="btn btn-primary btn-sm">
                   show
                   </button>
                   <button 
-                  onclick="copy_adb_command('{{files_at_path.path}}','{{f}}')"
+                  onclick="copy_adb_command('{{files_at_path.path}}','{{f}}','{{mobile_OS}}')"
                   class="btn btn-warning btn-sm">
                   copy
                   </button>
@@ -200,17 +204,28 @@
 
   {% block scripts %}
   <script>
-    function show_adb_command(path,filename){ 
-      if (filename=="base.apk")
-        alert("adb pull "+path+"/"+filename+ " {{target_package}}.apk")
-      else alert("adb pull "+path+"/"+filename)
+    function show_adb_command(path,filename,os){ 
+      if(os=="Android"){
+        if (filename=="base.apk")
+          alert("adb pull "+path+"/"+filename+ " {{target_package}}.apk")
+        else alert("adb pull "+path+"/"+filename)
+      }
+      else{
+        alert(path+"/"+filename)
+      }
+
     }
 
-    function copy_adb_command(path,filename){ 
+    function copy_adb_command(path,filename,os){ 
       var textToCopy=""
-      if (filename=="base.apk")
-        textToCopy="adb pull "+path+"/"+filename+" {{target_package}}.apk"
-      else textToCopy="adb pull "+path+"/"+filename
+      if(os=="Android"){
+        if (filename=="base.apk")
+          textToCopy="adb pull "+path+"/"+filename+" {{target_package}}.apk"
+        else textToCopy="adb pull "+path+"/"+filename
+      }
+      else{
+        textToCopy=path+"/"+filename
+      }
 
       var inp =document.createElement('input');
       document.body.appendChild(inp)
