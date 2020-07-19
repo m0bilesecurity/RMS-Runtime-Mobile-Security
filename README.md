@@ -5,12 +5,12 @@
 
 by [@mobilesecurity_](https://twitter.com/mobilesecurity_) 
 
-**Runtime Mobile Security (RMS)**, powered by [FRIDA](https://github.com/frida/frida), is a powerful web interface that helps you to manipulate Mobile Apps for iOS and Android at Runtime. 
+**Runtime Mobile Security (RMS)**, powered by [FRIDA](https://github.com/frida/frida), is a powerful web interface that helps you to manipulate <b>Android and iOS Mobile Apps</b> at Runtime. 
 
 You can easily dump all the loaded classes and relative methods, hook everything on the fly, trace methods args and return value, load custom scripts and many other useful stuff.
 
 # General Info
-Runtime Mobile Security (RMS) is supporting <b>Android</b> and <b>iOS</b> devices.
+Runtime Mobile Security (RMS) supports <b>Android</b> and <b>iOS</b> devices.
 
 It has been tested on MacOS and with the following devices:
 * AVD emulator
@@ -21,6 +21,7 @@ It has been tested on MacOS and with the following devices:
 It should also work well on Windows and Linux but some minor adjustments may be needed.
 
 Do not connect more than one device at the same time. RMS is not so smart at the moment 😉
+
 <b>NOTE:</b> Socket are not working on Safari, please use Chrome instead.
 
 # Prerequisites
