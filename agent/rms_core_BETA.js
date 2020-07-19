@@ -680,6 +680,7 @@ function load_classes_with_filter_iOS(filter, isRegex, isCase, isWhole)
 
   return loaded_classes;
 }
+
 function load_methods_iOS(loaded_classes){
   var loaded_methods = {};
   loaded_classes.forEach(function (className, index) {
@@ -710,13 +711,15 @@ function load_methods_iOS(loaded_classes){
       }
       try{
         args=(ObjC.classes[className][m].argumentTypes)
-        args.shift(2) //remove args[0] = self, args[1] = selector
+        //remove args[0] = self, args[1] = selector
+        args.shift() 
+        args.shift()
       }
       catch(err){
         args=null
       }
       
-      method_and_args["ui_name"]="("+retValue+") "+m+" ("+args+")";
+      method_and_args["ui_name"]="("+retValue+") "+m+"("+args+")";
       method_and_args["name"]=m;
       method_and_args["args"]=args;
       classMethods.push(method_and_args);
@@ -881,7 +884,7 @@ function list_files_at_path_iOS(path)
             }
         }
       }
-      // add the file to the listResult
+      // add current file to the listResult
       listResult.files[file] = files;
     }
     //DEBUG console.log(JSON.stringify(listResult))
