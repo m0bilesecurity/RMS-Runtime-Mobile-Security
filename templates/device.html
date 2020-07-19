@@ -40,7 +40,7 @@
           <div class="collapse show" id="collapseViewDevice">
             <div class="form-group">
               <label for="system_package">System Package used for diff loaded classes - (In case of issue try to attach a different persistent process)</label>
-              <input type="text" class="form-control" id="system_package" placeholder="{{ system_package_str|safe }} "
+              <input type="text" class="form-control" id="system_package" placeholder="Android: {{ system_package_Android|safe }} - iOS: {{ system_package_iOS|safe }}"
                 disabled>
             </div>
             <div class="form-group">
@@ -61,7 +61,17 @@
                        list-group-item-action 
                        bg-light
                        rounded" action="/" method=post>
-
+            <div class="form-group">
+              <label for="mode">Mobile OS</label>
+              <select class="form-control" 
+                      id="mobile_OS" 
+                      name="mobile_OS"
+                      required=true>
+                <option disabled selected value> -- select an option -- </option>
+                <option>Android</option>
+                <option>iOS</option>
+              </select>
+            </div>            
             <div class="form-group">
               <label for="package">Package name</label>
               <input class="form-control" list="package" name="package" required="true" placeholder="com.example.app">
@@ -109,7 +119,7 @@
               <button type="submit" class="btn btn-success mb-2">Start RMS</button>
               <button class="btn btn-danger mb-2 float-right" type="button" data-toggle="collapse"
                 data-target="#collapseViewCFS" aria-expanded="true" aria-controls="collapseView">
-                Custom Frida Script
+                Load favorite Frida Scripts
               </button>
             </div>
             <!-- Custom Frida Script - Toggle -->
@@ -117,17 +127,46 @@
             <div class="collapse" id="collapseViewCFS">
               <div class="form-group">
                 <h5>&nbsp;Load one of your favorite Frida Custom Scripts</h5>
-                <ul class="list-group">
-                  {% for cs in custom_scripts %}
-                  <a href="/?cs={{ cs }}" class="list-group-item list-group-item-action">
-                    [{{ loop.index }}] - {{ cs }}
-                  </a>
-                  {% endfor %}
-                </ul>
                 <small class="form-text text-muted">
                   &nbsp; Scripts are automatically loaded from the <font color=red>custom_scripts</font> folder.
                   <u><b>Make sure to add your favorite <font color=red>.js</font> scripts!</b></u> 😉
                 </small>
+                <br>
+                  <!-- Nav tabs -->
+                  <ul class="nav nav-tabs" role="tablist">
+                    <li class="nav-item">
+                      <a class="nav-link active" data-toggle="tab" href="#Android">Android</a>
+                    </li>
+                    <li class="nav-item">
+                      <a class="nav-link" data-toggle="tab" href="#iOS">iOS</a>
+                    </li>
+                  </ul>
+
+                  <!-- Tab panes -->
+                  <div class="tab-content">
+                    <div id="Android" class="container tab-pane active"><br>
+                      <h3>Android</h3>
+                      <ul class="list-group">
+                        {% for cs in custom_scripts_Android %}
+                        <a href="/?os=Android&cs={{ cs }}" class="list-group-item list-group-item-action">
+                          [{{ loop.index }}] - {{ cs }}
+                        </a>
+                        {% endfor %}
+                      </ul>
+
+                    </div>
+                    <div id="iOS" class="container tab-pane fade"><br>
+                      <h3>iOS</h3>
+                      <ul class="list-group">
+                        {% for cs in custom_scripts_iOS %}
+                        <a href="/?os=iOS&cs={{ cs }}" class="list-group-item list-group-item-action">
+                          [{{ loop.index }}] - {{ cs }}
+                        </a>
+                        {% endfor %}
+                      </ul>
+                    </div>
+                  </div> <!-- tab-content end-->
+
               </div>
             </div>
             <!-- Custom Frida Script - Toggle -->

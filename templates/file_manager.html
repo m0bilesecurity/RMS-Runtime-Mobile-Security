@@ -20,10 +20,12 @@
       <!-- 2 textarea side by side -->
       <div class="container-fluid">
         <br>
-        <h2>File Manager 🗂 - [BETA - use ADB to download files]</h2>
+        <h2>File Manager 🗂 - [BETA - use ADB/SCP to download files]</h2>
         <div class="border-top my-3"></div>
         <h4><font color="ff5050">{{target_package}}</font> - enviroment info:</h4>
         <ul>
+        <!-- Android start -->
+        {% if mobile_OS=="Android" %}
         <li>
           <b>mainDirectory:</b> 
           <a href="/file_manager?path={{env.mainDirectory}}">{{env.mainDirectory}}</a>
@@ -51,6 +53,33 @@
           <b>packageCodePath:</b> 
           <a href="/file_manager?path={{env.packageCodePath}}">{{env.packageCodePath}}</a>
         </li>
+        {% endif %}
+        <!-- Android end -->
+        <!-- iOS start -->
+        {% if mobile_OS=="iOS" %}
+        <li>
+          <b>mainDirectory:</b> 
+          <a href="/file_manager?path={{env.mainDirectory}}">{{env.mainDirectory}}</a>
+        </li>
+        <li>
+          <b>BundlePath:</b> 
+          <a href="/file_manager?path={{env.BundlePath}}">{{env.BundlePath}}</a>
+        </li>
+        <li>
+          <b>CachesDirectory:</b> 
+          <a href="/file_manager?path={{env.CachesDirectory}}">{{env.CachesDirectory}}</a>
+        </li>
+        <li>
+          <b>DocumentDirectory:</b> 
+          <a href="/file_manager?path={{env.DocumentDirectory}}">{{env.DocumentDirectory}}</a>
+        </li>
+        <li>
+          <b>LibraryDirectory:</b> 
+          <a href="/file_manager?path={{env.LibraryDirectory}}">{{env.LibraryDirectory}}</a>
+        </li>
+        {% endif %}
+        <!-- iOS end -->
+
         </ul>
         <div class="border-top my-3"></div>
           {% if currentPath %}
@@ -63,14 +92,20 @@
               <th class="text-center">isHidden</th>
               <th class="text-center">size</th>
               <th class="text-center">lastModified</th>
+              {% if mobile_OS == "Android" %}
               <th class="text-center">adb command</th>
+              {% else %}
+              <th class="text-center">file path</th>
+              {% endif %}
               {% if BETA == True %}
               <th class="text-center">download</th>
               {% endif %}
             </thead>
             <tbody>
               {% set parent = '/'.join(((files_at_path.path).split("/"))[:-1])  %}
+              <!-- Android start -->
               {% if 
+                mobile_OS == "Android" and
                 files_at_path.path != env.mainDirectory and 
                 files_at_path.path != env.externalCacheDirectory and 
                 files_at_path.path != env.obbDir 
@@ -79,6 +114,19 @@
               <td><a href="/file_manager?path={{parent}}">..</a></td>
             </tr>
             {% endif %}
+            <!-- Android end -->
+            <!-- iOS start TODO -->
+            {% if 
+              mobile_OS == "iOS" and
+              files_at_path.path != env.mainDirectory and
+              files_at_path.path != env.BundlePath 
+            %}
+          <tr>
+            <td><a href="/file_manager?path={{parent}}">..</a></td>
+          </tr>
+          {% endif %}
+          <!-- iOS end -->
+
             {% for f in files_at_path["files"] %}
             <tr>
               <td class="text-center">
@@ -111,12 +159,12 @@
                 <td class="text-center">
                   {% if files_at_path.files[f].attributes.isFile %}
                   <button 
-                  onclick="show_adb_command('{{files_at_path.path}}','{{f}}')"
+                  onclick="show_adb_command('{{files_at_path.path}}','{{f}}','{{mobile_OS}}')"
                   class="btn btn-primary btn-sm">
                   show
                   </button>
                   <button 
-                  onclick="copy_adb_command('{{files_at_path.path}}','{{f}}')"
+                  onclick="copy_adb_command('{{files_at_path.path}}','{{f}}','{{mobile_OS}}')"
                   class="btn btn-warning btn-sm">
                   copy
                   </button>
@@ -156,17 +204,28 @@
 
   {% block scripts %}
   <script>
-    function show_adb_command(path,filename){ 
-      if (filename=="base.apk")
-        alert("adb pull "+path+"/"+filename+ " {{target_package}}.apk")
-      else alert("adb pull "+path+"/"+filename)
+    function show_adb_command(path,filename,os){ 
+      if(os=="Android"){
+        if (filename=="base.apk")
+          alert("adb pull "+path+"/"+filename+ " {{target_package}}.apk")
+        else alert("adb pull "+path+"/"+filename)
+      }
+      else{
+        alert(path+"/"+filename)
+      }
+
     }
 
-    function copy_adb_command(path,filename){ 
+    function copy_adb_command(path,filename,os){ 
       var textToCopy=""
-      if (filename=="base.apk")
-        textToCopy="adb pull "+path+"/"+filename+" {{target_package}}.apk"
-      else textToCopy="adb pull "+path+"/"+filename
+      if(os=="Android"){
+        if (filename=="base.apk")
+          textToCopy="adb pull "+path+"/"+filename+" {{target_package}}.apk"
+        else textToCopy="adb pull "+path+"/"+filename
+      }
+      else{
+        textToCopy=path+"/"+filename
+      }
 
       var inp =document.createElement('input');
       document.body.appendChild(inp)

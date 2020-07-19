@@ -12,30 +12,51 @@
                 <a class="nav-link" href="/">Device<span class="sr-only">(current)</span></a>
             </li>
             {% if target_package %}
+            {% if mobile_OS=="Android" or mobile_OS=="iOS" %}
             <li class="nav-item border-right">
                 <a class="nav-link" href="/dump">Dump TAB<span class="sr-only"></span></a>
             </li>
+            {% endif %}
+            {% if mobile_OS=="Android" or mobile_OS=="iOS" %}
             <li class="nav-item border-right">
                 <a class="nav-link" href="/diff_classes">Diff Classes Analysis<span class="sr-only"></span></a>
             </li>
+            {% endif %}
+            {% if mobile_OS=="iOS" %}
+            <li class="nav-item border-right">
+                <a class="nav-link" href="/static_analysis">Static Analysis<span class="sr-only"></span></a>
+            </li>
+            {% endif %}
+            {% if mobile_OS=="Android" or mobile_OS=="iOS" %}
             <li class="nav-item border-right">
                 <a class="nav-link" href="/hook_lab">Hook LAB</a>
             </li>
+            {% endif %}
+            {% if mobile_OS=="Android" or mobile_OS=="iOS" %}
             <li class="nav-item border-right">
                 <a class="nav-link" href="/heap_search">Heap Search</a>
             </li>
+            {% endif %}
+            {% if mobile_OS=="Android" %}
             <li class="nav-item border-right">
                 <a class="nav-link" href="/api_monitor">API Monitor</a>
             </li>
+            {% endif %}
+            {% if mobile_OS=="Android" or mobile_OS=="iOS" %}
             <li class="nav-item border-right">
                 <a class="nav-link" href="/file_manager">File Manager</a>
             </li>
+            {% endif %}
+            {% if mobile_OS=="Android" or mobile_OS=="iOS" %}
             <li class="nav-item border-right">
                 <a class="nav-link" href="/load_frida_script">Load Frida Script</a>
             </li>
+            {% endif %}
+            {% if mobile_OS=="Android" or mobile_OS=="iOS" %}
             <li class="nav-item border-right">
                 <a class="nav-link" href="/console_output">Console Output</a>
             </li>
+            {% endif %}
             {% endif %}
             <li class="nav-item border-right">
                 <a class="nav-link" href="/config">Config</a>

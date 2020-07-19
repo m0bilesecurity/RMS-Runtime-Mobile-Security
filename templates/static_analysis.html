@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- head and css -->
+  {% include 't_head.html' %}
+</head>
+
+<body>
+  <div class="d-flex" id="wrapper">
+    <!-- Sidebar -->
+    {% include 't_sidebar.html' %}
+
+    <!-- Page Content -->
+    <div id="page-content-wrapper">
+
+      <!-- Navbar -->
+      {% include 't_navbar.html' %}
+
+      <div class="container-fluid">
+        <br>
+        <h2>Static Analysis 🖥 - iOS Only</h2>
+        <div class="border-top my-3"></div>
+
+        <div class="row">
+          <div class="col-sm-12">
+            <!-- Textarea  -->
+              <textarea id=static_analysis_textarea name=static_analysis_textarea
+                class="form-control">{{ static_analysis_console_output|safe }}</textarea>
+              <br>
+            </form>
+          </div>
+
+        </div>
+      </div>
+      <!-- /#container-fluid -->
+
+    </div>
+    <!-- /#page-content-wrapper -->
+
+  </div>
+  <!-- /#wrapper -->
+
+  <!-- Javascript loading -->
+  {% include 't_js_script.html' %}
+
+  {% block scripts %}
+  <script>
+    var editor = CodeMirror.fromTextArea(static_analysis_textarea, {
+        lineNumbers: true,
+        mode: 'javascript',
+        theme: 'dracula'
+    });
+    editor.setSize("100%",650);
+  </script> 
+
+
+  
+  {% endblock %}
+
+</body>
+
+</html>

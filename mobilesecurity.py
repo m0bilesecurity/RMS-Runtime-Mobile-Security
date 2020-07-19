@@ -17,6 +17,7 @@ system_classes = []
 loaded_methods = {}
 
 # app env info
+mobile_OS="N/A"
 app_env_info = {}
 
 # Global variables - diff analysis
@@ -29,7 +30,7 @@ hooks_console_output = ""
 heap_console_output = ""
 global_console_output = ""
 api_monitor_console_output = ""
-
+static_analysis_console_output = ""
 #Global variables - call stack 
 call_count = 0
 call_count_stack={}
@@ -42,18 +43,18 @@ system_package = ""
 no_system_package=False
 
 #{{stacktrace}} placeholder is managed python side
-template_massive_hook = """
+template_massive_hook_Android = """
 Java.perform(function () {
     var classname = "{className}";
     var classmethod = "{classMethod}";
     var methodsignature = "{methodSignature}";
     var hookclass = Java.use(classname);
-
+    
     hookclass.{classMethod}.{overload}implementation = function ({args}) {
         send("[Call_Stack]\\nClass: " +classname+"\\nMethod: "+methodsignature+"\\n");
         var ret = this.{classMethod}({args});
 
-        var s="";s
+        var s="";
         s=s+"[Hook_Stack]\\n"
         s=s+"Class: "+classname+"\\n"
         s=s+"Method: "+methodsignature+"\\n"
@@ -68,7 +69,46 @@ Java.perform(function () {
 });
 """
 
-template_hook_lab = """
+template_massive_hook_iOS = """
+var classname = "{className}";
+var classmethod = "{classMethod}";
+var methodsignature = "{methodSignature}";
+try {
+  var hook = eval('ObjC.classes.' + classname + '["' + classmethod + '"]');
+
+  Interceptor.attach(hook.implementation, {
+    onEnter: function (args) {
+      send("[Call_Stack]\\nClass: " + classname + "\\nMethod: " + methodsignature + "\\n");
+      this.s = ""
+      this.s = this.s + "[Hook_Stack]\\n"
+      this.s = this.s + "Class: " + classname + "\\n"
+      this.s = this.s + "Method: " + methodsignature + "\\n"
+      if (classmethod.indexOf(":") !== -1) {
+        var params = classmethod.split(":");
+        params[0] = params[0].split(" ")[1];
+        for (var i = 0; i < params.length - 1; i++) {
+          try {
+            this.s = this.s + "Input: " + params[i] + ": " + new ObjC.Object(args[2 + i]).toString() + "\\n";
+          } catch (e) {
+            this.s = this.s + "Input: " + params[i] + ": " + args[2 + i].toString() + "\\n";
+          }
+        }
+      }
+    },
+
+    onLeave: function (retval) {
+      this.s = this.s + "Output: " + retval.toString() + "\\n";
+      {{stacktrace}}
+      send(this.s);
+    }
+  });
+} catch (err) {
+  send("[!] Exception: " + err.message);
+  send("Not able to hook \\nClass: " + classname + "\\nMethod: " + methodsignature + "\\n");
+}
+"""
+
+template_hook_lab_Android = """
 Java.perform(function () {
     var classname = "{className}";
     var classmethod = "{classMethod}";
@@ -97,7 +137,52 @@ Java.perform(function () {
 });
 """
 
-template_heap_search = """
+template_hook_lab_iOS = """
+var classname = "{className}";
+var classmethod = "{classMethod}";
+var methodsignature = "{methodSignature}";
+try {
+  var hook = eval('ObjC.classes.' + classname + '["' + classmethod + '"]');
+ 
+  //{methodSignature}
+  Interceptor.attach(hook.implementation, {
+    onEnter: function (args) {
+      send("[Call_Stack]\\nClass: " + classname + "\\nMethod: " + methodsignature + "\\n");
+      this.s = ""
+      this.s = this.s + "[Hook_Stack]\\n"
+      this.s = this.s + "Class: " + classname + "\\n"
+      this.s = this.s + "Method: " + methodsignature + "\\n"
+      if (classmethod.indexOf(":") !== -1) {
+        var params = classmethod.split(":");
+        params[0] = params[0].split(" ")[1];
+        for (var i = 0; i < params.length - 1; i++) {
+          try {
+            this.s = this.s + "Input: " + params[i] + ": " + new ObjC.Object(args[2 + i]).toString() + "\\n";
+          } catch (e) {
+            this.s = this.s + "Input: " + params[i] + ": " + args[2 + i].toString() + "\\n";
+          }
+        }
+      }
+    },
+
+    //{methodSignature}
+    onLeave: function (retval) {
+      this.s = this.s + "Output: " + retval.toString() + "\\n";
+      //uncomment the lines below to replace retvalue
+      //retval.replace(0);  
+
+      //uncomment the line below to print StackTrace
+      //this.s = this.s + "StackTrace: \\n" + Thread.backtrace(this.context, Backtracer.ACCURATE).map(DebugSymbol.fromAddress).join('\\n') + "\\n";
+      send(this.s);
+    }
+  });
+} catch (err) {
+  send("[!] Exception: " + err.message);
+  send("Not able to hook \\nClass: " + classname + "\\nMethod: " + methodsignature + "\\n");
+}
+"""
+
+template_heap_search_Android = """
 Java.performNow(function () {
     var classname = "{className}"
     var classmethod = "{classMethod}";
@@ -145,6 +230,51 @@ Java.performNow(function () {
 });
 """
 
+
+template_heap_search_iOS = """
+var classname = "{className}";
+var classmethod = "{classMethod}";
+var methodsignature = "{methodSignature}";
+
+ObjC.choose(ObjC.classes[classname], {
+  onMatch: function (instance) {
+    try
+    {   
+        var returnValue;
+        //{methodSignature}
+        returnValue = instance[classmethod](); //<-- insert args if needed
+
+        var s=""
+        s=s+"[Heap_Search]\\n"
+        s=s + "[*] Heap Search - START\\n"
+        s=s+"Instance Found: " + instance.toString() + "\\n";
+        s=s+"Calling method: \\n";
+        s=s+"   Class: " + classname + "\\n"
+        s=s+"   Method: " + methodsignature + "\\n"
+        s=s+"-->Output: " + returnValue + "\\n";
+
+        s=s+"[*] Heap Search - END\\n"
+        send(s);
+        
+    }catch(err)
+    {
+        var s = "";
+        s=s+"[Heap_Search]\\n"
+        s=s + "[*] Heap Search - START\\n"
+        s=s + "Instance NOT Found or Exception while calling the method\\n";
+        s=s + "   Class: " + classname + "\\n"
+        s=s + "   Method: " + methodsignature + "\\n"
+        s=s + "-->Exception: " + err + "\\n"
+        s=s + "[*] Heap Search - END\\n"
+        send(s)
+    }
+  },
+  onComplete: function () {
+  }
+});
+"""
+
+
 ''' 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Device - TAB
@@ -154,6 +284,7 @@ Device - TAB
 @app.route('/', methods=['GET', 'POST'])
 def device_management():
     global api
+    global mobile_OS
     global system_classes
     global target_package
     global system_package
@@ -161,10 +292,16 @@ def device_management():
     global BETA
 
     cs_file = ""
-    custom_scripts = []
+    custom_scripts_Android = []
+    custom_scripts_iOS = []
     packages = []
     config = read_config_file()
-    system_package=config["system_package"];
+
+    if mobile_OS=="Android":
+        system_package=config["system_package_Android"];
+    else: 
+        system_package=config["system_package_iOS"];
+
     no_system_package=False
     frida_crash=False
 
@@ -176,6 +313,7 @@ def device_management():
 
     try:
         device = get_device(device_type=config["device_type"], device_args=config['device_args'])
+        rms_print(device)
     except:
         return redirect(url_for('edit_config_file', error=True))
 
@@ -192,21 +330,31 @@ def device_management():
             return redirect(url_for('edit_config_file', error=True))
 
         # Load frida custom scripts inside "custom_scripts" folder
-        for f in os.listdir(os.path.dirname(os.path.realpath(__file__)) + "/custom_scripts"):
+        for f in os.listdir(os.path.dirname(os.path.realpath(__file__)) + "/custom_scripts/Android/"):
             if f.endswith(".js"):
-                custom_scripts.append(f)
+                custom_scripts_Android.append(f)
+        for f in os.listdir(os.path.dirname(os.path.realpath(__file__)) + "/custom_scripts/iOS/"):
+            if f.endswith(".js"):
+                custom_scripts_iOS.append(f)
 
         cs = request.args.get('cs')
-        if cs is not None:
-            with open(os.path.dirname(os.path.realpath(__file__)) + "/custom_scripts/" + cs) as f:
+        mobile_os_get = request.args.get('os')
+        if cs is not None and os is not None:
+            with open(os.path.dirname(os.path.realpath(__file__)) + "/custom_scripts/"+ mobile_os_get +"/" + cs) as f:
                 cs_file = f.read()
 
     if request.method == 'POST':
 
         #output reset
         reset_variables_and_output()
+        mobile_OS = request.values.get('mobile_OS')
+        
 
-        system_package=config["system_package"];
+        if mobile_OS=="Android":
+            system_package=config["system_package_Android"];
+        else: 
+            system_package=config["system_package_iOS"];
+
         target_package = request.values.get('package')
         #Frida Gadget support
         if target_package=="re.frida.Gadget":
@@ -242,6 +390,7 @@ def device_management():
         try:
             # attaching a persistent process to get enumerateLoadedClasses() result
             # before starting the target app - default process is com.android.systemui
+            session=None
             session = device.attach(system_package)
             script = session.create_script(frida_code)
             #script.set_log_handler(log_handler)
@@ -250,10 +399,11 @@ def device_management():
             system_classes = api.loadclasses()
             #sort list alphabetically
             system_classes.sort()
-        except:
+        except Exception as err:
+            rms_print(err)
             if (len(system_classes)==0):
                 no_system_package=True
-            rms_print(system_package+" is NOT available on your device. For a better RE experience, change it via the Config TAB!");
+            rms_print(system_package+" is NOT available on your device or a wrong OS has been selected. For a better RE experience, change it via the Config TAB!");
             pass
 
         session = None
@@ -287,8 +437,10 @@ def device_management():
     return render_template(
         "device.html",
         custom_script_loaded=cs_file,
-        custom_scripts=custom_scripts,
-        system_package_str=config["system_package"],
+        custom_scripts_Android=custom_scripts_Android,
+        custom_scripts_iOS=custom_scripts_iOS,
+        system_package_Android=config["system_package_Android"],
+        system_package_iOS=config["system_package_iOS"],
         device_type_str=config["device_type"],
         target_package=target_package,
         system_package=system_package,
@@ -323,6 +475,37 @@ def get_device(device_type="usb", device_args=None):
 
 ''' 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Static Analysis - TAB (iOS only)
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'''
+
+@app.route('/static_analysis', methods=['GET'])
+def static_analysis():
+    global mobile_OS
+    global static_analysis_console_output
+
+    script_path="/custom_scripts/"+ mobile_OS +"/static_analysis.js"
+
+    static_analysis_script = ""
+    with open(os.path.dirname(os.path.realpath(__file__)) + script_path) as f:
+        static_analysis_script = f.read()
+
+    api.loadcustomfridascript(static_analysis_script)
+
+    return render_template(
+    "static_analysis.html",
+    mobile_OS=mobile_OS,
+    static_analysis_console_output=static_analysis_console_output,
+    target_package=target_package,
+    system_package=system_package,
+    no_system_package=no_system_package
+    )
+
+
+
+
+''' 
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Dump Classes and Methods - TAB
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '''
@@ -330,6 +513,7 @@ Dump Classes and Methods - TAB
 
 @app.route('/dump', methods=['GET', 'POST'])
 def home():
+    global mobile_OS
     global loaded_classes
     global loaded_methods
     global system_classes
@@ -386,18 +570,28 @@ def home():
         try:
             loaded_methods = api.loadmethods(loaded_classes)
         except Exception as err:
+            rms_print(err)
             rms_print("FRIDA crashed while loading methods for one or more classes selected. Try to exclude them from your search!")
             return redirect(url_for("device_management", frida_crash=True))
         return printwebpage()
 
     if choice == 3:
         # --> Hook all loaded classes and methods
-        global template_massive_hook
+        global template_massive_hook_Android
+        global template_massive_hook_iOS
 
-        current_template=template_massive_hook
+        current_template=""
+        if mobile_OS=="Android":
+            current_template=template_massive_hook_Android
+        else: 
+            current_template=template_massive_hook_iOS
+
         stacktrace = request.args.get('stacktrace')
         if stacktrace == "yes":
-            current_template=current_template.replace("{{stacktrace}}", "s=s+\"StackTrace: \"+Java.use('android.util.Log').getStackTraceString(Java.use('java.lang.Exception').$new()).replace('java.lang.Exception','') +\"\\n\";")
+            if mobile_OS=="Android": 
+                current_template=current_template.replace("{{stacktrace}}", "s=s+\"StackTrace: \"+Java.use('android.util.Log').getStackTraceString(Java.use('java.lang.Exception').$new()).replace('java.lang.Exception','') +\"\\n\";")
+            else:
+                current_template=current_template.replace("{{stacktrace}}", "this.s=this.s+\"StackTrace: \\n\"+Thread.backtrace(this.context, Backtracer.ACCURATE).map(DebugSymbol.fromAddress).join('\\n') +\"\\n\";")
         else:
             current_template=current_template.replace("{{stacktrace}}", "")
 
@@ -418,6 +612,7 @@ Diff Classess - TAB
 
 @app.route('/diff_classes', methods=['GET', 'POST'])
 def diff_analysis():
+    global mobile_OS
     global current_loaded_classes
     global new_loaded_classes
     global target_package
@@ -459,6 +654,7 @@ def diff_analysis():
 
     return render_template(
         "diff_classes.html",
+        mobile_OS=mobile_OS,
         current_loaded_classes=temp_str_1,
         new_loaded_classes=temp_str_2,
         target_package=target_package,
@@ -473,10 +669,18 @@ Hook LAB - TAB
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '''
 
+def get_hook_lab_template(mobile_OS):
+    if mobile_OS=="Android":
+        return template_hook_lab_Android
+    else:
+        return template_hook_lab_iOS
+
 
 @app.route('/hook_lab', methods=['GET', 'POST'])
 def hook_lab():
-    global template_hook_lab
+    global mobile_OS
+    global template_hook_lab_Android
+    global template_hook_lab_iOS
     global loaded_methods
     global loaded_classes
     global target_package
@@ -504,7 +708,11 @@ def hook_lab():
         #Only class selected - load heap search template for all the methods
         if method_index is None:
             # hook template generation
-            hook_template = api.generatehooktemplate([selected_class], loaded_methods, template_hook_lab)
+            hook_template = api.generatehooktemplate(
+                [selected_class], 
+                loaded_methods, 
+                get_hook_lab_template(mobile_OS)
+            )
         #class and method selected - load heap search template for selected method only
         else:
             selected_method={}
@@ -512,11 +720,16 @@ def hook_lab():
             # get method of the selected class
             selected_method[selected_class] = [(loaded_methods[selected_class])[method_index]]
             # hook template generation
-            hook_template = api.generatehooktemplate([selected_class], selected_method, template_hook_lab)
+            hook_template = api.generatehooktemplate(
+                [selected_class], 
+                selected_method, 
+                get_hook_lab_template(mobile_OS)
+            )
 
     # print hook template
     return render_template(
         "hook_lab.html",
+        mobile_OS=mobile_OS,
         loaded_classes=loaded_classes,
         loaded_methods=loaded_methods,
         methods_hooked_and_executed=methods_hooked_and_executed,
@@ -535,10 +748,17 @@ Heap Search - TAB
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '''
 
+def get_heap_search_template(mobile_OS):
+    if mobile_OS=="Android":
+        return template_heap_search_Android
+    else:
+        return template_heap_search_iOS
 
 @app.route('/heap_search', methods=['GET', 'POST'])
 def heap_search():
-    global template_heap_search
+    global mobile_OS
+    global template_heap_search_Android
+    global template_heap_search_iOS
     global loaded_methods
     global loaded_classes
     global target_package
@@ -566,7 +786,11 @@ def heap_search():
         #Only class selected - load heap search template for all the methods
         if method_index is None:
             # heap template generation
-            heap_template = api.heapsearchtemplate([selected_class], loaded_methods, template_heap_search)
+            heap_template = api.heapsearchtemplate(
+                [selected_class], 
+                loaded_methods, 
+                get_heap_search_template(mobile_OS)
+                )
         #class and method selected - load heap search template for selected method only
         else:
             selected_method={}
@@ -574,12 +798,17 @@ def heap_search():
             # get method of the selected class
             selected_method[selected_class] = [(loaded_methods[selected_class])[method_index]]
             # heap template generation
-            heap_template = api.heapsearchtemplate([selected_class], selected_method, template_heap_search)
+            heap_template = api.heapsearchtemplate(
+                [selected_class], 
+                selected_method, 
+                get_heap_search_template(mobile_OS)
+                )
 
 
     # print hook template
     return render_template(
         "heap_search.html",
+        mobile_OS=mobile_OS,
         loaded_classes=loaded_classes,
         loaded_methods=loaded_methods,
         methods_hooked_and_executed=methods_hooked_and_executed,
@@ -600,6 +829,7 @@ API Monitor - TAB
 @app.route('/api_monitor', methods=['GET', 'POST'])
 def api_monitor():
 
+    global mobile_OS
     global target_package
     global system_package
     global no_system_package
@@ -632,6 +862,7 @@ def api_monitor():
 
     return render_template(
         "api_monitor.html",
+        mobile_OS=mobile_OS,
         target_package=target_package,
         system_package=system_package,
         no_system_package=no_system_package,
@@ -647,6 +878,7 @@ File Manager - TAB
 
 @app.route('/file_manager', methods=['GET', 'POST'])
 def file_manager():
+    global mobile_OS
     global app_env_info
 
     files_at_path=None
@@ -673,6 +905,7 @@ def file_manager():
 
     return render_template(
         "file_manager.html",
+        mobile_OS=mobile_OS,
         target_package=target_package,
         system_package=system_package,
         no_system_package=no_system_package,
@@ -691,6 +924,7 @@ Load Frida Script - TAB
 
 @app.route('/load_frida_script', methods=['GET', 'POST'])
 def frida_script_loader():
+    global mobile_OS
     global target_package
     global system_package
     global no_system_package
@@ -703,18 +937,19 @@ def frida_script_loader():
 
     # Load frida custom scripts inside "custom_scripts" folder
     custom_scripts = []
-    for f in os.listdir(os.path.dirname(os.path.realpath(__file__)) + "/custom_scripts"):
+    for f in os.listdir(os.path.dirname(os.path.realpath(__file__)) + "/custom_scripts/"+mobile_OS):
         if f.endswith(".js"):
             custom_scripts.append(f)
     cs_file = ""
     if request.method == 'GET':
         cs = request.args.get('cs')
         if cs is not None:
-            with open(os.path.dirname(os.path.realpath(__file__)) + "/custom_scripts/" + cs) as f:
+            with open(os.path.dirname(os.path.realpath(__file__)) + "/custom_scripts/"+mobile_OS+"/" + cs) as f:
                 cs_file = f.read()
 
     return render_template(
         "load_frida_script.html",
+        mobile_OS=mobile_OS,
         target_package=target_package,
         system_package=system_package,
         no_system_package=no_system_package,
@@ -732,11 +967,13 @@ Console Output - TAB
 
 @app.route('/console_output', methods=['GET', 'POST'])
 def console_output_loader():
+    global mobile_OS
     global target_package
     global system_package
     global no_system_package
     return render_template(
         "console_output.html",
+        mobile_OS=mobile_OS,
         called_console_output_str=calls_console_output,
         hooked_console_output_str=hooks_console_output,
         global_console_output_str=global_console_output,
@@ -766,6 +1003,7 @@ Config File - TAB
 
 @app.route('/config', methods=['GET', 'POST'])
 def edit_config_file():
+    global mobile_OS
     global target_package
     global system_package
     global no_system_package
@@ -784,14 +1022,16 @@ def edit_config_file():
         new_config = {}
 
         device_type = request.values.get('device-type')
-        system_package = request.values.get('package')
+        system_package_Android = request.values.get('system_package_Android')
+        system_package_iOS = request.values.get('system_package_iOS')
         device_args_keys = request.values.getlist('key[]')
         device_args_values = request.values.getlist('value[]')
 
         device_args = dict(zip(device_args_keys, device_args_values))
 
         if device_type: new_config['device_type'] = device_type.lower()
-        if system_package: new_config['system_package'] = system_package.strip()
+        if system_package_Android: new_config['system_package_Android'] = system_package_Android.strip()
+        if system_package_iOS: new_config['system_package_iOS'] = system_package_iOS.strip()
         if device_args: new_config['device_args'] = device_args
 
         with open(os.path.dirname(os.path.realpath(__file__)) + "/config.json", "w") as f:
@@ -801,7 +1041,9 @@ def edit_config_file():
 
     return render_template(
         "config.html",
-        system_package_str=config['system_package'],
+        mobile_OS=mobile_OS,
+        system_package_Android=config["system_package_Android"],
+        system_package_iOS=config["system_package_iOS"],
         device_type_str=config['device_type'],
         args=config['device_args'],
         placeholder_str=placeholder,
@@ -917,6 +1159,7 @@ def printwebpage():
     
     return render_template(
         "dump.html",
+        mobile_OS=mobile_OS,
         loaded_classes=loaded_classes,
         loaded_methods=loaded_methods,
         target_package=target_package,
@@ -944,10 +1187,13 @@ def on_message(message, data):
             log_handler("heap_search",message['payload'])
         if "[API_Monitor]" in message['payload']:
             log_handler("api_monitor",message['payload'])
+        if "[Static_Analysis]" in message['payload']:
+            log_handler("static_analysis",message['payload'])            
         if ("[Call_Stack]" not in message['payload'] and
             "[Hook_Stack]" not in message['payload'] and
             "[Heap_Search]" not in message['payload'] and
-            "[API_Monitor]" not in message['payload']):
+            "[API_Monitor]" not in message['payload'] and
+            "[Static_Analysis]" not in message['payload']):
             log_handler("global_stack",message['payload'])
 
 ''' 
@@ -969,6 +1215,7 @@ def reset_variables_and_output():
     global heap_console_output
     global global_console_output
     global api_monitor_console_output
+    global static_analysis_console_output
 
     global loaded_classes
     global system_classes
@@ -976,10 +1223,13 @@ def reset_variables_and_output():
     global current_loaded_classes
     global new_loaded_classes
     global app_env_info
+    global mobile_OS
 
     global target_package
     global system_package
     global no_system_package
+
+    mobile_OS="N/A"
 
     #output reset
     calls_console_output = ""
@@ -987,6 +1237,7 @@ def reset_variables_and_output():
     heap_console_output = ""
     global_console_output = ""
     api_monitor_console_output = ""
+    static_analysis_console_output = ""
     # call stack
     call_count = 0
     call_count_stack = {}
@@ -1014,6 +1265,7 @@ def log_handler(level, text):
     global heap_console_output
     global global_console_output
     global api_monitor_console_output
+    global static_analysis_console_output
 
     if not text:
         return
@@ -1091,6 +1343,10 @@ def log_handler(level, text):
         }, 
         namespace='/console'
         )
+    if level == 'static_analysis':
+        text=text.replace("[Static_Analysis]\n","")
+        static_analysis_console_output=text
+
     global_console_output = global_console_output + "\n" + text
     socket_io.emit(
     'global_console', 

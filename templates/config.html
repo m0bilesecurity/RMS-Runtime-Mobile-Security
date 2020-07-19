@@ -38,8 +38,13 @@
                        rounded" action="/config" method=post>
             
             <div class="form-group">
-              <label for="system_package">System Package used for diff loaded classes - (In case of issue try to attach a different persistent process)</label>
-              <input type="text" class="form-control" id="system_package" name="package" value="{{ system_package_str|safe }} ">
+              <label for="system_package_Android">Android - System Package used for diff loaded classes - (In case of issue try to attach a different persistent process)</label>
+              <input type="text" class="form-control" id="system_package_Android" name="system_package_Android" value="{{ system_package_Android|safe }} ">
+            </div>
+
+            <div class="form-group">
+              <label for="system_package_iOS">iOS - System Package used for diff loaded classes - (In case of issue try to attach a different persistent process)</label>
+              <input type="text" class="form-control" id="system_package_iOS" name="system_package_iOS" value="{{ system_package_iOS|safe }} ">
             </div>
 
             <div class="form-group">
