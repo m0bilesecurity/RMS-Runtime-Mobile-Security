@@ -9,6 +9,27 @@ by [@mobilesecurity_](https://twitter.com/mobilesecurity_)
 
 You can easily dump all the loaded classes and relative methods, hook everything on the fly, trace methods args and return value, load custom scripts and many other useful stuff.
 
+# Prerequisites
+
+**FRIDA server up and running on the target device**
+
+Refer to the official FRIDA guide for the installation: 
+* [Android](https://frida.re/docs/android/)
+* [iOS](https://frida.re/docs/ios/)
+
+Some cool projects that can help you to **auto** install, update and run frida on Android devices:
+* [MagiskFrida - Android](https://github.com/ViRb3/magisk-frida)
+* [FridaLoader - Android](https://github.com/dineshshetty/FridaLoader)
+
+They are not needed on iOS devices, since FRIDA starts just after the boot of the device (jailbreak mode).
+
+# Installation
+
+1. **(optional)** Create a python virtual environment
+2. ```pip3 install -r requirements.txt```
+3. ```python3 mobilesecurity.py```
+4. Open your browser at ```http://127.0.0.1:5000/```
+
 # General Info
 Runtime Mobile Security (RMS) supports <b>Android</b> and <b>iOS</b> devices.
 
@@ -25,20 +46,6 @@ Do not connect more than one device at the same time. RMS is not so smart at the
 
 <b>NOTE:</b> Socket are not working on Safari, <b>please use Chrome</b> instead.
 
-# Prerequisites
-
-**FRIDA server up and running on the target device**
-
-Refer to the official FRIDA guide for the installation: 
-* [Android](https://frida.re/docs/android/)
-* [iOS](https://frida.re/docs/ios/)
-
-Some cool projects that can help you to **auto** install, update and run frida on Android devices:
-* [MagiskFrida - Android](https://github.com/ViRb3/magisk-frida)
-* [FridaLoader - Android](https://github.com/dineshshetty/FridaLoader)
-
-They are not needed on iOS devices, since FRIDA starts just after the boot of the device (jailbreak mode).
-
 # Known issues
 * Sometime RMS fails to load complex methods. Use a filter when this happens or feel free to improve the algo (agent/RMS_core.js).
 * Code is not optimized
@@ -51,14 +58,6 @@ e.g.
 	* ssl pinning bypass
 	* reflection detection
 	* etc...
-
-
-# Installation
-
-1. **(optional)** Create a python virtual environment
-2. ```pip3 install -r requirements.txt```
-3. ```python3 mobilesecurity.py```
-4. Open your browser at ```http://127.0.0.1:5000/```
 
 
 # Usage
