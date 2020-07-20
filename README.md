@@ -5,7 +5,7 @@
 
 by [@mobilesecurity_](https://twitter.com/mobilesecurity_) 
 
-**Runtime Mobile Security (RMS)**, powered by [FRIDA](https://github.com/frida/frida), is a powerful web interface that helps you to manipulate <b>Android and iOS Mobile Apps</b> at Runtime. 
+**Runtime Mobile Security (RMS)**, powered by [FRIDA](https://github.com/frida/frida), is a powerful web interface that helps you to manipulate <b>Android and iOS Apps</b> at Runtime. 
 
 You can easily dump all the loaded classes and relative methods, hook everything on the fly, trace methods args and return value, load custom scripts and many other useful stuff.
 
@@ -17,12 +17,13 @@ It has been tested on MacOS and with the following devices:
 * Genymotion emulator 
 * Amazon Fire Stick 4K
 * iPhone 7
+* Chrome (Web Interface)
 
 It should also work well on Windows and Linux but some minor adjustments may be needed.
 
 Do not connect more than one device at the same time. RMS is not so smart at the moment 😉
 
-<b>NOTE:</b> Socket are not working on Safari, please use Chrome instead.
+<b>NOTE:</b> Socket are not working on Safari, <b>please use Chrome</b> instead.
 
 # Prerequisites
 
@@ -32,12 +33,14 @@ Refer to the official FRIDA guide for the installation:
 * [Android](https://frida.re/docs/android/)
 * [iOS](https://frida.re/docs/ios/)
 
-Some cool projects that can help to **auto** install, update and run frida are:
+Some cool projects that can help you to **auto** install, update and run frida on Android devices:
 * [MagiskFrida - Android](https://github.com/ViRb3/magisk-frida)
 * [FridaLoader - Android](https://github.com/dineshshetty/FridaLoader)
 
+They are not needed on iOS devices, since FRIDA starts just after the boot of the device (jailbreak mode).
+
 # Known issues
-* Sometime RMS fails to load complex methods. Use a filter when this happens or feel free to improve the algo (default.js).
+* Sometime RMS fails to load complex methods. Use a filter when this happens or feel free to improve the algo (agent/RMS_core.js).
 * Code is not optimized
 
 # Improvements
@@ -61,8 +64,8 @@ e.g.
 # Usage
 
 ## 1. Run your favorite app by simply inserting its package name ##
-**NOTE** RMS attachs a persistence process called **com.android.systemui** on Android and **SpringBoard** on iOS devices to get the list of all the classes that are already loaded in memory before the launch of the target app. If you have an issue with it, try to find a different package that works well on your device. 
-You can set another default package via the Config Tab or by simply editing the config.json file.
+**NOTE** RMS attachs a persistence process called **com.android.systemui** on Android and **SpringBoard** on iOS devices to get the list of all the classes that are already loaded in memory before the launch of the target app. If you have an issue with them, try to find a different default package that works well on your device. 
+You can set another default package via the Config Tab or by simply editing the **config.json** file.
 
 ![DEMO_1_Android](/DEMO/Android/DEMO_1_Device.gif)
 
@@ -103,7 +106,7 @@ Just add your .js files inside the custom_script folder and they will be automat
 
 ## 8. API Monitor - Android Only ##
 
-via the API Monitor TAB you can easily monitor tons of Android APIs organized in 19 different Categories. Support can be easily extended by adding more classes/methods to the **api_monitor.json** file.
+via the API Monitor TAB you can easily monitor tons of Android APIs organized in 20 different Categories. Support can be easily extended by adding more classes/methods to the **api_monitor.json** file.
 
 ![DEMO_10](/DEMO/Android/DEMO_10_API_Monitor.png)
 

@@ -368,17 +368,17 @@ def device_management():
         if frida_script: rms_print("Frida Startup Script: \n" + frida_script)
 
         # main JS file
-        frida_agent="/agent/rms_core.js"
+        frida_agent="/agent/RMS_core.js"
         #BETA - compiled version with frida-fs (File Manager - Download file enabled)
         #make sure to compile the core via frida-compile 
         #run "npm install" directly inside the "agent" folder
-        if(BETA==True): frida_agent="/agent/_rms_core_BETA.js"
+        if(BETA==True): frida_agent="/agent/_RMS_core_BETA.js"
         try:
             with open(os.path.dirname(os.path.realpath(__file__)) + frida_agent) as f:
                 frida_code = f.read()
         except:
             err_message="\nERROR!!!\n"
-            err_message=err_message+"_rms_core_BETA.js not found!\n"
+            err_message=err_message+"_RMS_core_BETA.js not found!\n"
             err_message=err_message+"Compile the core via frida-compile!\n"
             err_message=err_message+"run \"npm install\" directly inside the \"agent\" folder\n"
             err_message=err_message+"Restart RMS!\n"
