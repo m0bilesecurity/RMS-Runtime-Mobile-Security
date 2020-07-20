@@ -1,5 +1,5 @@
 
-# Runtime Mobile Security #
+# RMS - Runtime Mobile Security #
 
 ![mobilesecurity_](/static/mobilesecurity_circle.png)
 
@@ -29,6 +29,8 @@ They are not needed on iOS devices, since FRIDA starts just after the boot of th
 2. ```pip3 install -r requirements.txt```
 3. ```python3 mobilesecurity.py```
 4. Open your browser at ```http://127.0.0.1:5000/```
+
+<b>NOTE:</b> In case of issue with your favorite Browser, please use Google Chrome (fully supported).
 
 # General Info
 Runtime Mobile Security (RMS) supports <b>Android</b> and <b>iOS</b> devices.
@@ -139,8 +141,6 @@ In order to enable the download button, follow the steps below:
 ## 11. Static Analysis - iOS Only  ##
 ![DEMO_12_iOS](/DEMO/iOS/DEMO_12_Static_Analysis.gif)
 
-
-
 # Acknowledgements
 Special thanks to the following Open Source projects for the inspiration:
 * [FRIDA](https://github.com/frida/frida)
@@ -152,6 +152,7 @@ Special thanks to the following Open Source projects for the inspiration:
 * [Runtime Mobile Security (RMS)](https://github.com/m0bilesecurity/RMS-Runtime-Mobile-Security)
 * [FSecureLABS](https://github.com/FSecureLABS/)
 * [Mediaservice](https://techblog.mediaservice.net/)
+* [federicodotta](https://github.com/federicodotta/Brida)
 * [iddoeldor](https://github.com/iddoeldor)
 * [dzonerzy](https://github.com/dzonerzy)
 * [akabe1](https://github.com/akabe1/my-FRIDA-scripts)
@@ -162,14 +163,13 @@ Special thanks to the following Open Source projects for the inspiration:
 * [chaitin](https://github.com/chaitin/passionfruit)
 * [lich4](https://codeshare.frida.re/@lichao890427/dump-ios/)
 * [fadeevab](https://codeshare.frida.re/@fadeevab/intercept-android-apk-crypto-operations/)
-* [federicodotta](https://github.com/federicodotta/Brida)
 
 ### DEMO apps:
 
-[RootBeer Sample](https://play.google.com/store/apps/details?id=com.scottyab.rootbeer.sample) is the DEMO app used to show how RMS works.
+* [RootBeer Sample](https://play.google.com/store/apps/details?id=com.scottyab.rootbeer.sample) is the DEMO app used to show how RMS works.
 [RootBeer](https://github.com/scottyab/rootbeer) is an **amazing root detection library**. I decided to use the Sample app as DEMO just to show that, as every client-side only check, its root detection logic can be easily bypassed if not combined with a server-side validation. 
-[DVIA](http://damnvulnerableiosapp.com/) a vulnerable app to test your iOS Penetration Testing Skills
-[Anti-Frida](https://github.com/b-mueller/frida-detection-demo) Frida Detection Examples by Bernhard Mueller.
+* [DVIA](http://damnvulnerableiosapp.com/) a vulnerable app to test your iOS Penetration Testing Skills
+* [Anti-Frida](https://github.com/b-mueller/frida-detection-demo) Frida Detection Examples by Bernhard Mueller.
 
 # License
 RMS is licensed under a [GNU General Public v3 License](https://www.gnu.org/licenses/gpl-3.0.en.html).
