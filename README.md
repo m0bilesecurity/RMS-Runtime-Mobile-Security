@@ -11,7 +11,7 @@ You can easily dump all the loaded classes and relative methods, hook everything
 
 Please check below a short video (1min42s) that shows RMS in action on an iOS device. Same functionalities are of course also available for Android devices.
 
-[![RMS - iOS DEMO](https://img.youtube.com/vi/https://youtu.be/EtsYHYA9ID4/0.jpg)](https://www.youtube.com/watch?v=EtsYHYA9ID4)
+[![RMS - iOS DEMO](https://img.youtube.com/vi/EtsYHYA9ID4/0.jpg)](https://www.youtube.com/watch?v=EtsYHYA9ID4)
 
 
 # Prerequisites
