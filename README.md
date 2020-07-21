@@ -9,7 +9,7 @@ by [@mobilesecurity_](https://twitter.com/mobilesecurity_)
 
 You can easily dump all the loaded classes and relative methods, hook everything on the fly, trace methods args and return value, load custom scripts and many other useful stuff.
 
-Please check below a short video (1min42s) that shows RMS in action on an iOS device. Same functionalities are of course also available for Android devices.
+Please check below a **short video** (1min42s) that shows RMS in action on an iOS device. Same functionalities are of course also available for Android devices.
 
 [![RMS - iOS DEMO](https://img.youtube.com/vi/EtsYHYA9ID4/0.jpg)](https://www.youtube.com/watch?v=EtsYHYA9ID4)
 
