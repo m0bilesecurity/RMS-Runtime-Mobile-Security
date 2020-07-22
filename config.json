@@ -1,6 +1,7 @@
 {
     "device_type": "usb",
-    "system_package": "com.android.systemui",
+    "system_package_Android": "com.android.systemui",
+    "system_package_iOS": "SpringBoard",
     "device_args": {
         "host": "",
         "id": ""

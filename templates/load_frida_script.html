@@ -29,7 +29,7 @@
             <form action="/load_frida_script" method="post">
               <textarea id=hooktable name=frida_custom_script class="form-control">{{ custom_script_loaded }}</textarea>
               <br>
-              <center><input type=submit class="btn btn-primary"></center>
+              <center><input type=submit value="Run Custom Frida Script" class="btn btn-success"></center>
               <br>
             </form>
           </div>
@@ -45,7 +45,7 @@
             <div class="list-group">
               {% for cs in custom_scripts %}
               <a href="load_frida_script?cs={{ cs }}" class="list-group-item list-group-item-action">
-                [{{ loop.index0 }}] - {{ cs }}
+                [{{ loop.index }}] - {{ cs }}
               </a>
               {% endfor %}
             </div>

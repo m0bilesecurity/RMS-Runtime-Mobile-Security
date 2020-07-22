@@ -1,0 +1,34 @@
+{
+  "name": "RMS-Runtime-Mobile-Security-Core",
+  "version": "0.0.0",
+  "description": "Runtime Mobile Security (RMS), powered by FRIDA, is a powerful web interface that helps you to manipulate Android Java Classes and Methods at Runtime",
+  "private": true,
+  "main": "RMS_core_BETA.js",
+  "scripts": {
+    "prepare": "npm run build",
+    "build": "frida-compile RMS_core_BETA.js -o _RMS_core_BETA.js",
+    "watch": "frida-compile RMS_core_BETA.js -o _RMS_core_BETA.js -w"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/m0bilesecurity/RMS-Runtime-Mobile-Security.git"
+  },
+  "keywords": [
+    "Mobile Security",
+    "Android Security",
+    "Mobile",
+    "Security",
+    "frida",
+    "RMS"
+  ],
+  "author": "@mobilesecurity_",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/m0bilesecurity/RMS-Runtime-Mobile-Security/issues"
+  },
+  "homepage": "https://github.com/m0bilesecurity/RMS-Runtime-Mobile-Security",
+  "dependencies": {
+    "frida-compile": "^9.3.0",
+    "frida-fs": "^3.0.1"
+  }
+}

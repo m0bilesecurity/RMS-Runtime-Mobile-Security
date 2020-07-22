@@ -43,7 +43,32 @@
                     </thead>
                     <tbody id="MainTable_Filter">
                       <h3>Classes and Methods</h3>
-                      <p>Use the search bar below to quickly filter results:</p>
+                      <p>Use the search bar below to quickly filter results:
+                        {% if loaded_methods|length > 0 %}
+                        {% if methods_hooked_and_executed|length > 0 %}
+                        <button 
+                           onclick="apply_filter('executed')"
+                           class="btn btn-success btn-sm">
+                           Executed ✅
+                        </button>
+                        {% endif %}
+                        <button 
+                           onclick="apply_filter('native')"
+                           class="btn btn-danger btn-sm">
+                           Native
+                        </button>
+                        <button 
+                           onclick="apply_filter('boolean')"
+                           class="btn btn-info btn-sm">
+                           Boolean
+                        </button>
+                        <button 
+                           onclick="apply_filter('clear')"
+                           class="btn btn-dark btn-sm">
+                           Clear
+                        </button>
+                      {% endif %}
+                      </p>
                       <input class="form-control" id="UserInput_Filter" type="text" placeholder="Search..">
                       <br>
                       <!-- Legenda -->
@@ -81,10 +106,17 @@
 
           <div class="col-sm-12">
             <!-- Dropdown menu -->
-            <button type="button" data-toggle="modal" data-target="#ModalFilterView"
-              class="btn btn-danger dropdown-toggle">
-              Select a Class
+            <form action="/load_frida_script" method="post">
+            <button type="button" 
+                    data-toggle="modal" 
+                    data-target="#ModalFilterView"
+                    class="btn btn-danger dropdown-toggle">
+              Select a Class 
             </button>
+            &nbsp;→&nbsp;
+            <input type=submit 
+                    value="Run Hook" 
+                    class="btn btn-success">
             <br>
             <br>
           </div>
@@ -94,15 +126,12 @@
         <div class="row">
           <div class="col-sm-12">
             <!-- Textarea with overload -->
-            <h3>Hook Template - <font class=text-primary>{{ selected_class}}</font>
-            </h3>
-            <form action="/load_frida_script" method="post">
+            <h3>Hook Template - <font class=text-primary>{{ selected_class}}</font></h3>
+            
               <input type=hidden name=choice value=4>
 
               <textarea id=hooktable name=frida_custom_script
                 class="form-control">{{ hook_template_str|safe }}</textarea>
-              <br>
-              <center><input type=submit class="btn btn-primary"></center>
               <br>
             </form>
           </div>
@@ -129,6 +158,24 @@
     });
     editor.setSize("100%",550);
   </script> 
+
+  <!-- quick filters -->
+  <script>
+    function apply_filter(filter){ 
+      if(filter=="executed") 
+        document.getElementById("UserInput_Filter").value = "✅";
+      if(filter=="native") 
+        document.getElementById("UserInput_Filter").value = "native";
+      if(filter=="boolean") 
+        document.getElementById("UserInput_Filter").value = "boolean";
+      if(filter=="clear")
+        document.getElementById("UserInput_Filter").value = "";
+      
+      //simulate keyup
+      $('#UserInput_Filter').keyup();
+    }
+  </script>
+  
   {% endblock %}
 
 </body>
