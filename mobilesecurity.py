@@ -403,7 +403,8 @@ def device_management():
             rms_print(err)
             if (len(system_classes)==0):
                 no_system_package=True
-            rms_print(system_package+" is NOT available on your device or a wrong OS has been selected. For a better RE experience, change it via the Config TAB!");
+            if (target_package!="Gadget"):
+                rms_print(system_package+" is NOT available on your device or a wrong OS has been selected. For a better RE experience, change it via the Config TAB!");
             pass
 
         session = None

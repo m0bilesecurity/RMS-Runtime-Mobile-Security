@@ -53,18 +53,10 @@ Do not connect more than one device at the same time. RMS is not so smart at the
 
 <b>NOTE:</b> Socket are not working on Safari, <b>please use Chrome</b> instead.
 
-# Known issues
+# Known issues and improvements
 * Sometime RMS fails to load complex methods. Use a filter when this happens or feel free to improve the algo (agent/RMS_core.js).
 * Code is not optimized
-
-# Improvements
-* Frida Gadget is currently NOT supported
-* Feel free to send me your best JS sript via a Pull request. I'll be happy to bundle all the best as default scripts in the next RMS release.
-e.g.
-	* root detection bypass
-	* ssl pinning bypass
-	* reflection detection
-	* etc...
+* Feel free to send me your best JS sript via a Pull request. I'll be happy to bundle all the best as default scripts in the next RMS release (e.g. root detection bypass, ssl pinning, etc)
 
 
 # Usage

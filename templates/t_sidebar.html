@@ -18,7 +18,7 @@
           <b>Target Package:</b> {{target_package}} <br>
           <b>System Package: </b> {{system_package}} <br>
           {% endif %}
-          {% if no_system_package==True %}
+          {% if no_system_package==True and target_package!="Gadget" %}
           <br>
             <b><font color=red>{{system_package}} is NOT available on your device!</font></b> <br><br>
             <b><font color=red>For a better RE experience, Click <a href="/config">here</a> to change it!</font></b>
