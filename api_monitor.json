@@ -289,6 +289,98 @@
         ]
       },
       {
+        "Category": "Accessibility - a11y",
+        "HookType": "Java",
+        "hooks": [
+          {
+            "clazz": "android.view.accessibility.AccessibilityNodeInfo",
+            "method": "getPackageName"
+          },
+          {
+            "clazz": "android.view.accessibility.AccessibilityNodeInfo",
+            "method": "getClassName"
+          },
+          {
+            "clazz": "android.view.accessibility.AccessibilityNodeInfo",
+            "method": "getContentDescription"
+          },
+          {
+            "clazz": "android.view.accessibility.AccessibilityNodeInfo",
+            "method": "getText"
+          },
+          {
+            "clazz": "android.view.accessibility.AccessibilityNodeInfo",
+            "method": "getViewIdResourceName"
+          },
+          {
+            "clazz": "android.view.MotionEvent",
+            "method": "obtain"
+          }
+        ]
+      },
+      {
+        "Category": "Clicks - MotionEvent",
+        "HookType": "Java",
+        "hooks": [
+          {
+            "clazz": "android.view.MotionEvent",
+            "method": "obtain"
+          }
+        ]
+      },
+      {
+        "Category": "Clipboard",
+        "HookType": "Java",
+        "hooks": [
+          {
+            "clazz": "android.content.ClipboardManager",
+            "method": "setPrimaryClip"
+          }
+        ]
+      },
+      {
+        "Category": "Compression - Gzip",
+        "HookType": "Java",
+        "hooks": [
+          {
+            "clazz": "java.util.zip.GZIPInputStream",
+            "method": "read"
+          },
+          {
+            "clazz": "java.util.zip.GZIPOutputStream",
+            "method": "write"
+          }
+        ]
+      },
+      {
+        "Category": "Bluetooth",
+        "HookType": "Java",
+        "hooks": [
+          {
+            "clazz": "android.bluetooth.BluetoothGatt",
+            "method": "readCharacteristic"
+          },
+          {
+            "clazz": "android.bluetooth.BluetoothGattCharacteristic",
+            "method": "setValue"
+          }
+        ]
+      },
+      {
+        "Category": "JSON",
+        "HookType": "Java",
+        "hooks": [
+          {
+            "clazz": "org.json.JSONObject",
+            "method": "put"
+          },
+          {
+            "clazz": "org.json.JSONObject",
+            "method": "optString"
+          }
+        ]
+      },
+      {
         "Category": "Crypto",
         "HookType": "Java",
         "hooks": [
@@ -335,6 +427,24 @@
           {
             "clazz": "com.android.okhttp.internal.http.HttpURLConnectionImpl",
             "method": "getInputStream"
+          }
+        ]
+      },
+      {
+        "Category": "Socket",
+        "HookType": "Java",
+        "hooks": [
+          {
+            "clazz": "java.net.Socket",
+            "method": "$init"
+          },
+          {
+            "clazz": "org.java_websocket.client.WebSocketClient",
+            "method": "$init"
+          },
+          {
+            "clazz": "org.java_websocket.client.WebSocketClient",
+            "method": "send"
           }
         ]
       },

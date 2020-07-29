@@ -43,7 +43,7 @@
             <div class="row">
               
               
-              <div class="col-sm-6">
+              <div class="col-sm-4">
                 {% for e in api_monitor %}
                 {% if loop.index<=10 %}
                 <div class="checkbox">
@@ -53,9 +53,19 @@
                 {% endfor %}
               </div>
 
-              <div class="col-sm-6">
+              <div class="col-sm-4">
                 {% for e in api_monitor %}
                 {% if loop.index>10 and loop.index<=20  %}
+                <div class="checkbox">
+                 <label><input type="checkbox" name="api_selected" value="{{e["Category"]}}">  {{ loop.index }}. {{e["Category"]}} {% if e["Comment"] is defined  %} <font color=red>&#8594;</font> {{e["Comment"]}} {% endif %}</label>
+                </div>
+                {% endif %}
+                {% endfor %}
+              </div>
+
+              <div class="col-sm-4">
+                {% for e in api_monitor %}
+                {% if loop.index>20 and loop.index<=30  %}
                 <div class="checkbox">
                  <label><input type="checkbox" name="api_selected" value="{{e["Category"]}}">  {{ loop.index }}. {{e["Category"]}} {% if e["Comment"] is defined  %} <font color=red>&#8594;</font> {{e["Comment"]}} {% endif %}</label>
                 </div>
