@@ -329,7 +329,7 @@ def device_management():
         if len(packages) == 0:
             return redirect(url_for('edit_config_file', error=True))
 
-        # Load frida custom scripts inside "custom_scripts" folder
+        # Load frida custom scripts list (from "custom_scripts" folder)
         for f in os.listdir(os.path.dirname(os.path.realpath(__file__)) + "/custom_scripts/Android/"):
             if f.endswith(".js"):
                 custom_scripts_Android.append(f)
@@ -337,6 +337,12 @@ def device_management():
             if f.endswith(".js"):
                 custom_scripts_iOS.append(f)
 
+        #Load APIs Monitors list
+        api_monitor = {}
+        with open(os.path.dirname(os.path.realpath(__file__)) + "/api_monitor.json") as f:
+            api_monitor = json.load(f)
+
+        #Load selected frida_script inside the textarea
         cs = request.args.get('cs')
         mobile_os_get = request.args.get('os')
         if cs is not None and os is not None:
@@ -362,10 +368,13 @@ def device_management():
 
         mode = request.values.get('mode')
         frida_script = request.values.get('fridastartupscript')
+        api_selected = request.values.getlist('api_selected')
 
         if target_package: rms_print("Package Name: " + target_package)
         if mode: rms_print("Mode: " + mode)
         if frida_script: rms_print("Frida Startup Script: \n" + frida_script)
+        if api_selected: rms_print("APIs Monitors: \n" + " - ".join(api_selected))
+        rms_print("\n")
 
         # main JS file
         frida_agent="/agent/RMS_core.js"
@@ -427,10 +436,19 @@ def device_management():
         if mode == "Spawn" and target_package!="Gadget":
             device.resume(pid)
 
-        # loading FRIDA startup script if exists
+        # loading FRIDA startup script if selected by the user
         if frida_script:
             api.loadcustomfridascript(frida_script)
             # DEBUG rms_print(frida_script)
+
+        #loading APIs Monitors if selected by the user
+        if api_selected:
+            api_monitor = {}
+            with open(os.path.dirname(os.path.realpath(__file__)) + "/api_monitor.json") as f:
+                api_monitor = json.load(f)
+            api_filter = [e for e in api_monitor if e['Category'] in api_selected]
+            api_to_hook = json.loads(json.dumps(api_filter))
+            api.apimonitor(api_to_hook)
 
         # automatically redirect the user to the dump classes and methods tab
         return printwebpage()
@@ -440,6 +458,7 @@ def device_management():
         custom_script_loaded=cs_file,
         custom_scripts_Android=custom_scripts_Android,
         custom_scripts_iOS=custom_scripts_iOS,
+        api_monitor=api_monitor,
         system_package_Android=config["system_package_Android"],
         system_package_iOS=config["system_package_iOS"],
         device_type_str=config["device_type"],
@@ -846,7 +865,7 @@ def api_monitor():
         api_selected = request.values.getlist('api_selected')
         api_filter = [e for e in api_monitor if e['Category'] in api_selected]
         api_to_hook = json.loads(json.dumps(api_filter))
-        api.apimonitor(api_to_hook);
+        api.apimonitor(api_to_hook)
 
         ''' DEBUG
         rms_print("\nAPI Selected")

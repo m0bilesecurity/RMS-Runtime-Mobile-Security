@@ -22,22 +22,9 @@
 
         <!-- Search Bar and Table -->
         <div class="col-sm-12">
-          <br>
-          <!-- Avanced menu -->
-          <!-- Collapse View Button
-          <p align=right>
-            <button 
-              class="btn btn-primary" 
-              type="button" 
-              data-toggle="collapse" 
-              data-target="#collapseViewDevice" 
-              aria-expanded="true" 
-              aria-controls="collapseView">
-              Advanced Settings
-            </button>
-          </p>
-          -->
-          <div class="collapse show" id="collapseViewDevice">
+
+          <div class="collapse" id="collapseViewDevice">
+            <br>
             <div class="form-group">
               <label for="system_package">System Package used for diff loaded classes - (In case of issue try to attach a different persistent process)</label>
               <input type="text" class="form-control" id="system_package" placeholder="Android: {{ system_package_Android|safe }} - iOS: {{ system_package_iOS|safe }}"
@@ -55,14 +42,29 @@
           <br>
 
           <!-- Avanced menu -->
+          <div class="align-middle">
+          <!-- Show Device Config menu -->
+            <div class="float-right">
+              <button 
+                class="btn btn-info" 
+                type="button" 
+                data-toggle="collapse" 
+                data-target="#collapseViewDevice" 
+                aria-expanded="true" 
+                aria-controls="collapseView">
+                Show RMS Config
+              </button>
+            </div>
           <h2>📱Device - Setting Panel</h2>
+
+          </div>
           <form class="form-group 
                        list-group-item 
                        list-group-item-action 
                        bg-light
                        rounded" action="/" method=post>
             <div class="form-group">
-              <label for="mode">Mobile OS</label>
+              <label for="mode"><b>Mobile OS</b></label>
               <select class="form-control" 
                       id="mobile_OS" 
                       name="mobile_OS"
@@ -73,7 +75,7 @@
               </select>
             </div>            
             <div class="form-group">
-              <label for="package">Package name</label>
+              <label for="package"><b>Package name</b></label>
               <input class="form-control" list="package" name="package" required="true" placeholder="com.example.app">
       	      <datalist id="package">
       	      {% for package in packages %}
@@ -82,46 +84,27 @@
               </datalist>
             </div>
             <div class="form-group">
-              <label for="mode">Spawn or Attach</label>
+              <label for="mode"><b>Spawn or Attach</b></label>
               <select class="form-control" id="mode" name="mode">
                 <option>Spawn</option>
                 <option>Attach</option>
               </select>
             </div>
-            <!-- 
-            <div class="form-group">
-              <label for="suspend_process">Suspend the process at startup</label>
-              <select class="form-control" 
-                      id="suspend_process" 
-                      name="suspend_process">
-                <option>No</option>
-                <option>Yes</option>
-              </select>
-            </div>
 
             <div class="form-group">
-              <label for="sleep_time">Suspend the app for 5,10 or 30sec</label>
-              <select class="form-control" 
-                      id="sleep_time" 
-                      name="sleep_time">
-                <option>5</option>
-                <option>10</option>
-                <option>30</option>
-              </select>
+              <label for="mode"><b>Optional</b> - Load a custom script or APIs Monitors</label>
+              <br>
+            <button class="btn btn-primary mb-2" type="button" data-toggle="collapse"
+            data-target="#collapseViewAPIM" aria-expanded="true" aria-controls="collapseView">
+            Load APIs Monitors 
+            </button>
+
+            <button class="btn btn-danger mb-2" type="button" data-toggle="collapse"
+              data-target="#collapseViewCFS" aria-expanded="true" aria-controls="collapseView">
+              Load Default Frida Scripts
+            </button>
             </div>
-            -->
-            <div class="form-group">
-              <label for="fridastartupscript">Run a FRIDA script at startup</label>
-              <textarea class="form-control" id="fridastartupscript" name="fridastartupscript"
-                rows="10">{{ custom_script_loaded }}</textarea>
-            </div>
-            <div class="form-group">
-              <button type="submit" class="btn btn-success mb-2">Start RMS</button>
-              <button class="btn btn-danger mb-2 float-right" type="button" data-toggle="collapse"
-                data-target="#collapseViewCFS" aria-expanded="true" aria-controls="collapseView">
-                Load favorite Frida Scripts
-              </button>
-            </div>
+
             <!-- Custom Frida Script - Toggle -->
 
             <div class="collapse" id="collapseViewCFS">
@@ -170,6 +153,69 @@
               </div>
             </div>
             <!-- Custom Frida Script - Toggle -->
+
+            <!-- Custom APIs Monitors - Toggle -->
+
+            <div class="collapse" id="collapseViewAPIM">
+              <div class="form-group">
+                <h5>&nbsp;What do you want to monitor? <font color=red>(Android Only)</font></h5>
+                <small class="form-text text-muted">
+                  &nbsp; This feature is currently available for Android apps only. <u><b><font color=red>Do not use it on iOS devices!</font></b></u>
+                </small>
+                <br>
+                <div class="row">
+              
+              
+                  <div class="col-sm-4">
+                    {% for e in api_monitor %}
+                    {% if loop.index<=10 %}
+                    <div class="checkbox">
+                      <label><input type="checkbox" name="api_selected" value="{{e["Category"]}}">  {{ loop.index }}. {{e["Category"]}} {% if e["Comment"] is defined  %} <font color=red>&#8594;</font> {{e["Comment"]}} {% endif %}</label>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                  </div>
+    
+                  <div class="col-sm-4">
+                    {% for e in api_monitor %}
+                    {% if loop.index>10 and loop.index<=20  %}
+                    <div class="checkbox">
+                     <label><input type="checkbox" name="api_selected" value="{{e["Category"]}}">  {{ loop.index }}. {{e["Category"]}} {% if e["Comment"] is defined  %} <font color=red>&#8594;</font> {{e["Comment"]}} {% endif %}</label>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                  </div>
+    
+                  <div class="col-sm-4">
+                    {% for e in api_monitor %}
+                    {% if loop.index>20 and loop.index<=30  %}
+                    <div class="checkbox">
+                     <label><input type="checkbox" name="api_selected" value="{{e["Category"]}}">  {{ loop.index }}. {{e["Category"]}} {% if e["Comment"] is defined  %} <font color=red>&#8594;</font> {{e["Comment"]}} {% endif %}</label>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                  </div>
+              
+                  </div> <!-- end row -->
+
+              </div>
+            </div>
+            <!-- APIs Monitors - Toggle -->
+
+            <!-- FRIDA script textarea -->
+            <div class="form-group">
+              <label for="fridastartupscript">Run a FRIDA script at startup</label>
+              <textarea class="form-control" id="fridastartupscript" name="fridastartupscript"
+                rows="10">{{ custom_script_loaded }}</textarea>
+            </div>
+            <!-- FRIDA script textarea -->
+
+            <!-- Submit button -->
+            <div class="form-group">
+              <button type="submit" class="btn btn-success mb-2">Start RMS</button>
+            </div>
+            <!-- Submit button -->
+
 
           </form>
         </div> <!-- form group-->
