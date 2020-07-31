@@ -534,10 +534,17 @@ function api_monitor_Android(api_to_monitor)
               }
               to_print.returnValue = '' + retval_string.join('');
             }
-            if (!to_print.result) to_print.result = undefined
             if (!to_print.returnValue) to_print.returnValue = undefined
 
-            send('[API_Monitor] - ' + JSON.stringify(to_print)+"\n");
+            send('[API_Monitor]\n' + 
+            JSON.stringify(to_print,function(k,v)
+            {
+              if(v instanceof Array)
+                 return JSON.stringify(v);
+              return v;
+            },2)
+            +"\n");
+            
             return realRetval;
           });
         } // end javadynamichook
@@ -594,6 +601,7 @@ function javadynamichook(hook, category, callback) {
         var args = [].slice.call(arguments);
         // Call original method
         var retval = this[method].apply(this, arguments);
+        
         if (callback) {
           var calledFrom = Exception.$new().getStackTrace().toString().split(',')[1];
           var to_print = {
@@ -601,8 +609,8 @@ function javadynamichook(hook, category, callback) {
             class: clazz,
             method: method,
             args: args,
+            returnValue: retval ? retval.toString() : null,
             calledFrom: calledFrom
-            //result: retval ? retval.toString() : null,
           };
           retval = callback(retval, to_print);
         }

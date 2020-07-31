@@ -1,6 +1,6 @@
 [
     {
-      "Category": "Process",
+      "Category": "Process Tasks",
       "HookType": "Java",
       "hooks": [
         {
@@ -18,7 +18,7 @@
       ]
     },
     {
-      "Category": "Command",
+      "Category": "Commands Execution",
       "HookType": "Java",
       "hooks": [
         {
@@ -67,7 +67,19 @@
           },
           {
             "clazz": "android.webkit.WebView",
+            "method": "removeJavascriptInterface"
+          },
+          {
+            "clazz": "android.webkit.WebView",
             "method": "evaluateJavascript"
+          },
+          {
+            "clazz": "android.webkit.WebView",
+            "method": "getUrl"
+          },
+          {
+            "clazz": "android.webkit.WebView",
+            "method": "getOriginalUrl"
           },
           {
             "clazz": "android.webkit.WebView",
@@ -92,6 +104,14 @@
           {
             "clazz": "android.webkit.WebView",
             "method": "setWebContentsDebuggingEnabled"
+          },
+          {
+            "clazz": "android.webkit.WebView",
+            "method": "setVisibility"
+          },
+          {
+            "clazz": "android.webkit.WebView",
+            "method": "setWebViewClient"
           }
         ]
       },
@@ -334,7 +354,23 @@
         "hooks": [
           {
             "clazz": "android.content.ClipboardManager",
+            "method": "getPrimaryClip"
+          },
+          {
+            "clazz": "android.content.ClipboardManager",
             "method": "setPrimaryClip"
+          },
+          {
+            "clazz": "android.content.ClipboardManager",
+            "method": "hasPrimaryClip"
+          },
+          {
+            "clazz": "android.content.ClipboardManager",
+            "method": "getText"
+          },
+          {
+            "clazz": "android.content.ClipboardManager",
+            "method": "hasText"
           }
         ]
       },
@@ -529,6 +565,10 @@
           {
             "clazz": "android.telephony.SmsManager",
             "method": "sendMultipartTextMessage"
+          },
+          {
+            "clazz": "android.telephony.SmsMessage",
+            "method": "createFromPdu"
           }
         ]
       },
@@ -674,20 +714,58 @@
             "method": "getLongitude"
           },
           {
-            "clazz": "android.media.AudioRecord",
-            "method": "startRecording"
-          },
-          {
-            "clazz": "android.media.MediaRecorder",
-            "method": "start"
-          },
-          {
             "clazz": "android.os.SystemProperties",
             "method": "get"
           },
           {
             "clazz": "android.app.ApplicationPackageManager",
             "method": "getInstalledPackages"
+          }
+        ]
+      },
+      {
+        "Category": "Audio/Media Recording",
+        "HookType": "Java",
+        "hooks": [
+          {
+            "clazz": "android.media.MediaRecorder",
+            "method": "start"
+          },
+          {
+            "clazz": "android.media.MediaRecorder",
+            "method": "stop"
+          },
+          {
+            "clazz": "android.media.MediaRecorder'",
+            "method": "setCamera"
+          },
+          {
+            "clazz": "android.media.MediaRecorder'",
+            "method": "setAudioSource"
+          },
+          {
+            "clazz": "android.media.MediaRecorder'",
+            "method": "setOutputFile"
+          },
+          {
+            "clazz": "android.media.AudioRecord",
+            "method": "openFileInput"
+          },
+          {
+            "clazz": "android.media.AudioRecord",
+            "method": "startRecording"
+          },
+          {
+            "clazz": "android.media.AudioRecord",
+            "method": "stop"
+          },
+          {
+            "clazz": "android.media.AudioRecord",
+            "method": "getActiveMicrophones"
+          },
+          {
+            "clazz": "android.media.AudioRecord",
+            "method": "getAudioSource"
           }
         ]
       },
@@ -719,7 +797,6 @@
             "clazz": "android.content.ContextWrapper",
             "method": "deleteFile"
           }
-
         ]
       },
       {
