@@ -9,7 +9,7 @@ from flask import Flask, request, render_template, redirect, url_for, Response
 app = Flask(__name__)
 socket_io = SocketIO(app)
 
-BETA=False
+BETA=True
 
 # Global variables
 loaded_classes = []
