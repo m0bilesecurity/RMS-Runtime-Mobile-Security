@@ -724,7 +724,7 @@
         ]
       },
       {
-        "Category": "Audio/Media Recording",
+        "Category": "Audio/Media/Screen Recording",
         "HookType": "Java",
         "hooks": [
           {
@@ -766,6 +766,14 @@
           {
             "clazz": "android.media.AudioRecord",
             "method": "getAudioSource"
+          },
+          {
+            "clazz": "android.media.projection.MediaProjectionManager",
+            "method": "createScreenCaptureIntent"
+          },
+          {
+            "clazz": "android.media.projection.MediaProjectionManager",
+            "method": "getMediaProjection"
           }
         ]
       },

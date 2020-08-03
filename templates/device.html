@@ -23,22 +23,52 @@
         <!-- Search Bar and Table -->
         <div class="col-sm-12">
 
+          <!-- collapseViewDevice - start -->
           <div class="collapse" id="collapseViewDevice">
             <br>
+            <!-- main form group - start -->
+            <div class="form-group 
+                       list-group-item 
+                       list-group-item-action 
+                       bg-light
+                       rounded">
             <div class="form-group">
-              <label for="system_package">System Package used for diff loaded classes - (In case of issue try to attach a different persistent process)</label>
-              <input type="text" class="form-control" id="system_package" placeholder="Android: {{ system_package_Android|safe }} - iOS: {{ system_package_iOS|safe }}"
-                disabled>
-            </div>
-            <div class="form-group">
-              <label for="device_type">Device connection</label>
-              <input type="text" class="form-control" id="device_type" placeholder="{{ device_type_str|safe }} {{'- ' + conn_args_str|safe if conn_args_str}}"
-                disabled>
-            </div>
-            <small class="form-text text-muted">
-              Edit this settings directly in the <a href="/config">Config tab</a>
-            </small>
-          </div>
+
+                <label for="Android_system_package"> 
+                  <b>Android - System Package used for diff loaded classes</b>
+                </label>
+                <input type="text" 
+                      class="form-control" 
+                      id="Android_system_package" 
+                      placeholder="{{ system_package_Android|safe}}"
+                      disabled>
+                <small class="form-text text-muted">
+                  In case of issue try to attach a different persistent process. <a href="/config">Click here to change.</a>
+                </small>
+
+                <br>
+                <label for="iOS_system_package">
+                  <b>iOS - System Package used for diff loaded classes</b>
+                </label>
+                <input type="text" 
+                      class="form-control" 
+                      id="iOS_system_package" 
+                      placeholder="{{system_package_iOS|safe}}"
+                      disabled>
+              </div>
+
+              <div class="form-group">
+                <label for="device_type"><b>Device connection mode</b></label>
+                <input type="text" class="form-control" id="device_type" placeholder="{{ device_type_str|safe }} {{'- ' + conn_args_str|safe if conn_args_str}}"
+                  disabled>
+                  <small class="form-text text-muted">
+                    Edit these settings directly in the <a href="/config">Config tab</a>
+                  </small>
+              </div>
+
+            </div> <!-- main form group - end -->
+
+          </div> <!-- collapseViewDevice - end -->
           <br>
 
           <!-- Avanced menu -->
@@ -63,6 +93,16 @@
                        list-group-item-action 
                        bg-light
                        rounded" action="/" method=post>
+            
+            <div class="form-group">
+            <label for="Mobile_OS"><b>Device detected</b></label>
+              <input type="text" 
+                     class="form-control" 
+                     id="device_type" 
+                     placeholder="{{device_info}}"
+                    disabled>
+            </div>
+
             <div class="form-group">
               <label for="mode"><b>Mobile OS</b></label>
               <select class="form-control" 
@@ -73,7 +113,8 @@
                 <option>Android</option>
                 <option>iOS</option>
               </select>
-            </div>            
+            </div>         
+
             <div class="form-group">
               <label for="package"><b>Package name</b></label>
               <input class="form-control" list="package" name="package" required="true" placeholder="com.example.app">
@@ -91,16 +132,28 @@
               </select>
             </div>
 
-            <div class="form-group">
+            <div class="form-group" id="startup_monitors">
               <label for="mode"><b>Optional</b> - Load a custom script or APIs Monitors</label>
               <br>
-            <button class="btn btn-primary mb-2" type="button" data-toggle="collapse"
-            data-target="#collapseViewAPIM" aria-expanded="true" aria-controls="collapseView">
+            <button class="btn btn-primary mb-2" 
+                    id="APIM_button"
+                    type="button" 
+                    data-toggle="collapse"
+                    data-target="#collapseViewAPIM" 
+                    aria-expanded="true" 
+                    aria-controls="collapseView"
+                    disabled>
             Load APIs Monitors 
             </button>
 
-            <button class="btn btn-danger mb-2" type="button" data-toggle="collapse"
-              data-target="#collapseViewCFS" aria-expanded="true" aria-controls="collapseView">
+            <button class="btn btn-danger mb-2" 
+                    id="CFS_button"
+                    type="button" 
+                    data-toggle="collapse"
+                    data-target="#collapseViewCFS" 
+                    aria-expanded="true" 
+                    aria-controls="collapseView"
+                    disabled>
               Load Default Frida Scripts
             </button>
             </div>
@@ -115,40 +168,40 @@
                   <u><b>Make sure to add your favorite <font color=red>.js</font> scripts!</b></u> 😉
                 </small>
                 <br>
-                  <!-- Nav tabs -->
-                  <ul class="nav nav-tabs" role="tablist">
-                    <li class="nav-item">
-                      <a class="nav-link active" data-toggle="tab" href="#Android">Android</a>
+
+
+                <!-- Tab panes -->
+                 <div class="tab-content">
+                  
+                  <!-- Android FRIDA custom scripts -->
+                  <div id="Android_frida_custom_scripts">
+                  <ul class="list-group">
+                    {% for cs in custom_scripts_Android %}
+                    <li 
+                       onclick="return get_frida_script('Android','{{ cs }}');" 
+                       class="list-group-item list-group-item-action">
+                      [{{ loop.index }}] - {{ cs }}
                     </li>
-                    <li class="nav-item">
-                      <a class="nav-link" data-toggle="tab" href="#iOS">iOS</a>
-                    </li>
+                    {% endfor %}
                   </ul>
+                  </div>
+                  <!-- Android FRIDA custom scripts -->
 
-                  <!-- Tab panes -->
-                  <div class="tab-content">
-                    <div id="Android" class="container tab-pane active"><br>
-                      <h3>Android</h3>
-                      <ul class="list-group">
-                        {% for cs in custom_scripts_Android %}
-                        <a href="/?os=Android&cs={{ cs }}" class="list-group-item list-group-item-action">
-                          [{{ loop.index }}] - {{ cs }}
-                        </a>
-                        {% endfor %}
-                      </ul>
+                  <!-- iOS FRIDA custom scripts -->
+                  <div id="iOS_frida_custom_scripts">
+                  <ul class="list-group">
+                    {% for cs in custom_scripts_iOS %}
+                    <li 
+                       onclick="return get_frida_script('iOS','{{ cs }}');" 
+                       class="list-group-item list-group-item-action">
+                      [{{ loop.index }}] - {{ cs }}
+                    </li>
+                    {% endfor %}
+                  </ul>
+                  </div>
+                  <!-- iOS FRIDA custom scripts -->
 
-                    </div>
-                    <div id="iOS" class="container tab-pane fade"><br>
-                      <h3>iOS</h3>
-                      <ul class="list-group">
-                        {% for cs in custom_scripts_iOS %}
-                        <a href="/?os=iOS&cs={{ cs }}" class="list-group-item list-group-item-action">
-                          [{{ loop.index }}] - {{ cs }}
-                        </a>
-                        {% endfor %}
-                      </ul>
-                    </div>
-                  </div> <!-- tab-content end-->
+                </div> <!-- tab-content end-->
 
               </div>
             </div>
@@ -160,7 +213,7 @@
               <div class="form-group">
                 <h5>&nbsp;What do you want to monitor? <font color=red>(Android Only)</font></h5>
                 <small class="form-text text-muted">
-                  &nbsp; This feature is currently available for Android apps only. <u><b><font color=red>Do not use it on iOS devices!</font></b></u>
+                  &nbsp; This feature is currently available for Android apps only.
                 </small>
                 <br>
                 <div class="row">
@@ -203,10 +256,10 @@
             <!-- APIs Monitors - Toggle -->
 
             <!-- FRIDA script textarea -->
-            <div class="form-group">
-              <label for="fridastartupscript"><b>Optional</b> - Run a FRIDA script at startup</label>
-              <textarea class="form-control" id="fridastartupscript" name="fridastartupscript"
-                rows="10">{{ custom_script_loaded }}</textarea>
+            <div class="form-group" id="form_group_frida_startup_script">
+              <label for="frida_startup_script"><b>Optional</b> - Run a FRIDA script at startup</label>
+              <textarea class="form-control" id="frida_startup_script" name="frida_startup_script"
+                rows="10"></textarea>
             </div>
             <!-- FRIDA script textarea -->
 
@@ -233,7 +286,62 @@
   {% include 't_js_script.html' %}
   {% block scripts %}
   <script>
-    var editor = CodeMirror.fromTextArea(fridastartupscript, {
+  $("#mobile_OS").on("change", function() {
+      
+      //collapse views on change
+      $('#collapseViewCFS').collapse('hide');
+      $('#collapseViewAPIM').collapse('hide');
+      
+      //clear text area
+      editor.setValue("");
+
+      //Android 
+      if(this.value=="Android")
+      {
+        $('#CFS_button').prop('disabled', false);
+        $('#APIM_button').prop('disabled', false);
+
+        $('#Android_frida_custom_scripts').show();
+        $('#iOS_frida_custom_scripts').hide();
+      }
+      //iOS
+      else 
+      {
+        $('#CFS_button').prop('disabled', false);
+        $('#APIM_button').prop('disabled', true);
+
+        $('#Android_frida_custom_scripts').hide();
+        $('#iOS_frida_custom_scripts').show();
+      }
+  });
+  </script>
+
+  <script>
+    
+    function get_frida_script(os,cs){
+          console.log(os,cs)
+          $.ajax({
+          url: "/get_frida_custom_script",
+          type: "get",
+          data: { 
+            os: os, 
+            cs: cs
+          },
+          success: function(selected_frida_script) {
+            console.log("selected_frida_script")
+            console.log(selected_frida_script)
+            editor.setValue(selected_frida_script);
+          }
+        });
+
+        //auto-collapse Custom Frida Script view
+        $('#collapseViewCFS').collapse('hide');
+
+    }
+  </script>
+
+  <script>
+    var editor = CodeMirror.fromTextArea(frida_startup_script, {
         lineNumbers: true,
         mode: 'javascript',
         theme: 'dracula'

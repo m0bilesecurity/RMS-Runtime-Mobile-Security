@@ -291,16 +291,12 @@ def device_management():
     global no_system_package
     global BETA
 
-    cs_file = ""
     custom_scripts_Android = []
     custom_scripts_iOS = []
     packages = []
     config = read_config_file()
 
-    if mobile_OS=="Android":
-        system_package=config["system_package_Android"];
-    else: 
-        system_package=config["system_package_iOS"];
+    mobile_OS="N/A"
 
     no_system_package=False
     frida_crash=False
@@ -313,7 +309,6 @@ def device_management():
 
     try:
         device = get_device(device_type=config["device_type"], device_args=config['device_args'])
-        rms_print(device)
     except:
         return redirect(url_for('edit_config_file', error=True))
 
@@ -342,12 +337,6 @@ def device_management():
         with open(os.path.dirname(os.path.realpath(__file__)) + "/api_monitor.json") as f:
             api_monitor = json.load(f)
 
-        #Load selected frida_script inside the textarea
-        cs = request.args.get('cs')
-        mobile_os_get = request.args.get('os')
-        if cs is not None and os is not None:
-            with open(os.path.dirname(os.path.realpath(__file__)) + "/custom_scripts/"+ mobile_os_get +"/" + cs) as f:
-                cs_file = f.read()
 
     if request.method == 'POST':
 
@@ -367,11 +356,14 @@ def device_management():
             target_package="Gadget"
 
         mode = request.values.get('mode')
-        frida_script = request.values.get('fridastartupscript')
+        frida_script = request.values.get('frida_startup_script')
         api_selected = request.values.getlist('api_selected')
 
+        rms_print("\n")
         if target_package: rms_print("Package Name: " + target_package)
         if mode: rms_print("Mode: " + mode)
+        if device: rms_print("Device: " + str(device))
+        rms_print("BETA: "+str(BETA))
         if frida_script: rms_print("Frida Startup Script: \n" + frida_script)
         if api_selected: rms_print("APIs Monitors: \n" + " - ".join(api_selected))
         rms_print("\n")
@@ -455,7 +447,7 @@ def device_management():
     
     return render_template(
         "device.html",
-        custom_script_loaded=cs_file,
+        device_info=device,
         custom_scripts_Android=custom_scripts_Android,
         custom_scripts_iOS=custom_scripts_iOS,
         api_monitor=api_monitor,
@@ -1150,6 +1142,24 @@ def eval_script_and_redirect():
         # auto redirect the user to the console output page
         return redirect(url_for(redirect_url))
 
+''' 
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+API - get frida custom script as text (Device Page)
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'''
+
+@app.route('/get_frida_custom_script', methods=['GET'])
+def get_frida_custom_script():
+    #Load selected frida_script inside the textarea
+    mobile_os_get = request.args.get('os')
+    cs = request.args.get('cs')
+
+    cs_file=""
+    if cs is not None and os is not None:
+        with open(os.path.dirname(os.path.realpath(__file__)) + "/custom_scripts/"+ mobile_os_get +"/" + cs) as f:
+            cs_file = f.read()
+            return cs_file
+    return ""
 
 ''' 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
