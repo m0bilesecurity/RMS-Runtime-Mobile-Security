@@ -426,7 +426,7 @@ def device_management():
             rms_print('[*] Process Spawned')
         if mode == "Attach" or target_package=="Gadget":
             #on iOS device "attach" is performd via package.name instead of identifier
-            if(mobile_OS=="iOS"):
+            if(mobile_OS=="iOS" and target_package!="Gadget"):
                 for p in packages:
                     if(p.identifier==target_package):
                         target_package=p.name
@@ -1415,7 +1415,7 @@ if __name__ == '__main__':
     print("")
     print("_________________________________________________________")
     print("RMS - Runtime Mobile Security")
-    print("Version: 1.4")
+    print("Version: 1.4.1")
     print("by @mobilesecurity_")
     print("Twitter Profile: https://twitter.com/mobilesecurity_")
     print("_________________________________________________________")
