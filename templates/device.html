@@ -120,7 +120,7 @@
               <input class="form-control" list="package" name="package" required="true" placeholder="com.example.app">
       	      <datalist id="package">
       	      {% for package in packages %}
-      	        <option>{{ package }}</option>
+      	        <option>{{ package.identifier }}</option>
       	      {% endfor %}
               </datalist>
             </div>

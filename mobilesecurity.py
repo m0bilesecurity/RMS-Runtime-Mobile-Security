@@ -16,6 +16,9 @@ loaded_classes = []
 system_classes = []
 loaded_methods = {}
 
+# List of apps installed on the device
+packages = []
+
 # app env info
 mobile_OS="N/A"
 app_env_info = {}
@@ -285,6 +288,7 @@ Device - TAB
 def device_management():
     global api
     global mobile_OS
+    global packages
     global system_classes
     global target_package
     global system_package
@@ -293,12 +297,8 @@ def device_management():
 
     custom_scripts_Android = []
     custom_scripts_iOS = []
-    packages = []
+
     config = read_config_file()
-
-    mobile_OS="N/A"
-
-    no_system_package=False
     frida_crash=False
 
     conn_args = ""
@@ -313,11 +313,14 @@ def device_management():
         return redirect(url_for('edit_config_file', error=True))
 
     if request.method == 'GET':
+        #reset the list of installed apps
+        packages = [] 
+
         #exception handling - frida crash
         frida_crash=request.args.get('frida_crash') == "True"
         try:
             for package in device.enumerate_applications():
-                packages.append(package.identifier)
+                packages.append(package)
         except Exception:
             return redirect(url_for('edit_config_file', error=True))
         
@@ -342,30 +345,38 @@ def device_management():
 
         #output reset
         reset_variables_and_output()
-        mobile_OS = request.values.get('mobile_OS')
-        
 
+        #obtain device OS
+        mobile_OS = request.values.get('mobile_OS')
+
+        #set the proper system package 
         if mobile_OS=="Android":
             system_package=config["system_package_Android"];
         else: 
             system_package=config["system_package_iOS"];
 
+        #set the target package
         target_package = request.values.get('package')
+
         #Frida Gadget support
         if target_package=="re.frida.Gadget":
             target_package="Gadget"
 
+        #setup the RMS run
         mode = request.values.get('mode')
         frida_script = request.values.get('frida_startup_script')
         api_selected = request.values.getlist('api_selected')
 
+        #RMS overview - print run options
         rms_print("\n")
         if target_package: rms_print("Package Name: " + target_package)
         if mode: rms_print("Mode: " + mode)
         if device: rms_print("Device: " + str(device))
         rms_print("BETA: "+str(BETA))
         if frida_script: rms_print("Frida Startup Script: \n" + frida_script)
+        else: rms_print("Frida Startup Script: None")
         if api_selected: rms_print("APIs Monitors: \n" + " - ".join(api_selected))
+        else: rms_print("APIs Monitors: None")
         rms_print("\n")
 
         # main JS file
@@ -414,6 +425,12 @@ def device_management():
             session = device.attach(pid)
             rms_print('[*] Process Spawned')
         if mode == "Attach" or target_package=="Gadget":
+            #on iOS device "attach" is performd via package.name instead of identifier
+            if(mobile_OS=="iOS"):
+                for p in packages:
+                    if(p.identifier==target_package):
+                        target_package=p.name
+                               
             session = device.attach(target_package)
             rms_print('[*] Process Attached')
 
