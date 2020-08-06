@@ -507,17 +507,6 @@ function api_monitor_Android(api_to_monitor)
         // Java 
         if (e["HookType"] == "Java") {
           javadynamichook(hook, e["Category"], function (realRetval, to_print) {
-            to_print.returnValue = realRetval
-
-            //check if type object if yes convert it to string
-            if (realRetval && typeof realRetval === 'object') {
-              var retval_string = [];
-              for (var k = 0, l = realRetval.length; k < l; k++) {
-                retval_string.push(realRetval[k]);
-              }
-              to_print.returnValue = '' + retval_string.join('');
-            }
-            if (!to_print.returnValue) to_print.returnValue = undefined
 
             send('[API_Monitor]\n' + 
             JSON.stringify(to_print,function(k,v)
@@ -592,7 +581,7 @@ function javadynamichook(hook, category, callback) {
             class: clazz,
             method: method,
             args: args,
-            returnValue: retval ? retval.toString() : null,
+            returnValue: retval ? retval.toString() : "N/A",
             calledFrom: calledFrom
           };
           retval = callback(retval, to_print);
