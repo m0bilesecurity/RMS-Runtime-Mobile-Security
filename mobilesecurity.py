@@ -301,11 +301,11 @@ def device_management():
     config = read_config_file()
     frida_crash=False
 
-    conn_args = ""
+    device_attributes = ""
     if config['device_type'] == 'remote':
-        conn_args = config['device_args']['host']
+        device_attributes = config['device_args']['host']
     elif config['device_type'] == 'id':
-        conn_args = config['device_args']['id']
+        device_attributes = config['device_args']['id']
 
     try:
         device = get_device(device_type=config["device_type"], device_args=config['device_args'])
@@ -470,12 +470,12 @@ def device_management():
         api_monitor=api_monitor,
         system_package_Android=config["system_package_Android"],
         system_package_iOS=config["system_package_iOS"],
-        device_type_str=config["device_type"],
+        device_mode=config["device_type"],
+        device_attributes=device_attributes,
         target_package=target_package,
         system_package=system_package,
         no_system_package=no_system_package,
         packages=packages,
-        conn_args_str=conn_args,
         frida_crash=frida_crash
     )
 
@@ -916,14 +916,16 @@ def file_manager():
         path=request.args.get('path')
         download=request.args.get('download')
         if download:
-            file=''.join(map(chr, (api.downloadfileatpath(download))["data"])) 
-            filename=os.path.basename(os.path.normpath(download))
-            rms_print(filename)
-            return Response(
-            file,
-            headers={
-                "Content-disposition":
-                "attachment; filename="+filename})
+            file=api.downloadfileatpath(download)
+            if(file):
+                file=''.join(map(chr, (file)["data"])) 
+                filename=os.path.basename(os.path.normpath(download))
+                rms_print(filename)
+                return Response(file,
+                                headers={
+                                "Content-disposition":
+                                "attachment; filename="+filename}
+                               )
         if path:
             files_at_path=api.listfilesatpath(path)
 

@@ -123,6 +123,16 @@
         }
     });
   </script> 
+
+  <!-- Set current Page as active in the NavBar -->
+  <script>
+    $(document).ready(function () {
+      $(".nav li").removeClass("active");
+      $('#api_monitor').addClass('active');
+    });
+    </script>
+  <!-- Set current Page as active in the NavBar -->
+
   {% endblock %}
 
 </body>

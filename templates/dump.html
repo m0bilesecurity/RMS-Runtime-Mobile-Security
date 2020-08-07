@@ -261,6 +261,16 @@
       $('#UserInput').keyup();
     }
   </script>
+
+  <!-- Set current Page as active in the NavBar -->
+  <script>
+    $(document).ready(function () {
+      $(".nav li").removeClass("active");
+      $('#dump').addClass('active');
+    });
+    </script>
+  <!-- Set current Page as active in the NavBar -->
+
   {% endblock %}  
 
 </body>

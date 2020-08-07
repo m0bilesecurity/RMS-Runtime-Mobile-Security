@@ -235,6 +235,16 @@
       inp.remove();
     }
   </script>
+
+  <!-- Set current Page as active in the NavBar -->
+  <script>
+    $(document).ready(function () {
+      $(".nav li").removeClass("active");
+      $('#file_manager').addClass('active');
+    });
+    </script>
+  <!-- Set current Page as active in the NavBar -->
+
   {% endblock %}
 
 </body>

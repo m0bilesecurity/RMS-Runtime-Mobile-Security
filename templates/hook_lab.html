@@ -175,6 +175,15 @@
       $('#UserInput_Filter').keyup();
     }
   </script>
+
+  <!-- Set current Page as active in the NavBar -->
+  <script>
+    $(document).ready(function () {
+      $(".nav li").removeClass("active");
+      $('#hook_lab').addClass('active');
+    });
+    </script>
+  <!-- Set current Page as active in the NavBar -->
   
   {% endblock %}
 

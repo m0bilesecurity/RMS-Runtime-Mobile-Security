@@ -90,6 +90,17 @@
   <!-- Javascript loading -->
   {% include 't_js_script.html' %}
 
+  <!-- Set current Page as active in the NavBar -->
+  {% block scripts %}
+  <script>
+  $(document).ready(function () {
+    $(".nav li").removeClass("active");
+    $('#config').addClass('active');
+  });
+  </script>
+  {% endblock %}
+  <!-- Set current Page as active in the NavBar -->
+  
 </body>
 
 </html>

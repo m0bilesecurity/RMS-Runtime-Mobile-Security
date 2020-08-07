@@ -28,6 +28,18 @@
             <b><font color=red>FRIDA crashed while loading methods for one or more classes selected!</font></b> <br><br>
             <b><font color=red>Try to exclude them from your search!</font></b>
           {% endif %}
+
+          <!-- print a warning if the Browser is not Chrome - start -->
+          {% block scripts %}
+          <script>
+          var isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
+          if(isChrome==false){
+            document.write("<br><br><b><font color=red>Browser not fully supported, please use Chrome!</font></b>")
+          }
+          </script>
+          {% endblock %}
+          <!-- print a warning if the Browser is not Chrome - end -->
+
         </p>
       </div>
     </div>

@@ -58,8 +58,8 @@
               </div>
 
               <div class="form-group">
-                <label for="device_type"><b>Device connection mode</b></label>
-                <input type="text" class="form-control" id="device_type" placeholder="{{ device_type_str|safe }} {{'- ' + conn_args_str|safe if conn_args_str}}"
+                <label for="device_mode"><b>Device connection mode</b></label>
+                <input type="text" class="form-control" id="device_mode" placeholder="{{ device_mode|safe }} {{'- ' + device_attributes|safe if device_attributes}}"
                   disabled>
                   <small class="form-text text-muted">
                     Edit these settings directly in the <a href="/config">Config tab</a>
@@ -117,23 +117,41 @@
 
             <div class="form-group">
               <label for="package"><b>Package name</b></label>
-              <input class="form-control" list="package" name="package" required="true" placeholder="com.example.app">
-      	      <datalist id="package">
-      	      {% for package in packages %}
-      	        <option>{{ package.identifier }}</option>
-      	      {% endfor %}
-              </datalist>
+              <input class="form-control" 
+                     list="package" 
+                     name="package" 
+                     required="true" 
+                     placeholder="com.example.app">
+
+                    <datalist id="package">
+                    {% for package in packages %}
+                      <option>{{ package.identifier }}</option>
+                    {% endfor %}
+                    </datalist>
+
             </div>
+
             <div class="form-group">
-              <label for="mode"><b>Spawn or Attach</b></label>
-              <select class="form-control" id="mode" name="mode">
+              <label for="mode">
+                <b>Spawn or Attach</b>
+              </label>
+
+              <select class="form-control" 
+                      id="mode" 
+                      name="mode">
                 <option>Spawn</option>
                 <option>Attach</option>
               </select>
+              <small id="spawn_info" 
+                     class="form-text text-muted collapse">
+                If you choose "attach", make sure the app you are looking for is <b>up and running</b> on the device!
+              </small>
             </div>
 
             <div class="form-group" id="startup_monitors">
-              <label for="mode"><b>Optional</b> - Load a custom script or APIs Monitors</label>
+              <label for="mode">
+                <b>Optional</b> - Load a custom script or APIs Monitors
+              </label>
               <br>
             <button class="btn btn-primary mb-2" 
                     id="APIM_button"
@@ -314,6 +332,13 @@
         $('#iOS_frida_custom_scripts').show();
       }
   });
+  $("#mode").on("change", function() {
+
+      if(this.value=="Attach")
+        $('#spawn_info').show();
+      else 
+        $('#spawn_info').hide();
+  });
   </script>
 
   <script>
@@ -348,6 +373,16 @@
     });
     editor.setSize("100%",300);
   </script>
+
+  <!-- Set current Page as active in the NavBar -->
+  <script>
+  $(document).ready(function () {
+    $(".nav li").removeClass("active");
+    $('#device').addClass('active');
+  });
+  </script>
+  <!-- Set current Page as active in the NavBar -->
+
   {% endblock %}
 
 </body>

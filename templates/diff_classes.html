@@ -90,6 +90,15 @@
     });
     editor.setSize("100%",620);
 </script>
+
+  <!-- Set current Page as active in the NavBar -->
+  <script>
+    $(document).ready(function () {
+      $(".nav li").removeClass("active");
+      $('#diff_classes').addClass('active');
+    });
+    </script>
+  <!-- Set current Page as active in the NavBar -->
   {% endblock %}
 
 </body>

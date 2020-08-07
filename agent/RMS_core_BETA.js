@@ -1,5 +1,8 @@
 /******************************************************************************
  * Exported APIs
+
+ Base APIs set - same of RMS_core.js
+ ____________________________________________________________________________
  1. loadclasses()
  2. loadclasseswithfilter([filters], isRegex, isCase, isWhole)
  3. loadmethods([loaded_classes])
@@ -7,12 +10,18 @@
  5. hookclassesandmethods([loaded_classes], [loaded_methods], template)
  6. generatehooktemplate([loaded_classes], [loaded_methods], template)
  7. heapsearchtemplate([loaded_classes], [loaded_methods], template)
- 8. getappenvinfo()
- 9. listfilesatpath(path)
- 10. downloadfileatpath(path)
- 11. apimonitor([api_to_monitor])
+ 8. apimonitor([api_to_monitor])
+ 9. getappenvinfo()
+ 10. listfilesatpath(path)
+ ____________________________________________________________________________
+
+ BETA APIs set 
+ ____________________________________________________________________________
+ 11. downloadfileatpath(path)
+ ____________________________________________________________________________
  ******************************************************************************/
 
+//import frida-fs
 const fs = require('frida-fs');
 
 rpc.exports = {

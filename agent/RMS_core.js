@@ -7,9 +7,9 @@
  5. hookclassesandmethods([loaded_classes], [loaded_methods], template)
  6. generatehooktemplate([loaded_classes], [loaded_methods], template)
  7. heapsearchtemplate([loaded_classes], [loaded_methods], template)
- 8. getappenvinfo()
- 9. listfilesatpath(path)
- 10. apimonitor([api_to_monitor])
+ 8. apimonitor([api_to_monitor])
+ 9. getappenvinfo()
+ 10. listfilesatpath(path)
  ******************************************************************************/
 
 rpc.exports = {
@@ -60,6 +60,12 @@ rpc.exports = {
     else 
       return heap_search_template_iOS(loaded_classes, loaded_methods, template)
   },
+  apimonitor: function (api_to_monitor) {
+    if (Java.available)
+      api_monitor_Android(api_to_monitor)
+    else 
+      api_monitor_iOS(api_to_monitor)
+  },
   getappenvinfo: function () {
     if (Java.available)
       return get_app_env_info_Android()
@@ -71,12 +77,6 @@ rpc.exports = {
       return list_files_at_path_Android(path)
     else 
       return list_files_at_path_iOS(path)
-  },
-  apimonitor: function (api_to_monitor) {
-    if (Java.available)
-      api_monitor_Android(api_to_monitor)
-    else 
-      api_monitor_iOS(api_to_monitor)
   }
 };
 
@@ -870,8 +870,6 @@ function list_files_at_path_iOS(path)
     //DEBUG console.log(JSON.stringify(listResult))
     return listResult;
 }
-
-
 
 function api_monitor_iOS(api_to_monitor) 
 {

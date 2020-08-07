@@ -68,6 +68,7 @@
 
   <!-- Javascript loading -->
   {% include 't_js_script.html' %}
+
   {% block scripts %}
   <script>
     var editor = CodeMirror.fromTextArea(hooktable, {
@@ -77,6 +78,16 @@
     });
     editor.setSize("100%",550);
   </script> 
+
+  <!-- Set current Page as active in the NavBar -->
+  <script>
+    $(document).ready(function () {
+      $(".nav li").removeClass("active");
+      $('#custom_frida_script').addClass('active');
+    });
+    </script>
+  <!-- Set current Page as active in the NavBar -->
+
   {% endblock %}
 
 </body>
