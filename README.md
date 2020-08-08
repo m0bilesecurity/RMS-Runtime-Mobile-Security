@@ -1,7 +1,7 @@
 
 # RMS - Runtime Mobile Security #
 
-![mobilesecurity_](/static/mobilesecurity_circle.png)
+![RMS_logo](/static/RMS_Github_Header.png)
 
 by [@mobilesecurity_](https://twitter.com/mobilesecurity_) 
 
