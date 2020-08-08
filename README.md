@@ -1,5 +1,5 @@
 
-# RMS - Runtime Mobile Security #
+# Runtime Mobile Security (RMS) 📱🔥#
 
 ![RMS_logo](/static/RMS_Github_Header.png)
 
