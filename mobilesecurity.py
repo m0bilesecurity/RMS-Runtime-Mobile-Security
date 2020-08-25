@@ -1120,6 +1120,7 @@ API - Print Console logs to a File
 @app.route('/save_console_logs', methods=['GET', 'POST'])
 def save_console_logs():
     global target_package
+    global mobile_OS
     try:
         #check if console_logs exists
         if not os.path.exists("console_logs"):
@@ -1140,6 +1141,11 @@ def save_console_logs():
         with open(out_path+"/global_console_output.txt", 'w') as textfile:
             textfile.write(global_console_output)
             textfile.close()
+        #save api_monitor_console_output - not available on iOS
+        if mobile_OS=="Android":
+            with open(out_path+"/api_monitor_console_output.txt", 'w') as textfile:
+                textfile.write(api_monitor_console_output)
+                textfile.close()
 
         return "print_done - "+out_path
     except Exception as err:
