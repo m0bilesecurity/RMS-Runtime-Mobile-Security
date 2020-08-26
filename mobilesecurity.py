@@ -952,7 +952,6 @@ Load Frida Script - TAB
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '''
 
-
 @app.route('/load_frida_script', methods=['GET', 'POST'])
 def frida_script_loader():
     global mobile_OS
@@ -995,7 +994,6 @@ Console Output - TAB
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '''
 
-
 @app.route('/console_output', methods=['GET', 'POST'])
 def console_output_loader():
     global mobile_OS
@@ -1030,7 +1028,6 @@ def ws_disconnect():
 Config File - TAB
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '''
-
 
 @app.route('/config', methods=['GET', 'POST'])
 def edit_config_file():
@@ -1150,6 +1147,39 @@ def save_console_logs():
         return "print_done - "+out_path
     except Exception as err:
         return "print_error: "+str(err)
+
+''' 
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+API - Reset Console Output
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'''
+
+@app.route('/reset_console_logs', methods=['GET'])
+def reset_console_logs():
+    global calls_console_output
+    global hooks_console_output
+    global heap_console_output
+    global global_console_output
+    global api_monitor_console_output
+    global static_analysis_console_output
+
+    global call_count
+    global call_count_stack
+    global methods_hooked_and_executed
+
+    calls_console_output = ""
+    hooks_console_output = ""
+    heap_console_output = ""
+    global_console_output = ""
+    api_monitor_console_output = ""
+    static_analysis_console_output = ""
+
+    call_count = 0
+    call_count_stack = {}
+    methods_hooked_and_executed = []
+
+    redirect_url = request.values.get('redirect')
+    return redirect(url_for(redirect_url))
 
 ''' 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

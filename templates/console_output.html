@@ -9,7 +9,7 @@
 </head>
 
 <body>
-<!-- Model View -->
+<!-- Model View - start -->
 <div class="modal fade" id="ModalZoomedView">
   <div class="modal-dialog modal-xl">
     <div class="modal-content">
@@ -19,6 +19,7 @@
         <h4 class="modal-title">Zoomed Console Output</h4>
         <button type="button" class="close" data-dismiss="modal">&times;</button>
       </div>
+      <!-- Modal Header -->
 
       <!-- Modal body -->
       <div class="modal-body">
@@ -29,17 +30,19 @@
                       name=zoomed_console_output></textarea>
           </div>
 
-      </div>
+      </div> 
+      <!-- Modal body -->
 
       <!-- Modal footer -->
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
       </div>
+      <!-- Modal footer -->
 
       </div>
     </div>
-  </div><!-- Modal body -->
-
+  </div>
+<!-- Model View - end -->
 
 
 
@@ -66,6 +69,11 @@
         </div> <!-- row -->
         <div class="border-top my-3"></div>
         <center>
+          <a role="button" 
+             href="/reset_console_logs?redirect=console_output_loader" 
+             class="btn btn-danger">
+             Reset Console Output
+          </a>
           <button class="btn btn-success" id="save_output">
           Save Console Output
           </button>
@@ -199,6 +207,8 @@
     });
 
   </script>
+
+  <!-- Save Console Output -->
   <script>
     $(document).ready(function() {
        $('#save_output').click(function(){
@@ -215,6 +225,7 @@
        });
     });
   </script>
+  <!-- Save Console Output -->
 
 
   <script>

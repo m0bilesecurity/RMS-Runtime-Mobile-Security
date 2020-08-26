@@ -10,6 +10,43 @@
 </head>
 
 <body>
+
+<!-- Model View - start -->
+<div class="modal fade" id="ModalZoomedView">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <h4 class="modal-title">Zoomed Console Output</h4>
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+      </div>
+      <!-- Modal Header -->
+
+      <!-- Modal body -->
+      <div class="modal-body">
+
+          <div class="col-sm-12">
+            
+            <textarea id=zoomed_console_output 
+                      name=zoomed_console_output></textarea>
+          </div>
+
+      </div> 
+      <!-- Modal body -->
+
+      <!-- Modal footer -->
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+      <!-- Modal footer -->
+
+      </div>
+    </div>
+  </div>
+<!-- Model View - end -->
+
+
   <div class="d-flex" id="wrapper">
     <!-- Sidebar -->
     {% include 't_sidebar.html' %}
@@ -31,9 +68,11 @@
           <div class="col-sm-12">
             <h4>What do you want to monitor?</h4>
             <small class="form-text text-muted">
-              <font color=red><b></b>NOTE:</b></font> You can easily add more monitors by simply editing the json file called <b>api_monitor.json</b>
+              <font color=red><b>NOTE:</b></font> You can easily add more monitors by simply editing the json file called <b>api_monitor.json</b>
             </small>
             <br>
+
+            <!-- FORM start -->
             <form class="form-group 
             list-group-item 
             list-group-item-action 
@@ -78,29 +117,60 @@
 
               <br/>
 
-            <center><input type=submit value="Start API Monitor" class="btn btn-success"></center>
+            <center>
+              <input type=submit 
+                     value="Start APIs Monitor" 
+                     class="btn btn-success">
+            </center>
+          </form>
+          <!-- Form end -->
 
+          <div class="border-top my-3"></div>
+          <center>
+            <a role="button" 
+               href="/reset_console_logs?redirect=api_monitor" 
+               class="btn btn-danger">
+               Reset Console Output
+            </a>
+            <button class="btn btn-secondary" id="save_output">
+            Save Console Output
+            </button>
+          </center>
 
-        <br>
-        <div class="row">
-            <div class="col-sm-12">
-                <textarea id=api_monitor_console name=api_monitor_console class="form-control">{{ api_monitor_console_output_str|safe }}</textarea>
-                <br>
-            </div>
-        </div><!-- /#row -->
+          <br>
+          
+          <h3>APIs Monitor Console Output
+            <button 
+              data-toggle="modal" 
+              data-target="#ModalZoomedView" 
+              data-console-id="api_monitor"
+              class="btn btn-primary btn-sm">
+              Zoom
+            </button>
+          </h3>
 
-      </div>
-      <!-- /#container-fluid -->
+          <!-- APIs Monitor Console output - Start -->
+          <div class="row">
+              <div class="col-sm-12">
+                  <textarea id=api_monitor_console 
+                            name=api_monitor_console 
+                            class="form-control">{{ api_monitor_console_output_str|safe }}</textarea>
+                  <br>
+              </div>
+          </div>
+          <!-- APIs Monitor Console output - end -->
 
-    </div>
-    <!-- /#page-content-wrapper -->
+      </div> <!-- /#container-fluid -->
 
-  </div>
-  <!-- /#wrapper -->
+    </div> <!-- /#page-content-wrapper -->
+
+  </div> <!-- /#wrapper -->
 
   <!-- Javascript loading -->
   {% include 't_js_script.html' %}
   {% block scripts %}
+
+
   <script>
     var api_monitor_editor = CodeMirror.fromTextArea(api_monitor_console, {
         lineNumbers: true,
@@ -109,8 +179,15 @@
         readOnly: true
     });
     api_monitor_editor.setSize("100%",500);
-    
+
+    var zoomed_console_editor = CodeMirror.fromTextArea(zoomed_console_output, {
+            lineNumbers: true,
+            mode: 'javascript',
+            theme: 'dracula'
+        });
+    zoomed_console_editor.setSize("100%",500);
   </script>
+
   <script>
     //Set cursors always at the bottom 
     api_monitor_editor.setCursor(api_monitor_editor.lineCount(), 0);
@@ -123,6 +200,38 @@
         }
     });
   </script> 
+
+  <!-- Save Console Output -->
+  <script>
+    $(document).ready(function() {
+      $('#save_output').click(function(){
+          $.ajax({
+          url: "/save_console_logs",
+          type: "get",
+          success: function(response) {
+          if(response.includes("print_done"))
+            alert("Console logs stored in:\n"+response.replace("print_done - ",""))
+          else
+            alert("Error while saving Console logs. \nError info: "+response)
+          }
+        });
+      });
+    });
+  </script>
+  <!-- Save Console Output -->
+  
+  <!-- Zoomed modal view script -->
+  <script>
+      $('#ModalZoomedView').on('shown.bs.modal', function (e) {
+        var console=$(e.relatedTarget).data('console-id');
+        var textToCopy=""
+          if(console=="api_monitor") textToCopy=api_monitor_editor.getValue()
+          zoomed_console_editor.setValue(textToCopy)
+          zoomed_console_editor.focus()
+          zoomed_console_editor.setCursor(0, 0)
+          zoomed_console_editor.refresh()
+      })
+    </script>
 
   <!-- Set current Page as active in the NavBar -->
   <script>
