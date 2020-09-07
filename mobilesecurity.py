@@ -334,6 +334,10 @@ def device_management():
         for f in os.listdir(os.path.dirname(os.path.realpath(__file__)) + "/custom_scripts/iOS/"):
             if f.endswith(".js"):
                 custom_scripts_iOS.append(f)
+        
+        #sort custom_scripts alphabetically
+        custom_scripts_Android.sort()
+        custom_scripts_iOS.sort()
 
         #Load APIs Monitors list
         api_monitor = {}
@@ -970,6 +974,10 @@ def frida_script_loader():
     for f in os.listdir(os.path.dirname(os.path.realpath(__file__)) + "/custom_scripts/"+mobile_OS):
         if f.endswith(".js"):
             custom_scripts.append(f)
+
+    #sort custom_scripts alphabetically
+    custom_scripts.sort()
+
     cs_file = ""
     if request.method == 'GET':
         cs = request.args.get('cs')
