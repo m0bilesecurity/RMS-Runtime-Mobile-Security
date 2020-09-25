@@ -168,6 +168,7 @@ Special thanks to the following Open Source projects for the inspiration:
 * [lich4](https://codeshare.frida.re/@lichao890427/dump-ios/)
 * [fadeevab](https://codeshare.frida.re/@fadeevab/intercept-android-apk-crypto-operations/)
 * [realgam3](https://codeshare.frida.re/@realgam3/dynamichooks/)
+* [noobpk](https://github.com/noobpk/frida-ios-hook)
 
 
 ### DEMO apps:
