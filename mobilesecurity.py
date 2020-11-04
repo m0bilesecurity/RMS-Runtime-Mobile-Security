@@ -638,8 +638,13 @@ def home():
                 current_template=current_template.replace("{{stacktrace}}", "this.s=this.s+\"StackTrace: \\n\"+Thread.backtrace(this.context, Backtracer.ACCURATE).map(DebugSymbol.fromAddress).join('\\n') +\"\\n\";")
         else:
             current_template=current_template.replace("{{stacktrace}}", "")
-
-        api.hookclassesandmethods(loaded_classes, loaded_methods, current_template)
+        try:
+            api.hookclassesandmethods(loaded_classes, loaded_methods, current_template)
+        except Exception as err:
+            rms_print(err)
+            msg="FRIDA crashed while hooking methods for one or more classes selected. Try to exclude them from your search!"
+            rms_print(msg)
+            return redirect(url_for("device_management", frida_crash=True, frida_crash_message=msg))
         # redirect the user to the console output
         return redirect(url_for('console_output_loader'))
 
