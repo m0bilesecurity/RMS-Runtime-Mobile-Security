@@ -53,7 +53,7 @@ They are not needed on iOS devices, since FRIDA starts just after the boot of th
 
 1. **(optional)** Create a python virtual environment
 2. ```pip3 install -r requirements.txt```
-3. Make sure frida-server is up and running on the target device. Instructions are here: [prerequisites](https://github.com/m0bilesecurity/RMS-Runtime-Mobile-Security#prerequisites)
+3. Make sure frida-server is up and running on the target device. Instructions are here: [Prerequisites](https://github.com/m0bilesecurity/RMS-Runtime-Mobile-Security#prerequisites) / [Quick smoke-test](https://github.com/m0bilesecurity/RMS-Runtime-Mobile-Security#quick-smoke-test)
 4. ```python3 mobilesecurity.py```
 5. Open your browser at ```http://127.0.0.1:5000/```
 
@@ -61,7 +61,7 @@ They are not needed on iOS devices, since FRIDA starts just after the boot of th
 1. In case of issues with your favorite Browser (e.g. logs not printed in the web console), please use <b>Google Chrome</b> (fully supported)
 2. If <b>RMS is not able to detect your device</b>, please perform the following checks:
     * double check if frida-server is up and running on the target device. Instructions are here: [Prerequisites](https://github.com/m0bilesecurity/RMS-Runtime-Mobile-Security#prerequisites)
-    / [Quick smoke-test](https://github.com/m0bilesecurity/RMS-Runtime-Mobile-Security#Quick-smoke--test)
+    / [Quick smoke-test](https://github.com/m0bilesecurity/RMS-Runtime-Mobile-Security#quick-smoke-test)
     * RMS must be started **after** frida-server
     * make sure that **only 1 device** is connected to your computer. RMS is currently not able to detect multiple devices
     * kill RMS and start it again 
