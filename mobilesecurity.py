@@ -300,6 +300,7 @@ def device_management():
 
     config = read_config_file()
     frida_crash=False
+    frida_crash_message=""
 
     device_attributes = ""
     if config['device_type'] == 'remote':
@@ -318,6 +319,8 @@ def device_management():
 
         #exception handling - frida crash
         frida_crash=request.args.get('frida_crash') == "True"
+        frida_crash_message=request.args.get('frida_crash_message')
+
         try:
             for package in device.enumerate_applications():
                 packages.append(package)
@@ -425,9 +428,12 @@ def device_management():
 
         session = None
         if mode == "Spawn" and target_package!="Gadget":
-            pid = device.spawn([target_package])
-            session = device.attach(pid)
-            rms_print('[*] Process Spawned')
+            try:
+                pid = device.spawn([target_package])
+                session = device.attach(pid)
+                rms_print('[*] Process Spawned')
+            except Exception as err:
+                return redirect(url_for("device_management", frida_crash=True, frida_crash_message=err))
         if mode == "Attach" or target_package=="Gadget":
             #on iOS device "attach" is performd via package.name instead of identifier
             if(mobile_OS=="iOS" and target_package!="Gadget"):
@@ -461,7 +467,10 @@ def device_management():
                 api_monitor = json.load(f)
             api_filter = [e for e in api_monitor if e['Category'] in api_selected]
             api_to_hook = json.loads(json.dumps(api_filter))
-            api.apimonitor(api_to_hook)
+            try:
+                api.apimonitor(api_to_hook)
+            except Exception as err:
+                return redirect(url_for("device_management", frida_crash=True, frida_crash_message=err))
 
         # automatically redirect the user to the dump classes and methods tab
         return printwebpage()
@@ -480,7 +489,8 @@ def device_management():
         system_package=system_package,
         no_system_package=no_system_package,
         packages=packages,
-        frida_crash=frida_crash
+        frida_crash=frida_crash,
+        frida_crash_message=frida_crash_message
     )
 
 def get_device(device_type="usb", device_args=None):
@@ -604,8 +614,9 @@ def home():
             loaded_methods = api.loadmethods(loaded_classes)
         except Exception as err:
             rms_print(err)
-            rms_print("FRIDA crashed while loading methods for one or more classes selected. Try to exclude them from your search!")
-            return redirect(url_for("device_management", frida_crash=True))
+            msg="FRIDA crashed while loading methods for one or more classes selected. Try to exclude them from your search!"
+            rms_print(msg)
+            return redirect(url_for("device_management", frida_crash=True, frida_crash_message=msg))
         return printwebpage()
 
     if choice == 3:
@@ -732,9 +743,11 @@ def hook_lab():
         if not loaded_methods:
             try:
                 loaded_methods = api.loadmethods(loaded_classes)
-            except Exception as err:
-                rms_print("FRIDA crashed while loading methods for one or more classes selected. Try to exclude them from your search!")
-                return redirect(url_for("device_management", frida_crash=True))
+            except Exception as err:                
+                rms_print(err)
+                msg="FRIDA crashed while loading methods for one or more classes selected. Try to exclude them from your search!"
+                rms_print(msg)
+                return redirect(url_for("device_management", frida_crash=True, frida_crash_message=msg))
         
         # method_index contains the index of the loaded method selected by the user
         method_index = request.args.get('method_index')
@@ -811,8 +824,10 @@ def heap_search():
             try:
                 loaded_methods = api.loadmethods(loaded_classes)
             except Exception as err:
-                rms_print("FRIDA crashed while loading methods for one or more classes selected. Try to exclude them from your search!")
-                return redirect(url_for("device_management", frida_crash=True))
+                rms_print(err)
+                msg="FRIDA crashed while loading methods for one or more classes selected. Try to exclude them from your search!"
+                rms_print(msg)
+                return redirect(url_for("device_management", frida_crash=True, frida_crash_message=msg))
         
         # method_index contains the index of the loaded method selected by the user
         method_index = request.args.get('method_index')
@@ -878,7 +893,10 @@ def api_monitor():
         api_selected = request.values.getlist('api_selected')
         api_filter = [e for e in api_monitor if e['Category'] in api_selected]
         api_to_hook = json.loads(json.dumps(api_filter))
-        api.apimonitor(api_to_hook)
+        try:
+            api.apimonitor(api_to_hook)
+        except Exception as err:
+            return redirect(url_for("device_management", frida_crash=True, frida_crash_message=err))
 
         ''' DEBUG
         rms_print("\nAPI Selected")

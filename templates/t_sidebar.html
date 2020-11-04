@@ -24,9 +24,14 @@
             <b><font color=red>For a better RE experience, Click <a href="/config">here</a> to change it!</font></b>
           {% endif %}
           {% if frida_crash==True %}
-          <br>
-            <b><font color=red>FRIDA crashed while loading methods for one or more classes selected!</font></b> <br><br>
-            <b><font color=red>Try to exclude them from your search!</font></b>
+            <br>
+            <b><font color=red>FRIDA crashed</font></b> <br><br>
+            {% if frida_crash_message %}
+              <b>Error description: <br>
+                <font color=red>{{frida_crash_message}}</font>
+              </b> 
+              <br><br>
+            {% endif %}
           {% endif %}
 
           <!-- print a warning if the Browser is not Chrome - start -->

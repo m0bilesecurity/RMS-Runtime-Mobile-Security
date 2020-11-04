@@ -29,6 +29,20 @@ Refer to the official FRIDA guide for the installation:
 * [Android](https://frida.re/docs/android/)
 * [iOS](https://frida.re/docs/ios/)
 
+### Quick smoke-test
+
+As suggested by the official FRIDA doc, please perform a **quick smoke-test** to make sure **FRIDA is working properly on your test device**.
+
+By running the ```frida-ps -U``` command from your desktop, you should receive the list of the processes running on your connected mobile device.
+
+```
+Android                    | iOS
+  PID NAME                 |  PID NAME
+ 1590 com.facebook.katana  |  488 Clock
+ 3282 com.twitter.android  |  116 Facebook
+ …                            …
+```
+### Tips
 Some cool projects that can help you to **auto** install, update and run frida on Android devices:
 * [MagiskFrida - Android](https://github.com/ViRb3/magisk-frida)
 * [FridaLoader - Android](https://github.com/dineshshetty/FridaLoader)
@@ -46,7 +60,8 @@ They are not needed on iOS devices, since FRIDA starts just after the boot of th
 ### Notes and possibile issues
 1. In case of issues with your favorite Browser (e.g. logs not printed in the web console), please use <b>Google Chrome</b> (fully supported)
 2. If <b>RMS is not able to detect your device</b>, please perform the following checks:
-    * double check if frida-server is up and running on the target device. Instructions are here: [prerequisites](https://github.com/m0bilesecurity/RMS-Runtime-Mobile-Security#prerequisites)
+    * double check if frida-server is up and running on the target device. Instructions are here: [Prerequisites](https://github.com/m0bilesecurity/RMS-Runtime-Mobile-Security#prerequisites)
+    / [Quick smoke-test](https://github.com/m0bilesecurity/RMS-Runtime-Mobile-Security#Quick-smoke--test)
     * RMS must be started **after** frida-server
     * make sure that **only 1 device** is connected to your computer. RMS is currently not able to detect multiple devices
     * kill RMS and start it again 
