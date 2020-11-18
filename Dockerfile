@@ -8,7 +8,7 @@ WORKDIR /app/
 COPY static/ ./static/
 COPY custom_scripts/ ./custom_scripts/
 COPY templates/ ./templates/
-COPY config.json default.js mobilesecurity.py requirements.txt ./
+COPY config.json /agent/RMS_core.js mobilesecurity.py requirements.txt ./
 
 # Create non root user
 RUN useradd -c 'RMS' -d /app/ rms
