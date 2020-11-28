@@ -1,0 +1,29 @@
+{
+  "name": "RMS-Runtime-Mobile-Security",
+  "version": "1.0.0",
+  "description": "![RMS_logo](/static/RMS_Github_Header.png)",
+  "main": "app.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "frida": "^14.0.8",
+    "nunjucks": "^3.2.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/m0bilesecurity/RMS-Runtime-Mobile-Security.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/m0bilesecurity/RMS-Runtime-Mobile-Security/issues"
+  },
+  "homepage": "https://github.com/m0bilesecurity/RMS-Runtime-Mobile-Security#readme"
+}
