@@ -1,6 +1,6 @@
 const express = require("express")
-const path = require('path')
 const nunjucks = require('nunjucks')
+const bodyParser = require('body-parser');
 const frida = require('frida');
 const fs = require('fs');
 
@@ -11,6 +11,9 @@ const CUSTOM_SCRIPTS_PATH = "custom_scripts/"
 
 
 const app = express();
+
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
 app.use(express.static('views/static/'))
 
@@ -69,6 +72,35 @@ app.get("/", async function(req, res){
       custom_scripts_iOS: custom_scripts_iOS,
     }
     res.render("device.html", template)
+})
+
+
+app.post("/", async function(req, res){
+
+  const mobile_OS = req.body.mobile_OS
+  const mode = req.body.mode
+  const target_package = req.body.package
+  const frida_script = req.body.frida_startup_script 
+  const api_selected = req.body.api_selected
+
+  // print info on the console
+  console.log()
+  if(target_package)
+    console.log("Package Name: " + target_package)
+  if(mode)
+    console.log("Mode: " + mode)
+  if(frida_script) 
+    console.log("Frida Startup Script: \n" + frida_script)
+  else 
+    console.log("Frida Startup Script: None")
+
+  if(api_selected)
+    console.log("APIs Monitors: \n" + " - ".join(api_selected))
+  else
+    console.log("APIs Monitors: None")
+  console.log
+
+  res.render("device.html")
 })
 
 /*
@@ -186,22 +218,6 @@ app.get("/get_frida_custom_script", (req, res) => {
   res.send(custom_script)
 
 });
-
-/*
-@app.route('/get_frida_custom_script', methods=['GET'])
-def get_frida_custom_script():
-    #Load selected frida_script inside the textarea
-    mobile_os_get = request.args.get('os')
-    cs = request.args.get('cs')
-
-    cs_file=""
-    if cs is not None and os is not None:
-        with open(os.path.dirname(os.path.realpath(__file__)) + "/custom_scripts/"+ mobile_os_get +"/" + cs) as f:
-            cs_file = f.read()
-            return cs_file
-    return ""
-*/
-
 
 /* 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
