@@ -5,16 +5,18 @@ const frida = require('frida');
 const load = require('frida-load');
 const fs = require('fs');
 
-
+ 
 const FRIDA_DEVICE_OPTIONS=["USB","Remote","ID"]
 const FRIDA_DEVICE_ARGS_OPTIONS={'host': 'IP:PORT','id': 'Device’s serial number'}
-
 //PATH files
-const FRIDA_AGENT_PATH = "./agent/RMS_core.js"
+const FRIDA_AGENT_PATH = "./agent/compiled_RMS_core.js"
 const CONFIG_FILE_PATH = "config/config.json"
 const API_MONITOR_FILE_PATH ="config/api_monitor.json"
 const CUSTOM_SCRIPTS_PATH = "custom_scripts/"
 
+var api;
+var loaded_classes = []
+var loaded_methods = []
 
 const app = express();
 
@@ -117,7 +119,7 @@ try {
   script.message.connect(onMessage);
   await script.load()
 
-  const api = await script.exports
+  api = await script.exports
   console.log('[*] API Test - checkmobileos() =>', await api.checkmobileos());
 
 
@@ -129,7 +131,7 @@ catch (e) {
     console.log("leaving catch block");
   }
 
-  res.render("device.html")
+  res.render("dump.html")
 })
 
 /*
@@ -137,9 +139,9 @@ catch (e) {
 Static Analysis - TAB (iOS only)
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 */
-app.get("/static_analysis", (req, res) => {
+app.get("/static_analysis", async function(req, res){
   res.render("static_analysis.html");
-});
+})
 
 
 /*
@@ -147,46 +149,85 @@ app.get("/static_analysis", (req, res) => {
 Dump Classes and Methods - TAB
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 */
-app.get("/diff_classes", (req, res) => {
-  res.render("diff_classes.html");
-});
+app.get("/dump", async function(req, res){
 
-/*
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Hook LAB - TAB
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-*/
-app.get("/hook_lab", (req, res) => {
-  res.render("hook_lab.html");
-});
+  //# check what the user is triyng to do
+  const choice = req.query.choice
+  if (choice == 1){
+    // --> Dump Loaded Classes (w/o filters)
 
-/*
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Heap Search - TAB
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-*/
-app.get("/heap_search", (req, res) => {
-  res.render("heap_search.html");
-});
+    //clean up the array
+    loaded_classes = []
+    loaded_methods = []
+    //check if the user is trying to filter loaded classes
+    filter = req.query.filter
+    //Checking options
+    regex=0
+    case_sensitive=0
+    whole_world=0
 
-/*
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-API Monitor - TAB
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-*/
-app.get("/api_monitor", (req, res) => {
-  res.render("api_monitor.html");
-});
+    if(req.query.regex==1) regex=1
+    if(req.query.case==1) case_sensitive=1
+    if(req.query.whole==1) whole_world=1
+
+    if (filter){
+      hooked_classes = await api.loadclasseswithfilter(filter, 
+                                                 regex, 
+                                                 case_sensitive, 
+                                                 whole_world)
+      loaded_classes = hooked_classes
+    }
+    else{
+      loaded_classes = await api.loadclasses()
+      //differences between class loaded after and before the app launch
+      //TODO 
+      //loaded_classes = list(set(loaded_classes) - set(system_classes))
+    }
+
+    //sort loaded_classes alphabetically
+    loaded_classes.sort()
+    console.log(loaded_classes)
+  }
+  
+  res.render("dump.html")
+})
+
 
 /*
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Diff Classess - TAB
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 */
+app.get("/diff_classes", async function(req, res){
+  res.render("diff_classes.html");
+})
 
-app.get("/dump", (req, res) => {
-  res.render("dump.html");
-});
+/*
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Hook LAB - TAB
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+*/
+app.get("/hook_lab", async function(req, res){
+  res.render("hook_lab.html");
+})
+
+/*
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Heap Search - TAB
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+*/
+app.get("/heap_search", async function(req, res){
+  res.render("heap_search.html");
+})
+
+/*
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+API Monitor - TAB
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+*/
+app.get("/api_monitor", async function(req, res){
+  res.render("api_monitor.html");
+})
 
 /*
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -194,9 +235,9 @@ File Manager - TAB
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 */
 
-app.get("/file_manager", (req, res) => {
+app.get("/file_manager", async function(req, res){
   res.render("file_manager.html");
-});
+})
 
 /*
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -204,9 +245,9 @@ Load Frida Script - TAB
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 */
 
-app.get("/load_frida_script", (req, res) => {
+app.get("/load_frida_script", async function(req, res){
   res.render("load_frida_script.html");
-});
+})
 
 /*
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -214,9 +255,9 @@ Console Output - TAB
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 */
 
-app.get("/console_output", (req, res) => {
-  res.render("console_output.html");
-});
+app.get("/console_output", async function(req, res){
+  res.render("console_output.html")
+})
 
 /* 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

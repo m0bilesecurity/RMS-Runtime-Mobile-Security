@@ -156,10 +156,14 @@
     var element = document.getElementById('device_type');
     var event = new Event('change');
     element.dispatchEvent(event);
+
+    //Set current Page as active in the NavBar
+    $(".nav li").removeClass("active");
+    $('#config').addClass('active');
+    //Set current Page as active in the NavBar
   });
   </script>
   {% endblock %}
-  <!-- Set current Page as active in the NavBar -->
   
 </body>
 

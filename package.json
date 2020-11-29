@@ -1,31 +1,42 @@
 {
   "name": "RMS-Runtime-Mobile-Security",
-  "version": "1.0.0",
-  "description": "![RMS_logo](/static/RMS_Github_Header.png)",
+  "version": "1.5.0",
+  "description": "Runtime Mobile Security (RMS), powered by FRIDA, is a powerful web interface that helps you to manipulate Android and iOS Apps at Runtime",
+  "private": true,
   "main": "app.js",
   "directories": {
     "lib": "lib"
   },
-  "dependencies": {
-    "body-parser": "^1.19.0",
-    "express": "^4.17.1",
-    "frida": "^14.0.8",
-    "frida-load": "^1.0.0",
-    "nunjucks": "^3.2.2"
-  },
-  "devDependencies": {},
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "prepare": "npm run build",
+    "build": "frida-compile agent/RMS_core.js -o agent/compiled_RMS_core.js",
+    "watch": "frida-compile agent/RMS_core.js -o agent/compiled_RMS_core.js -w"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/m0bilesecurity/RMS-Runtime-Mobile-Security.git"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "Mobile Security",
+    "Android Security",
+    "Mobile",
+    "Security",
+    "frida",
+    "RMS"
+  ],
+  "author": "@mobilesecurity_",
+  "license": "GPL-3.0",
   "bugs": {
     "url": "https://github.com/m0bilesecurity/RMS-Runtime-Mobile-Security/issues"
   },
-  "homepage": "https://github.com/m0bilesecurity/RMS-Runtime-Mobile-Security#readme"
+  "homepage": "https://github.com/m0bilesecurity/RMS-Runtime-Mobile-Security",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "frida": "^14.0.8",
+    "frida-compile": "^10.0.0",
+    "frida-fs": "^3.0.1",
+    "frida-load": "^1.0.0",
+    "nunjucks": "^3.2.2"
+  }
 }
