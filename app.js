@@ -2,9 +2,15 @@ const express = require("express")
 const nunjucks = require('nunjucks')
 const bodyParser = require('body-parser');
 const frida = require('frida');
+const load = require('frida-load');
 const fs = require('fs');
 
+
+const FRIDA_DEVICE_OPTIONS=["USB","Remote","ID"]
+const FRIDA_DEVICE_ARGS_OPTIONS={'host': 'IP:PORT','id': 'Device’s serial number'}
+
 //PATH files
+const FRIDA_AGENT_PATH = "./agent/RMS_core.js"
 const CONFIG_FILE_PATH = "config/config.json"
 const API_MONITOR_FILE_PATH ="config/api_monitor.json"
 const CUSTOM_SCRIPTS_PATH = "custom_scripts/"
@@ -99,6 +105,30 @@ app.post("/", async function(req, res){
   else
     console.log("APIs Monitors: None")
   console.log
+
+let session, script;
+try {
+  const device = await frida.getUsbDevice();
+  
+  const pid = await device.spawn(target_package);
+  session = await device.attach(pid);
+  const frida_agent = await	load(require.resolve(FRIDA_AGENT_PATH));	
+  script = await session.createScript(frida_agent);
+
+  //script.events.listen('message', onMessage);
+  await script.load()
+
+  const api = await script.exports
+  console.log('[*] API Test - checkmobileos() =>', await api.checkmobileos());
+
+
+  await device.resume(pid);
+}
+catch (e) {
+    console.log("entering catch block");
+    console.log(e);
+    console.log("leaving catch block");
+  }
 
   res.render("device.html")
 })
@@ -195,9 +225,56 @@ Config File - TAB
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 */
 
-app.get("/config", async function(req, res){
-  res.render("config.html");
-});
+app.all("/config", async function(req, res){
+  /*
+  |POST!
+  */
+  if (req.method == "POST"){
+      //read new values
+      const device_type = req.body.device_type
+      const system_package_Android = req.body.system_package_Android.trim()
+      const system_package_iOS = req.body.system_package_iOS.trim()
+      let device_arg_host = req.body.host_value
+      let device_arg_id = req.body.id_value
+      
+      if(!device_arg_host) device_arg_host=""
+      if(!device_arg_id) device_arg_id=""
+
+      device_args={
+        host:device_arg_host,
+        id:device_arg_id
+      }
+
+      new_config = {}
+      new_config.device_type=device_type
+      new_config.system_package_Android=system_package_Android
+      new_config.system_package_iOS=system_package_iOS
+      new_config.device_args=device_args
+
+      console.log("NEW CONFIG")
+      console.log(new_config)
+
+      //write new config to config.js
+      fs.writeFileSync(CONFIG_FILE_PATH, 
+                       JSON.stringify(new_config,null,4));
+  }
+
+  /*
+  |GET!
+  */
+
+  //read config file
+  const config = read_json_file(CONFIG_FILE_PATH)
+  let template = {
+    system_package_Android: config.system_package_Android,
+    system_package_iOS: config.system_package_iOS,
+    device_type_selected: config.device_type,
+    device_type_options: FRIDA_DEVICE_OPTIONS,
+    device_args: config.device_args,
+    device_args_options: FRIDA_DEVICE_ARGS_OPTIONS
+  }
+  res.render("config.html", template);
+})
 
 
 /*
@@ -248,7 +325,7 @@ app.listen(5000, () => {
   console.log("")
 
   
-  console.log("Running on http://127.0.0.1:5000/ (Press CTRL+C to quit");
+  console.log("Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)");
   
 });
 
