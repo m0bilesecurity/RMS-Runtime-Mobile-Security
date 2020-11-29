@@ -114,8 +114,7 @@ try {
   session = await device.attach(pid);
   const frida_agent = await	load(require.resolve(FRIDA_AGENT_PATH));	
   script = await session.createScript(frida_agent);
-
-  //script.events.listen('message', onMessage);
+  script.message.connect(onMessage);
   await script.load()
 
   const api = await script.exports
@@ -295,6 +294,40 @@ app.get("/get_frida_custom_script", (req, res) => {
   res.send(custom_script)
 
 });
+
+/* 
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+on_message stuff
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+*/
+
+function onMessage(message, data) {
+  console.log('[*] onMessage() message:', message, 'data:', data);
+
+  if (message.type == 'send'){
+    if("[Call_Stack]" in message.payload)
+      log_handler("call_stack",message.payload)
+    if("[Hook_Stack]" in message.payload)
+      log_handler("hook_stack",message.payload)
+    if("[Heap_Search]" in message.payload)
+      log_handler("heap_search",message.payload)
+    if("[API_Monitor]" in message.payload)
+      log_handler("api_monitor",message.payload)
+    if("[Static_Analysis]" in message.payload)
+      log_handler("static_analysis",message.payload) 
+    if(!("[Call_Stack]" in message.payload) &&
+       !("[Hook_Stack]" in message.payload) &&
+       !("[Heap_Search]" in message.payload) &&
+       !("[API_Monitor]" in message.payload) &&
+       !("[Static_Analysis]" in message.payload)
+      ) 
+      log_handler("global_stack",message.payload)
+  }   
+}
+
+function log_handler(level, text){
+  console.log('[*] log_handler() level:', level, 'text:', text);
+}
 
 /* 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
