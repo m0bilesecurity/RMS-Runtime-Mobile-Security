@@ -37,6 +37,7 @@
     "frida-compile": "^10.0.0",
     "frida-fs": "^3.0.1",
     "frida-load": "^1.0.0",
-    "nunjucks": "^3.2.2"
+    "nunjucks": "^3.2.2",
+    "socket.io": "^2.3.0"
   }
 }

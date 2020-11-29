@@ -35,7 +35,8 @@
             </form>
 
             <textarea id=console_output_1 name=console_output
-              class="form-control">{{ current_loaded_classes|safe }}</textarea>
+              class="form-control">{% for class in current_loaded_classes %}{{class}}
+{% endfor %}</textarea>
           </div>
 
           <div class="col-sm-2">
@@ -55,7 +56,8 @@
             </form>
 
             <textarea id=console_output_2 name=console_output
-              class="form-control">{{ new_loaded_classes|safe }}</textarea>
+              class="form-control">{% for class in new_loaded_classes %}{{class}}
+{% endfor %}</textarea>
           </div>
         </div>
       </div>
