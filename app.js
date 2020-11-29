@@ -15,8 +15,8 @@ const API_MONITOR_FILE_PATH ="config/api_monitor.json"
 const CUSTOM_SCRIPTS_PATH = "custom_scripts/"
 
 var api;
-var loaded_classes = []
-var loaded_methods = []
+var loaded_classes = [];
+var loaded_methods = [];
 
 const app = express();
 
@@ -188,7 +188,24 @@ app.get("/dump", async function(req, res){
     loaded_classes.sort()
     console.log(loaded_classes)
   }
-  
+
+  if (choice == 2){
+    // --> Dump all methods [Loaded Classes]
+    // NOTE: Load methods for more than 500 classes can crash the app
+    try{
+      loaded_methods = await api.loadmethods(loaded_classes)
+      console.log(loaded_methods)
+    }
+    catch (err) {
+      console.log(err)
+      /* TODO
+      msg="FRIDA crashed while loading methods for one or more classes selected. Try to exclude them from your search!"
+      console.log(msg)
+      return redirect(url_for("device_management", frida_crash=True, frida_crash_message=msg))
+      */
+    }
+  }
+ 
   res.render("dump.html")
 })
 
@@ -343,7 +360,10 @@ on_message stuff
 */
 
 function onMessage(message, data) {
-  console.log('[*] onMessage() message:', message, 'data:', data);
+  //TODO check what's wrong with loadclasses
+  if(message.type!="error"){
+    console.log('[*] onMessage() message:', message, 'data:', data);
+  }
 
   if (message.type == 'send'){
     if("[Call_Stack]" in message.payload)
