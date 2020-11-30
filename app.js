@@ -1,10 +1,11 @@
+var http = require('http');
 const express = require("express")
 const nunjucks = require('nunjucks')
 const bodyParser = require('body-parser');
 const frida = require('frida');
 const load = require('frida-load');
 const fs = require('fs');
-const io = require('socket.io');
+const socket_io = require('socket.io');
 
  
 const FRIDA_DEVICE_OPTIONS=["USB","Remote","ID"]
@@ -47,19 +48,61 @@ var call_count = 0
 var call_count_stack={}
 var methods_hooked_and_executed = []
 
-
+//app instance
 const app = express();
+// server instance
+const server = http.createServer(app);
+// socket listen
+const io=socket_io(server);
 
+//bind socket_io to app
+app.set('socket_io', io);
+
+//express post config
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-
+//express static path
 app.use(express.static('views/static/'))
-
-
+//nunjucks config
 nunjucks.configure('views/templates', {
     autoescape: true,
     express: app
 });
+
+/*
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Server startup
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+*/
+
+server.listen(5000, () => {
+
+  console.log("")
+  console.log("_________________________________________________________")
+  console.log("RMS - Runtime Mobile Security")
+  console.log("Version: 1.5 - NodeJS release")
+  console.log("by @mobilesecurity_")
+  console.log("Twitter Profile: https://twitter.com/mobilesecurity_")
+  console.log("_________________________________________________________")
+  console.log("")
+
+  console.log("Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)");
+  
+});
+
+io.on('connection', (socket) => {
+  console.log('Socket connected');
+
+  socket.on('disconnect', () => {
+    console.log('Socket disconnected');
+  });
+});
+
+/*
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Templates
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+*/
 
 //{{stacktrace}} placeholder is managed nodejs side
 template_massive_hook_Android = `
@@ -292,7 +335,6 @@ ObjC.choose(ObjC.classes[classname], {
   }
 });
 `
-
 
 /*
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -934,9 +976,11 @@ on_message stuff
 
 function onMessage(message, data) {
   //TODO check what's wrong with loadclasses
+  /*
   if(message.type!="error"){
     console.log('[*] onMessage() message:', message, 'data:', data);
   }
+  */
 
   if (message.type == 'send'){
     if(message.payload.includes("[Call_Stack]"))
@@ -960,7 +1004,105 @@ function onMessage(message, data) {
 }
 
 function log_handler(level, text){
-  console.log('[*] log_handler() level:', level, 'text:', text);
+  if(!text) return //needed?
+
+  switch (level) 
+  {
+    case "call_stack":
+      //clean up the string
+      text=text.replace("[Call_Stack]\n","")
+      //method hooked has been executed by the app
+      var new_m_executed=text //text contains Class and Method info
+      //remove duplicates
+      if (!methods_hooked_and_executed.includes(new_m_executed))
+          methods_hooked_and_executed.push(new_m_executed)
+      //add the current call (method) to the call stack
+      call_count_stack[new_m_executed]=call_count
+      //creating string for the console output by adding INDEX info
+      text = "-->INDEX: [" + call_count + "]\n" + text
+      calls_console_output = calls_console_output + "\n" + text
+      //increase the counter
+      call_count += 1
+
+      io.emit(
+      'call_stack', 
+      {
+          'data': "\n"+text, 
+          'level': level
+      }, 
+      namespace='/console'
+      )
+      break;
+    case "hook_stack":
+      //clean up the string
+      text=text.replace("[Hook_Stack]\n","")
+      //obtain current method info - first 2 lines contain Class and Method info
+      var current_method=(text.split("\n").splice(2)).join('\n')+'\n'
+      //check the call order by looking at the stack call
+      var out_index=-1 //default value if for some reasons current method is not in the stack
+      try
+      {
+        out_index=call_count_stack[current_method]
+      }
+      catch(err)
+      {
+        console.log("Not able to assign: \n"+current_method+"to its index")
+      }
+      //assign the correct index (stack call) to the current hooked method and relative info (IN/OUT)
+      text="INFO for INDEX: ["+out_index+"]\n"+text
+      hooks_console_output = hooks_console_output + "\n" + text
+
+      io.emit(
+      'hook_stack', 
+      {
+          'data': "\n"+text, 
+          'level': level
+      }, 
+      namespace='/console'
+      )
+      break;
+    case "heap_search":
+      text=text.replace("[Heap_Search]\n","")
+      heap_console_output = heap_console_output + "\n" + text
+      io.emit(
+      'heap_search', 
+      {
+          'data': "\n"+text, 
+          'level': level
+      }, 
+      namespace='/console'
+      )
+      break;
+    case "api_monitor":
+      api_monitor_console_output = api_monitor_console_output + "\n" + text
+      io.emit(
+      'api_monitor', 
+      {
+          'data': "\n"+text, 
+          'level': level
+      }, 
+      namespace='/console'
+      )
+      break;
+    case "static_analysis":
+      text=text.replace("[Static_Analysis]\n","")
+      static_analysis_console_output=text
+    default:
+      break;
+  }
+
+  //always executed
+  global_console_output = global_console_output + "\n" + text
+  io.emit(
+  'global_console', 
+  {
+      'data': "\n"+text, 
+      'level': level
+  }, 
+  namespace='/console'
+  )
+  //print text
+  console.log(text)
 }
 
 /* 
@@ -1002,25 +1144,5 @@ function reset_variables_and_output(){
   //no_system_package=false
 }
 
-/*
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Server startup
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-*/
 
-app.listen(5000, () => {
-
-  console.log("")
-  console.log("_________________________________________________________")
-  console.log("RMS - Runtime Mobile Security")
-  console.log("Version: 1.4.2")
-  console.log("by @mobilesecurity_")
-  console.log("Twitter Profile: https://twitter.com/mobilesecurity_")
-  console.log("_________________________________________________________")
-  console.log("")
-
-  
-  console.log("Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)");
-  
-});
 
