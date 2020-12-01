@@ -6,6 +6,7 @@ const frida = require('frida');
 const load = require('frida-load');
 const fs = require('fs');
 const socket_io = require('socket.io');
+const datetime = require('node-datetime');
 
  
 const FRIDA_DEVICE_OPTIONS=["USB","Remote","ID"]
@@ -15,6 +16,7 @@ const FRIDA_AGENT_PATH = "./agent/compiled_RMS_core.js"
 const CONFIG_FILE_PATH = "config/config.json"
 const API_MONITOR_FILE_PATH ="config/api_monitor.json"
 const CUSTOM_SCRIPTS_PATH = "custom_scripts/"
+const CONSOLE_LOGS_PATH = "console_logs"
 
 //Global variables
 var api = null //contains agent export
@@ -24,7 +26,7 @@ var loaded_methods = {}
 
 var target_package = ""
 var system_package = ""
-var no_system_package=false //TODO needed?
+var no_system_package=false 
 
 var packages = [] //apps installed on the device
 var mobile_OS="N/A"
@@ -665,26 +667,6 @@ Dump Classes and Methods - TAB
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 */
 app.get("/dump", async function(req, res){
-
-  //TODO
-  //tohook contains class selected by the user (hooking purposes)
-  if (req.method == "POST")
-  {
-      array_to_hook = req.body.tohook 
-      if (array_to_hook)
-      {
-        hooked_classes = []
-        for (index in array_to_hook)
-        {
-          //hooked classes
-          hooked_classes.push(loaded_classes[index])
-        }
-        loaded_classes = hooked_classes
-      }
-
-      return printwebpage()
-  }
-
   //# check what the user is triyng to do
   const choice = req.query.choice
   if (choice == 1){
@@ -803,31 +785,28 @@ app.get("/dump", async function(req, res){
 
 
 app.post("/dump", async function(req, res){
-
-//TODO
-//tohook contains class selected by the user (hooking purposes)
-array_to_hook = req.body.tohook 
-if (array_to_hook)
-{
-  hooked_classes = []
-  for (index in array_to_hook)
+  //tohook contains class selected by the user (hooking purposes)
+  array_to_hook = req.body.tohook 
+  if (array_to_hook)
   {
-    //hooked classes
-    hooked_classes.push(loaded_classes[index])
+    hooked_classes = []
+    for (index in array_to_hook)
+    {
+      //hooked classes
+      hooked_classes.push(loaded_classes[index])
+    }
+    loaded_classes = hooked_classes
   }
-  loaded_classes = hooked_classes
-}
 
-let template = {
-  mobile_OS: mobile_OS,
-  target_package: target_package,
-  loaded_classes: loaded_classes,
-  loaded_methods: loaded_methods,
-  system_package: system_package,
-  methods_hooked_and_executed: methods_hooked_and_executed
-}
-res.render("dump.html",template)
-
+  let template = {
+    mobile_OS: mobile_OS,
+    target_package: target_package,
+    loaded_classes: loaded_classes,
+    loaded_methods: loaded_methods,
+    system_package: system_package,
+    methods_hooked_and_executed: methods_hooked_and_executed
+  }
+  res.render("dump.html",template)
 })
 /*
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1233,6 +1212,91 @@ app.get("/console_output", async function(req, res){
   res.render("console_output.html",template)
 })
 
+/*
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+API - Print Console logs to a File
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+*/
+
+app.get("/save_console_logs", async function(req, res){
+  try
+  {
+    //check if console_logs exists
+    if (!fs.existsSync(CONSOLE_LOGS_PATH))
+      fs.mkdirSync("console_logs")
+
+    //create new directory for current logs package_timestamp
+    const dt = datetime.create().format('Ymd-HMS')
+    out_path=CONSOLE_LOGS_PATH+"/"+target_package+"_"+dt
+    fs.mkdirSync(out_path)
+
+    //save calls_console_output
+    fs.writeFile(out_path+"/calls_console_output.txt", 
+                 calls_console_output, 
+                 function(err){
+                  if(err)
+                    console.log(err);
+                  console.log("calls_console_output.txt saved");
+    });
+    //save hooks_console_output
+    fs.writeFile(out_path+"/hooks_console_output.txt", 
+                 hooks_console_output, 
+                 function(err)
+                 {
+                  if(err)
+                   console.log(err);
+                  console.log("hooks_console_output.txt saved");
+                 });
+    //save global_console_output
+    fs.writeFile(out_path+"/global_console_output.txt", 
+                 global_console_output, 
+                 function(err)
+                 {
+                  if(err)
+                    console.log(err);
+                  console.log("global_console_output.txt saved");
+                 });
+    //save api_monitor_console_output - not available on iOS
+    if(mobile_OS=="Android")
+    {
+      fs.writeFile(out_path+"/api_monitor_console_output.txt", 
+                   api_monitor_console_output, 
+                   function(err)
+                   {
+                    if(err)
+                      console.log(err);
+                    console.log("api_monitor_console_output.txt saved");
+                   });
+    }
+
+    res.send("print_done - "+out_path)
+  }
+  catch(err){
+    res.send("print_error: "+str(err))
+  }
+})
+
+/* 
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+API - Reset Console Output
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+*/
+app.get("/reset_console_logs", async function(req, res){
+  calls_console_output = ""
+  hooks_console_output = ""
+  heap_console_output = ""
+  global_console_output = ""
+  api_monitor_console_output = ""
+  static_analysis_console_output = ""
+
+  call_count = 0
+  call_count_stack = {}
+  methods_hooked_and_executed = []
+
+  redirect_url = req.query.redirect
+  //auto redirect the user to the console output page
+  res.redirect(redirect_url);
+})
 /* 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Config File - TAB
@@ -1494,7 +1558,7 @@ function reset_variables_and_output(){
   //package reset
   target_package=""
   system_package=""
-  //error reset //TODO remove?
+  //error reset
   no_system_package=false
 }
 
