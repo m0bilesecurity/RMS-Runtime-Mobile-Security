@@ -1307,7 +1307,8 @@ app.all("/config", async function(req, res){
   /*
   |POST!
   */
-  if (req.method == "POST"){
+  if (req.method == "POST")
+  {
       //read new values
       const device_type = req.body.device_type
       const system_package_Android = req.body.system_package_Android.trim()

@@ -23,7 +23,7 @@
         <!-- Search Bar and Table -->
         <div class="col-sm-12">
           <br>
-          {% if error==True %}
+          {% if error==true %}
           <div class="alert alert-danger" role="alert">
             <b>Device not connected.</b> Please check your config and <b>click <a href="/">here</a> to try again.</b> <br>
             If you still see this error and the device is correctly connected with frida-server <a href="https://frida.re/docs/android/">up and running</a>, <b>please kill RSM and start it again.</b> <br>
@@ -76,7 +76,7 @@
                              class="form-control" 
                              id=host_value
                              name=host_value 
-                             value="{{host_value|safe}}"
+                             value="{{device_args.host|safe}}"
                              placeholder="{{ device_args_options["host"] }}">
                     </div>     
                   </div>
@@ -96,7 +96,7 @@
                              class="form-control" 
                              id=id_value
                              name=id_value 
-                             value="{{id_value|safe}}"
+                             value="{{device_args.id|safe}}"
                              placeholder="{{ device_args_options["id"] }}">
                     </div>     
                   </div>
@@ -127,6 +127,9 @@
   $("#device_type").on("change", function() {
       console.log(this.value)
       if(this.value=="USB"){
+        $('#host_value').val("")
+        $('#id_value').val("")
+
         $('#host').prop('disabled', true);
         $('#host_value').prop('disabled', true);
 
@@ -134,6 +137,8 @@
         $('#id_value').prop('disabled', true);
       }
       if(this.value=="Remote"){
+        $('#id_value').val("")
+
         $('#host').prop('disabled', false);
         $('#host_value').prop('disabled', false);
 
@@ -141,6 +146,8 @@
         $('#id_value').prop('disabled', true);
       }
       if(this.value=="ID"){
+        $('#host_value').val("")
+
         $('#host').prop('disabled', true);
         $('#host_value').prop('disabled', true);
 
