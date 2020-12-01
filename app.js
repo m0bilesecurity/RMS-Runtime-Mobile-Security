@@ -343,51 +343,90 @@ Device - TAB
 */
 
 app.get("/", async function(req, res){
-    /*
-    const mgr = await frida.getDeviceManager();
-    const list = await mgr.enumerateDevices();
-    */
-   let custom_scripts_Android = []
-   let custom_scripts_iOS = []
+  const config = read_json_file(CONFIG_FILE_PATH)
 
-    //get device
-    const device = await frida.getUsbDevice()
-    const device_info=device.name+" | "+device.id+" | "+device.type
+  let custom_scripts_Android = []
+  let custom_scripts_iOS = []
 
-    //get app list
-    const app_list = await device.enumerateApplications()
+  //#exception handling - frida crash
+  var frida_crash=req.query.frida_crash || "False"
+  var frida_crash_message=req.query.frida_crash_message
 
-    //read config file
-    const config = read_json_file(CONFIG_FILE_PATH)
-
-    //load FRIDA custom scripts list
-    fs.readdirSync(CUSTOM_SCRIPTS_PATH+"Android").forEach(file => {
-      if (file.endsWith(".js"))
-        custom_scripts_Android.push(file)
-    })
-    fs.readdirSync(CUSTOM_SCRIPTS_PATH+"iOS").forEach(file => {
-      if (file.endsWith(".js"))
-      custom_scripts_iOS.push(file)
-    })
-
-    //load API Monitors list
-    const api_monitor = read_json_file(API_MONITOR_FILE_PATH)
-
-    let template = {
-      device_info: device_info,
-      app_list: app_list,
-      api_monitor: api_monitor,
-      system_package_Android: config.system_package_Android,
-      system_package_iOS: config.system_package_iOS,
-      device_mode: config.device_type,
-      custom_scripts_Android: custom_scripts_Android,
-      custom_scripts_iOS: custom_scripts_iOS,
+  var device=null
+  //get device
+  try
+  {
+    const device_manager = await frida.getDeviceManager()
+    switch(config.device_type)
+    {
+      case "USB":
+        device = await frida.getUsbDevice()
+        break;
+      case "Remote":
+        device = device_manager.add_remote_device(config.host)
+        break;
+      case "ID":
+        device= device_manager.get_device(config.id)
+        break;
+      default:
+        device = await frida.getUsbDevice()
+        break;
     }
-    res.render("device.html", template)
+  }
+  catch(err)
+  {
+    console.log(err)
+    res.redirect('/config?error=true');
+  }
+  
+  const device_info=device.name+" | "+device.id+" | "+device.type
+
+  //get app list
+  const app_list = await device.enumerateApplications()
+  if (app_list.length == 0)
+    res.redirect('/config?error=true');
+
+  //load FRIDA custom scripts list
+  fs.readdirSync(CUSTOM_SCRIPTS_PATH+"Android").forEach(file => {
+    if (file.endsWith(".js"))
+      custom_scripts_Android.push(file)
+  })
+  fs.readdirSync(CUSTOM_SCRIPTS_PATH+"iOS").forEach(file => {
+    if (file.endsWith(".js"))
+    custom_scripts_iOS.push(file)
+  })
+
+  //sort custom_scripts alphabetically
+  custom_scripts_Android.sort()
+  custom_scripts_iOS.sort()
+
+  //load API Monitors list
+  const api_monitor = read_json_file(API_MONITOR_FILE_PATH)
+
+  let template = {
+    device_info: device_info,
+    app_list: app_list,
+    api_monitor: api_monitor,
+    system_package_Android: config.system_package_Android,
+    system_package_iOS: config.system_package_iOS,
+    device_mode: config.device_type,
+    custom_scripts_Android: custom_scripts_Android,
+    custom_scripts_iOS: custom_scripts_iOS,
+    frida_crash: frida_crash,
+    frida_crash_message: frida_crash_message,
+    no_system_package: no_system_package,
+    target_package: target_package,
+    system_package: system_package
+  }
+  res.render("device.html", template)
 })
 
 
 app.post("/", async function(req, res){
+
+  //#exception handling - frida crash
+  var frida_crash=req.query.frida_crash || "False"
+  var frida_crash_message=req.query.frida_crash_message
 
   //output reset
   reset_variables_and_output()
@@ -426,43 +465,179 @@ app.post("/", async function(req, res){
     console.log("Frida Startup Script: \n" + frida_script)
   else 
     console.log("Frida Startup Script: None")
-
   if(api_selected)
-    console.log("APIs Monitors: \n" + " - ".join(api_selected))
+    console.log("APIs Monitors: \n" + api_selected.join(" - "))
   else
     console.log("APIs Monitors: None")
   console.log
-
-let session, script;
-try {
-  const device = await frida.getUsbDevice();
   
-  const pid = await device.spawn(target_package);
-  session = await device.attach(pid);
-  const frida_agent = await	load(require.resolve(FRIDA_AGENT_PATH));	
-  script = await session.createScript(frida_agent);
-  script.message.connect(onMessage);
-  await script.load()
-
-  api = await script.exports
-  console.log('[*] API Test - checkmobileos() =>', await api.checkmobileos());
-
-
-  await device.resume(pid);
-}
-catch (err) {
-    console.log(err);
+  var device=null
+  //get device
+  try
+  {
+    const device_manager = await frida.getDeviceManager()
+    switch(config.device_type)
+    {
+      case "USB":
+        device = await frida.getUsbDevice()
+        break;
+      case "Remote":
+        device = device_manager.add_remote_device(config.host)
+        break;
+      case "ID":
+        device= device_manager.get_device(config.id)
+        break;
+      default:
+        device = await frida.getUsbDevice()
+        break;
+    }
+  }
+  catch(err)
+  {
+    console.log(err)
+    res.redirect('/config?error=true');
   }
 
+  //spawn/attach the app/gadget
+  let session, script;
+  try 
+  {
+    //attaching a persistent process to get enumerateLoadedClasses() result before starting the target app 
+    //default process are com.android.systemui/SpringBoard
+    session = await device.attach(system_package)
+    const frida_agent = await	load(require.resolve(FRIDA_AGENT_PATH));
+    script = await session.createScript(frida_agent)
+    await script.load()
+    api = await script.exports
+    system_classes = await api.loadclasses()
+    //sort list alphabetically
+    system_classes.sort()
+  }
+  catch(err)
+  {
+    console.log("Error: "+err)
+    if (system_classes.length==0)
+      no_system_package=True
+    if (target_package!="Gadget")
+      console.log(system_package+" is NOT available on your device or a wrong OS has been selected. For a better RE experience, change it via the Config TAB!");
+  }
+
+  session = null
+  pid=null
+  try
+  {
+    if (mode == "Spawn" && target_package!="Gadget")
+    {
+      pid= await device.spawn([target_package])
+      session = await device.attach(pid)
+      console.log('[*] Process Spawned')
+    }
+    if (mode == "Attach" || target_package=="Gadget")
+    {
+      //on iOS device "attach" is performd via package.name instead of identifier
+      if(mobile_OS=="iOS" && target_package!="Gadget")
+      {
+        for (p in packages)
+          if(p.identifier==target_package)
+              target_package=p.name
+      }        
+      session = await device.attach(target_package)
+      console.log('[*] Process Attached')
+    }
+
+    const frida_agent = await	load(require.resolve(FRIDA_AGENT_PATH));
+    script = await session.createScript(frida_agent)
+
+    //crash handling 
+    device.processCrashed.connect(onProcessCrashed);
+    session.detached.connect(onSessionDetached);
+
+    //onMessage 
+    script.message.connect(onMessage);
+
+    await script.load()
+
+    //API export
+    api = script.exports
+
+    if (mode == "Spawn" && target_package!="Gadget")
+      device.resume(pid)
+    
+    //loading FRIDA startup script if selected by the user
+    if (frida_script)
+      await api.loadcustomfridascript(frida_script)
+
+    //loading APIs Monitors if selected by the user
+    if(api_selected)
+    {
+      //load API Monitors list
+      const api_monitor = read_json_file(API_MONITOR_FILE_PATH)
+      var api_to_hook=[]
+    
+      api_monitor.forEach(function(e) {
+        if(api_selected.includes(e.Category))
+        api_to_hook.push(e)
+      });
+      
+      //load APIs monitors
+      await api.apimonitor(api_to_hook)
+    }
+  
+  }//end try
+  catch(err)
+  {
+    console.log("Excpetion: "+err)
+    res.redirect('/?frida_crash=True&frida_crash_message=err');
+  }
+
+  //automatically redirect the user to the dump classes and methods tab
   let template = {
     mobile_OS: mobile_OS,
     target_package: target_package,
     loaded_classes: loaded_classes,
     loaded_methods: loaded_methods,
     system_package: system_package,
+    no_system_package: no_system_package,
+    frida_crash: frida_crash,
+    frida_crash_message: frida_crash_message
   }
   res.render("dump.html",template)
 })
+
+
+/* spawn app android
+  try{
+    const pid = await device.spawn(target_package);
+    session = await device.attach(pid);
+
+    //crash reporting
+    device.processCrashed.connect(onProcessCrashed);
+    session.detached.connect(onSessionDetached);
+
+    const frida_agent = await	load(require.resolve(FRIDA_AGENT_PATH));	
+    script = await session.createScript(frida_agent);
+    script.message.connect(onMessage);
+    await script.load()
+
+    api = await script.exports
+    console.log('[*] API Test - checkmobileos() =>', await api.checkmobileos());
+
+
+    await device.resume(pid);
+  }
+  catch (err) {
+      console.log(err);
+    }
+  */
+
+function onProcessCrashed(crash) {
+  console.log('[*] onProcessCrashed() crash:', crash);
+  console.log(crash.report);
+}
+
+function onSessionDetached(reason, crash) {
+  console.log('[*] onDetached() reason:', reason, 'crash:', crash);
+}
 
 /*
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -495,7 +670,30 @@ app.get("/static_analysis", async function(req, res){
 Dump Classes and Methods - TAB
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 */
-app.get("/dump", async function(req, res){
+app.all("/dump", async function(req, res){
+
+  //#exception handling - frida crash
+  var frida_crash=req.query.frida_crash || "False"
+  var frida_crash_message=req.query.frida_crash_message
+
+  //TODO
+  //tohook contains class selected by the user (hooking purposes)
+  if (req.method == "POST")
+  {
+      array_to_hook = req.body.tohook 
+      if (array_to_hook)
+      {
+        hooked_classes = []
+        for (index in array_to_hook)
+        {
+          //hooked classes
+          hooked_classes.push(loaded_classes[index])
+        }
+        loaded_classes = hooked_classes
+      }
+
+      return printwebpage()
+  }
 
   //# check what the user is triyng to do
   const choice = req.query.choice
@@ -516,49 +714,101 @@ app.get("/dump", async function(req, res){
     if(req.query.case==1) case_sensitive=1
     if(req.query.whole==1) whole_world=1
 
-    if (filter){
+    if (filter)
+    {
       hooked_classes = await api.loadclasseswithfilter(filter, 
                                                  regex, 
                                                  case_sensitive, 
                                                  whole_world)
       loaded_classes = hooked_classes
     }
-    else{
+    else
+    {
       loaded_classes = await api.loadclasses()
-      //differences between class loaded after and before the app launch
-      //TODO 
-      //loaded_classes = list(set(loaded_classes) - set(system_classes))
+      //Checking current loaded classes
+      /*
+      perform --> loaded classes - 
+                  system classes =
+                  ______________________
+                  current_loaded_classes
+      */
+     loaded_classes=loaded_classes.filter(function(x) 
+      { 
+        return system_classes.indexOf(x) < 0;
+      });
     }
 
     //sort loaded_classes alphabetically
     loaded_classes.sort()
-    console.log(loaded_classes)
+    //console.log(loaded_classes)
   }
 
   if (choice == 2){
     // --> Dump all methods [Loaded Classes]
     // NOTE: Load methods for more than 500 classes can crash the app
-    try{
+    try
+    {
       loaded_methods = await api.loadmethods(loaded_classes)
-      console.log(loaded_methods)
+      //console.log(loaded_methods)
     }
     catch (err) {
-      console.log(err)
-      /* TODO
+      console.log("Excpetion: "+err)
+      
       msg="FRIDA crashed while loading methods for one or more classes selected. Try to exclude them from your search!"
       console.log(msg)
-      return redirect(url_for("device_management", frida_crash=True, frida_crash_message=msg))
-      */
+
+      res.redirect('/?frida_crash=True&frida_crash_message=err');
     }
   }
- 
+  if (choice == 3)
+  {
+    //--> Hook all loaded classes and methods
+
+    current_template=""
+    if (mobile_OS=="Android")
+        current_template=template_massive_hook_Android
+    else
+        current_template=template_massive_hook_iOS
+  
+    const stacktrace = req.query.stacktrace
+    if (stacktrace == "yes")
+    {
+      if (mobile_OS=="Android")
+        current_template=current_template.replace("{{stacktrace}}", "s=s+\"StackTrace: \"+Java.use('android.util.Log').getStackTraceString(Java.use('java.lang.Exception').$new()).replace('java.lang.Exception','') +\"\\n\";")
+      else
+        current_template=current_template.replace("{{stacktrace}}", "this.s=this.s+\"StackTrace: \\n\"+Thread.backtrace(this.context, Backtracer.ACCURATE).map(DebugSymbol.fromAddress).join('\\n') +\"\\n\";")
+    }
+    else
+      current_template=current_template.replace("{{stacktrace}}", "")
+    try
+    {
+      await api.hookclassesandmethods(loaded_classes, 
+                                      loaded_methods, 
+                                      current_template)
+    }
+    catch(err)
+    {
+      console.log("Excpetion: "+err)
+      
+      msg="FRIDA crashed while hooking methods for one or more classes selected. Try to exclude them from your search!"
+      console.log(msg)
+
+      res.redirect('/?frida_crash=True&frida_crash_message=err');
+    }
+
+    //redirect the user to the console output
+    return res.redirect('/console_output');
+  }
+
   let template = {
     mobile_OS: mobile_OS,
     target_package: target_package,
     loaded_classes: loaded_classes,
     loaded_methods: loaded_methods,
     system_package: system_package,
-    methods_hooked_and_executed: methods_hooked_and_executed
+    methods_hooked_and_executed: methods_hooked_and_executed,
+    frida_crash: frida_crash,
+    frida_crash_message: frida_crash_message
   }
   res.render("dump.html",template)
 })
@@ -589,7 +839,6 @@ app.get("/diff_classes", async function(req, res){
 
     //sort list alphabetically
     current_loaded_classes.sort()
-    console.log(current_loaded_classes)
   }
   if (choice == 2)
   {
@@ -658,11 +907,12 @@ app.get("/hook_lab", async function(req, res){
       loaded_methods = await api.loadmethods(loaded_classes)
     }
     catch(err){
-      console.log(err)
+      console.log("Excpetion: "+err)
+      
       const msg="FRIDA crashed while loading methods for one or more classes selected. Try to exclude them from your search!"
       console.log(msg)
-      //TODO
-      //return redirect(url_for("device_management", frida_crash=True, frida_crash_message=msg))
+
+      res.redirect('/?frida_crash=True&frida_crash_message=err');
     }
   }
       
@@ -739,11 +989,12 @@ app.get("/heap_search", async function(req, res){
       loaded_methods = await api.loadmethods(loaded_classes)
     }
     catch(err){
-      console.log(err)
+      console.log("Excpetion: "+err)
+      
       const msg="FRIDA crashed while loading methods for one or more classes selected. Try to exclude them from your search!"
       console.log(msg)
-      //TODO
-      //return redirect(url_for("device_management", frida_crash=True, frida_crash_message=msg))
+
+      res.redirect('/?frida_crash=True&frida_crash_message=err');
     }
   }
       
@@ -812,34 +1063,24 @@ app.get("/api_monitor", async function(req, res){
 app.post("/api_monitor", async function(req, res){
 
   const api_monitor = read_json_file(API_MONITOR_FILE_PATH)
-  const api_selected = req.body.api_selected 
-  
-  var api_filter=[]
+  const api_selected = req.body.api_selected
+  var api_to_hook=[]
 
-  //not working
-  for (e in api_monitor) 
-  {
-    console.log(e.Category)
-
+  api_monitor.forEach(function(e) {
     if(api_selected.includes(e.Category))
-    api_filter.push(e)
-  }
-  console.log(api_filter)
+    api_to_hook.push(e)
+  });
 
-  //api_to_hook = JSON.loads(JSON.dumps(api_filter))
   try
   {
-      //await api.apimonitor(api_to_hook)
+    await api.apimonitor(api_to_hook)
   }
   catch(err)
   {
-    //TODO
-    //return redirect(url_for("device_management", frida_crash=True, frida_crash_message=err))
-    res.redirect('/device_management');
+    console.log("Excpetion: "+err)
+    res.redirect('/?frida_crash=True&frida_crash_message=err');
   }
-
-
-          
+ 
   let template = {
     mobile_OS: mobile_OS,
     target_package: target_package,
@@ -848,7 +1089,7 @@ app.post("/api_monitor", async function(req, res){
     api_monitor: api_monitor,
     api_monitor_console_output_str: api_monitor_console_output
   }
-  res.render("api_monitor.html");
+  res.render("api_monitor.html",template);
 })
 
 /*
@@ -876,6 +1117,7 @@ app.get("/file_manager", async function(req, res){
   if(download)
   {
     file=await api.downloadfileatpath(download)
+    /*
     if(file)
     {
       file=''.join(map(chr, (file)["data"])) 
@@ -887,17 +1129,10 @@ app.get("/file_manager", async function(req, res){
                       "attachment; filename="+filename}
                      )
     }
+    */
 
   }
 
-  for (f in files_at_path.files)
-  {
-    console.log(f)
-    for (a in f.attributes)
-    {
-      console.log(a.isDirectory)
-    }
-  }
   let template = {
     mobile_OS: mobile_OS,
     target_package: target_package,
@@ -1245,7 +1480,7 @@ function reset_variables_and_output(){
   target_package=""
   system_package=""
   //error reset //TODO remove?
-  //no_system_package=false
+  no_system_package=false
 }
 
 

@@ -102,7 +102,8 @@
 
             </thead>
             <tbody>
-              {% set parent = "'/'.join(((files_at_path.path).split("/"))[:-1])"  %}
+              {% set pathlength = ((files_at_path.path).split("/")) | length %}
+              {% set parent = ((files_at_path.path).split("/")).slice(0,pathlength-1).join("/")  %}
               <!-- Android start -->
               {% if 
                 mobile_OS == "Android" and
@@ -126,8 +127,7 @@
           </tr>
           {% endif %}
           <!-- iOS end -->
-          {{ files_at_path | dump | safe }};
-            {% for f in files_at_path["files"] %}
+            {% for f, item in files_at_path["files"] %}
             <tr>
               <td class="text-center">
                 {% if files_at_path.files[f].attributes.isDirectory == True %}
