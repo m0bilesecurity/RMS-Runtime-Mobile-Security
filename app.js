@@ -796,6 +796,58 @@ API Monitor - TAB
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 */
 app.get("/api_monitor", async function(req, res){
+  const api_monitor = read_json_file(API_MONITOR_FILE_PATH)
+
+  let template = {
+    mobile_OS: mobile_OS,
+    target_package: target_package,
+    system_package: system_package,
+    no_system_package: no_system_package,
+    api_monitor: api_monitor,
+    api_monitor_console_output_str: api_monitor_console_output
+  }
+  res.render("api_monitor.html",template);
+})
+
+app.post("/api_monitor", async function(req, res){
+
+  const api_monitor = read_json_file(API_MONITOR_FILE_PATH)
+  const api_selected = req.body.api_selected 
+  
+  var api_filter=[]
+
+  //not working
+  for (e in api_monitor) 
+  {
+    console.log(e.Category)
+
+    if(api_selected.includes(e.Category))
+    api_filter.push(e)
+  }
+  console.log(api_filter)
+
+  //api_to_hook = JSON.loads(JSON.dumps(api_filter))
+  try
+  {
+      //await api.apimonitor(api_to_hook)
+  }
+  catch(err)
+  {
+    //TODO
+    //return redirect(url_for("device_management", frida_crash=True, frida_crash_message=err))
+    res.redirect('/device_management');
+  }
+
+
+          
+  let template = {
+    mobile_OS: mobile_OS,
+    target_package: target_package,
+    system_package: system_package,
+    no_system_package: no_system_package,
+    api_monitor: api_monitor,
+    api_monitor_console_output_str: api_monitor_console_output
+  }
   res.render("api_monitor.html");
 })
 
@@ -806,9 +858,61 @@ File Manager - TAB
 */
 
 app.get("/file_manager", async function(req, res){
-  res.render("file_manager.html");
+
+  const path=req.query.path 
+  const download=req.query.download 
+  var files_at_path=""
+  var file=""
+
+  //check is app_env_info is not loaded yet
+  if (Object.keys(app_env_info).length === 0) 
+    app_env_info=await api.getappenvinfo()
+  
+  if(path)
+  {
+    files_at_path=await api.listfilesatpath(path)
+    //console.log(files_at_path)
+  }
+  if(download)
+  {
+    file=await api.downloadfileatpath(download)
+    if(file)
+    {
+      file=''.join(map(chr, (file)["data"])) 
+      filename=os.path.basename(os.path.normpath(download))
+      //console.log(filename)
+      return Response(file,
+                      headers={
+                      "Content-disposition":
+                      "attachment; filename="+filename}
+                     )
+    }
+
+  }
+
+  for (f in files_at_path.files)
+  {
+    console.log(f)
+    for (a in f.attributes)
+    {
+      console.log(a.isDirectory)
+    }
+  }
+  let template = {
+    mobile_OS: mobile_OS,
+    target_package: target_package,
+    system_package: system_package,
+    no_system_package: no_system_package,
+    env: app_env_info,
+    files_at_path: files_at_path,
+    currentPath: path
+  }
+  res.render("file_manager.html",template);
 })
 
+app.post("/file_manager", async function(req, res){
+
+})
 /*
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Load Frida Script - TAB
