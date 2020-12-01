@@ -424,10 +424,6 @@ app.get("/", async function(req, res){
 
 app.post("/", async function(req, res){
 
-  //#exception handling - frida crash
-  var frida_crash=req.query.frida_crash || "False"
-  var frida_crash_message=req.query.frida_crash_message
-
   //output reset
   reset_variables_and_output()
 
@@ -597,9 +593,7 @@ app.post("/", async function(req, res){
     loaded_classes: loaded_classes,
     loaded_methods: loaded_methods,
     system_package: system_package,
-    no_system_package: no_system_package,
-    frida_crash: frida_crash,
-    frida_crash_message: frida_crash_message
+    no_system_package: no_system_package
   }
   res.render("dump.html",template)
 })
@@ -670,11 +664,7 @@ app.get("/static_analysis", async function(req, res){
 Dump Classes and Methods - TAB
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 */
-app.all("/dump", async function(req, res){
-
-  //#exception handling - frida crash
-  var frida_crash=req.query.frida_crash || "False"
-  var frida_crash_message=req.query.frida_crash_message
+app.get("/dump", async function(req, res){
 
   //TODO
   //tohook contains class selected by the user (hooking purposes)
@@ -806,14 +796,39 @@ app.all("/dump", async function(req, res){
     loaded_classes: loaded_classes,
     loaded_methods: loaded_methods,
     system_package: system_package,
-    methods_hooked_and_executed: methods_hooked_and_executed,
-    frida_crash: frida_crash,
-    frida_crash_message: frida_crash_message
+    methods_hooked_and_executed: methods_hooked_and_executed
   }
   res.render("dump.html",template)
 })
 
 
+app.post("/dump", async function(req, res){
+
+//TODO
+//tohook contains class selected by the user (hooking purposes)
+array_to_hook = req.body.tohook 
+if (array_to_hook)
+{
+  hooked_classes = []
+  for (index in array_to_hook)
+  {
+    //hooked classes
+    hooked_classes.push(loaded_classes[index])
+  }
+  loaded_classes = hooked_classes
+}
+
+let template = {
+  mobile_OS: mobile_OS,
+  target_package: target_package,
+  loaded_classes: loaded_classes,
+  loaded_methods: loaded_methods,
+  system_package: system_package,
+  methods_hooked_and_executed: methods_hooked_and_executed
+}
+res.render("dump.html",template)
+
+})
 /*
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Diff Classess - TAB
