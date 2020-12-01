@@ -1455,7 +1455,7 @@ function log_handler(level, text){
       //clean up the string
       text=text.replace("[Hook_Stack]\n","")
       //obtain current method info - first 2 lines contain Class and Method info
-      var current_method=(text.split("\n").splice(2)).join('\n')+'\n'
+      var current_method=(text.split("\n").splice(0,2)).join('\n')+'\n'
       //check the call order by looking at the stack call
       var out_index=-1 //default value if for some reasons current method is not in the stack
       try
