@@ -5,6 +5,8 @@
 
 by [@mobilesecurity_](https://twitter.com/mobilesecurity_) 
 
+[![NPM](https://nodei.co/npm/rms-runtime-mobile-security.png)](https://npmjs.org/package/rms-runtime-mobile-security)
+
 **Runtime Mobile Security (RMS)**, powered by [FRIDA](https://github.com/frida/frida), is a powerful web interface that helps you to manipulate <b>Android and iOS Apps</b> at Runtime. 
 
 You can easily dump all the loaded classes and relative methods, hook everything on the fly, trace methods args and return value, load custom scripts and many other useful stuff.
