@@ -1,4 +1,6 @@
-var http = require('http');
+#!/usr/bin/env node
+
+const http = require('http');
 const express = require("express")
 const nunjucks = require('nunjucks')
 const bodyParser = require('body-parser');
@@ -7,17 +9,20 @@ const load = require('frida-load');
 const fs = require('fs');
 const socket_io = require('socket.io');
 const datetime = require('node-datetime');
-
  
 const BETA = false
 const FRIDA_DEVICE_OPTIONS=["USB","Remote","ID"]
 const FRIDA_DEVICE_ARGS_OPTIONS={'host': 'IP:PORT','id': 'Device’s serial number'}
 //PATH files
-const FRIDA_AGENT_PATH = "./agent/compiled_RMS_core.js"
-const CONFIG_FILE_PATH = "config/config.json"
-const API_MONITOR_FILE_PATH ="config/api_monitor.json"
-const CUSTOM_SCRIPTS_PATH = "custom_scripts/"
-const CONSOLE_LOGS_PATH = "console_logs"
+const FRIDA_AGENT_PATH = __dirname+"/agent/compiled_RMS_core.js"
+const CONFIG_FILE_PATH = __dirname+"/config/config.json"
+const API_MONITOR_FILE_PATH = __dirname+"/config/api_monitor.json"
+const CUSTOM_SCRIPTS_PATH = __dirname+"/custom_scripts/"
+const CONSOLE_LOGS_PATH = __dirname+"/console_logs"
+
+const STATIC_PATH = __dirname+"/views/static/"
+const TEMPLATE_PATH =__dirname+"/views/templates"
+
 
 //Global variables
 var api = null //contains agent export
@@ -65,9 +70,9 @@ app.set('socket_io', io);
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 //express static path
-app.use(express.static('views/static/'))
+app.use(express.static(STATIC_PATH))
 //nunjucks config
-nunjucks.configure('views/templates', {
+nunjucks.configure(TEMPLATE_PATH, {
     autoescape: true,
     express: app
 });
@@ -1193,7 +1198,7 @@ app.get("/load_frida_script", async function(req, res){
 
   //check if a custom script has been selected
   if(cs_name){
-    cs_path="custom_scripts/"+mobile_OS+"/"+ cs_name
+    cs_path=CUSTOM_SCRIPTS_PATH+mobile_OS+"/"+ cs_name
     cs_file=fs.readFileSync(cs_path, 'utf8')
   }
 
@@ -1607,6 +1612,3 @@ function reset_variables_and_output(){
   //error reset
   no_system_package=false
 }
-
-
-

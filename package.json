@@ -1,9 +1,12 @@
 {
   "name": "RMS-Runtime-Mobile-Security",
-  "version": "1.5.0",
+  "version": "1.4.4",
   "description": "Runtime Mobile Security (RMS), powered by FRIDA, is a powerful web interface that helps you to manipulate Android and iOS Apps at Runtime",
   "private": true,
   "main": "app.js",
+  "bin": {
+    "RMS-Runtime-Mobile-Security": "./app.js"
+  },
   "scripts": {
     "prepare": "npm run build",
     "build": "frida-compile agent/RMS_core.js -o agent/compiled_RMS_core.js",

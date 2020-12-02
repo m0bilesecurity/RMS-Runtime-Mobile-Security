@@ -50,16 +50,10 @@ Some cool projects that can help you to **auto** install, update and run frida o
 They are not needed on iOS devices, since FRIDA starts just after the boot of the device (jailbreak mode).
 
 # Installation
-1. ```npm install RMS-Runtime-Mobile-Security```
+1. ```npm install -g RMS-Runtime-Mobile-Security```
 2. Make sure frida-server is up and running on the target device. Instructions are here: [Prerequisites](https://github.com/m0bilesecurity/RMS-Runtime-Mobile-Security#prerequisites) / [Quick smoke-test](https://github.com/m0bilesecurity/RMS-Runtime-Mobile-Security#quick-smoke-test)
 3. RMS-Runtime-Mobile-Security
 4. Open your browser at ```http://127.0.0.1:5000/```
-
-1. **(optional)** Create a python virtual environment
-2. ```pip3 install -r requirements.txt```
-3. Make sure frida-server is up and running on the target device. Instructions are here: [Prerequisites](https://github.com/m0bilesecurity/RMS-Runtime-Mobile-Security#prerequisites) / [Quick smoke-test](https://github.com/m0bilesecurity/RMS-Runtime-Mobile-Security#quick-smoke-test)
-4. ```python3 mobilesecurity.py```
-5. Open your browser at ```http://127.0.0.1:5000/```
 
 ### Notes and possibile issues
 1. In case of issues with your favorite Browser (e.g. logs not printed in the web console), please use <b>Google Chrome</b> (fully supported)
