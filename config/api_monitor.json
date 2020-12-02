@@ -608,7 +608,6 @@
 {
   "Category": "Accessibility - a11y",
   "HookType": "Java",
-  "Comment": "(broken)",
   "hooks": [{
       "clazz": "android.view.accessibility.AccessibilityNodeInfo",
       "method": "getPackageName"
@@ -638,7 +637,6 @@
 {
   "Category": "Clicks - MotionEvent",
   "HookType": "Java",
-  "Comment": "(broken)",
   "hooks": [{
     "clazz": "android.view.MotionEvent",
     "method": "obtain"
@@ -716,7 +714,6 @@
 {
   "Category": "String",
   "HookType": "Java",
-  "Comment": "(broken)",
   "hooks": [{
       "clazz": "java.lang.StringBuilder",
       "method": "toString"
@@ -730,7 +727,6 @@
 {
   "Category": "String Comparison",
   "HookType": "Java",
-  "Comment": "(broken)",
   "hooks": [{
     "clazz": "java.lang.String",
     "method": "equals"

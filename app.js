@@ -29,7 +29,7 @@ var target_package = ""
 var system_package = ""
 var no_system_package=false 
 
-var packages = [] //apps installed on the device
+var app_list = [] //apps installed on the device
 var mobile_OS="N/A"
 var app_env_info = {} //app env info
 
@@ -356,6 +356,7 @@ app.get("/", async function(req, res){
   var frida_crash_message=req.query.frida_crash_message
 
   var device=null
+  app_list=null
   //get device
   try
   {
@@ -366,28 +367,28 @@ app.get("/", async function(req, res){
         device = await frida.getUsbDevice()
         break;
       case "Remote":
-        device = device_manager.add_remote_device(config.host)
+        device = await device_manager.add_remote_device(config.host)
         break;
       case "ID":
-        device= device_manager.get_device(config.id)
+        device= await device_manager.get_device(config.id)
         break;
       default:
         device = await frida.getUsbDevice()
         break;
     }
+
+    //get app list
+    app_list = await device.enumerateApplications()
+    if (app_list.length == 0)
+      return res.redirect('/config?error=True');
   }
   catch(err)
   {
     console.log(err)
-    res.redirect('/config?error=true');
+    return res.redirect('/config?error=True');
   }
-  
-  const device_info=device.name+" | "+device.id+" | "+device.type
 
-  //get app list
-  const app_list = await device.enumerateApplications()
-  if (app_list.length == 0)
-    res.redirect('/config?error=true');
+  const device_info=device.name+" | "+device.id+" | "+device.type
 
   //load FRIDA custom scripts list
   fs.readdirSync(CUSTOM_SCRIPTS_PATH+"Android").forEach(file => {
@@ -494,7 +495,7 @@ app.post("/", async function(req, res){
   catch(err)
   {
     console.log(err)
-    res.redirect('/config?error=true');
+    return res.redirect('/config?error=True');
   }
 
   //spawn/attach the app/gadget
@@ -514,9 +515,9 @@ app.post("/", async function(req, res){
   }
   catch(err)
   {
-    console.log("Error: "+err)
+    console.log("Exception: "+err)
     if (system_classes.length==0)
-      no_system_package=True
+      no_system_package=true
     if (target_package!="Gadget")
       console.log(system_package+" is NOT available on your device or a wrong OS has been selected. For a better RE experience, change it via the Config TAB!");
   }
@@ -536,9 +537,10 @@ app.post("/", async function(req, res){
       //on iOS device "attach" is performd via package.name instead of identifier
       if(mobile_OS=="iOS" && target_package!="Gadget")
       {
-        for (p in packages)
+        app_list.forEach(function(p) {
           if(p.identifier==target_package)
-              target_package=p.name
+            target_package=p.name
+        });
       }        
       session = await device.attach(target_package)
       console.log('[*] Process Attached')
@@ -586,7 +588,7 @@ app.post("/", async function(req, res){
   catch(err)
   {
     console.log("Excpetion: "+err)
-    res.redirect('/?frida_crash=True&frida_crash_message=err');
+    return res.redirect('/?frida_crash=True&frida_crash_message=err');
   }
 
   //automatically redirect the user to the dump classes and methods tab
@@ -644,11 +646,19 @@ Static Analysis - TAB (iOS only)
 app.get("/static_analysis", async function(req, res){
 
   //obtain static analysis script path
-  static_analysis_script_path="/custom_scripts/"+ mobile_OS +"/static_analysis.js"
+  static_analysis_script_path=CUSTOM_SCRIPTS_PATH+ mobile_OS +"/static_analysis.js"
   //read the script
   static_analysis_script = fs.readFileSync(static_analysis_script_path, 'utf8')
   //run it via the loadcustomfridascript api
-  await api.loadcustomfridascript(static_analysis_script)
+  try
+  {
+    await api.loadcustomfridascript(static_analysis_script)
+  }
+  catch(err)
+  {
+    console.log(err)
+  }
+  
 
   let template = {
     mobile_OS: mobile_OS,
@@ -730,7 +740,7 @@ app.get("/dump", async function(req, res){
       msg="FRIDA crashed while loading methods for one or more classes selected. Try to exclude them from your search!"
       console.log(msg)
 
-      res.redirect('/?frida_crash=True&frida_crash_message=err');
+      return res.redirect('/?frida_crash=True&frida_crash_message=err');
     }
   }
   if (choice == 3)
@@ -766,7 +776,7 @@ app.get("/dump", async function(req, res){
       msg="FRIDA crashed while hooking methods for one or more classes selected. Try to exclude them from your search!"
       console.log(msg)
 
-      res.redirect('/?frida_crash=True&frida_crash_message=err');
+      return res.redirect('/?frida_crash=True&frida_crash_message=err');
     }
 
     //redirect the user to the console output
@@ -786,16 +796,19 @@ app.get("/dump", async function(req, res){
 
 
 app.post("/dump", async function(req, res){
-  //tohook contains class selected by the user (hooking purposes)
-  array_to_hook = req.body.tohook 
+  //tohook contains class (index) selected by the user (hooking purposes)
+  array_to_hook = req.body.tohook
+  if(!Array.isArray(array_to_hook))
+    array_to_hook=[array_to_hook]
+
   if (array_to_hook)
   {
     hooked_classes = []
-    for (index in array_to_hook)
+    array_to_hook.forEach(function(index) 
     {
       //hooked classes
-      hooked_classes.push(loaded_classes[index])
-    }
+      hooked_classes.push(loaded_classes[Number(index)])
+    })
     loaded_classes = hooked_classes
   }
 
@@ -887,19 +900,13 @@ function get_hook_lab_template(mobile_OS){
 
 
 app.get("/hook_lab", async function(req, res){
-
-  var hook_template = ""
-  var selected_class = ""
-
-  //class_index contains the index of the loaded class selected by the user
-  class_index = req.query.class_index 
-  //get methods of the selected class
-  selected_class = loaded_classes[class_index]
+  
   //check if methods are loaded or not
-  if(!loaded_methods)
+  if (loaded_methods === undefined || loaded_methods.length == 0) 
   {
     try{
       loaded_methods = await api.loadmethods(loaded_classes)
+      return res.redirect("/hook_lab")
     }
     catch(err){
       console.log("Excpetion: "+err)
@@ -907,36 +914,46 @@ app.get("/hook_lab", async function(req, res){
       const msg="FRIDA crashed while loading methods for one or more classes selected. Try to exclude them from your search!"
       console.log(msg)
 
-      res.redirect('/?frida_crash=True&frida_crash_message=err');
+      return res.redirect('/?frida_crash=True&frida_crash_message=err');
     }
   }
-      
-  //method_index contains the index of the loaded method selected by the user
-  method_index = req.query.method_index 
-  //Only class selected - load heap search template for all the methods
-  if (!method_index)
-  {
-    //hook template generation
-    hook_template = await api.generatehooktemplate(
-      [selected_class], 
-      loaded_methods, 
-      get_hook_lab_template(mobile_OS)
-    )
-  }
-  //class and method selected - load heap search template for selected method only
-  else
-  {
-    var selected_method={}
-    //get method of the selected class
-    selected_method[selected_class] = 
-      [(loaded_methods[selected_class])[method_index]]
 
-    //hook template generation
-    hook_template = await api.generatehooktemplate(
+  var hook_template = ""
+  var selected_class = ""
+
+  //class_index contains the index of the loaded class selected by the user
+  class_index = req.query.class_index 
+  if(class_index)
+  {
+    //get methods of the selected class
+    selected_class = loaded_classes[class_index]        
+    //method_index contains the index of the loaded method selected by the user
+    method_index = req.query.method_index 
+    //Only class selected - load heap search template for all the methods
+    if (!method_index)
+    {
+      //hook template generation
+      hook_template = await api.generatehooktemplate(
         [selected_class], 
-        selected_method, 
+        loaded_methods, 
         get_hook_lab_template(mobile_OS)
-    )
+      )
+    }
+    //class and method selected - load heap search template for selected method only
+    else
+    {
+      var selected_method={}
+      //get method of the selected class
+      selected_method[selected_class] = 
+        [(loaded_methods[selected_class])[method_index]]
+
+      //hook template generation
+      hook_template = await api.generatehooktemplate(
+          [selected_class], 
+          selected_method, 
+          get_hook_lab_template(mobile_OS)
+      )
+    }
   }
 
   //print hook template
@@ -970,18 +987,12 @@ function get_heap_search_template(mobile_OS){
 
 app.get("/heap_search", async function(req, res){
 
-  var heap_template = ""
-  var selected_class = ""
-
-  //lass_index contains the index of the loaded class selected by the user
-  class_index = req.query.class_index 
-  //get methods of the selected class
-  selected_class = loaded_classes[class_index]
   //check if methods are loaded or not
-  if(!loaded_methods)
+  if (loaded_methods === undefined || loaded_methods.length == 0) 
   {
     try{
       loaded_methods = await api.loadmethods(loaded_classes)
+      return res.redirect("/heap_search")
     }
     catch(err){
       console.log("Excpetion: "+err)
@@ -989,36 +1000,47 @@ app.get("/heap_search", async function(req, res){
       const msg="FRIDA crashed while loading methods for one or more classes selected. Try to exclude them from your search!"
       console.log(msg)
 
-      res.redirect('/?frida_crash=True&frida_crash_message=err');
+      return redirect('/?frida_crash=True&frida_crash_message=err');
     }
   }
-      
-  //method_index contains the index of the loaded method selected by the user
-  method_index = req.query.method_index 
-  //Only class selected - load heap search template for all the methods
-  if (!method_index)
+
+  var heap_template = ""
+  var selected_class = ""
+
+  //lass_index contains the index of the loaded class selected by the user
+  class_index = req.query.class_index 
+  if(class_index)
   {
-    //heap template generation
-    heap_template = await api.heapsearchtemplate(
-        [selected_class], 
-        loaded_methods, 
-        get_heap_search_template(mobile_OS)
-    )
+    //get methods of the selected class
+    selected_class = loaded_classes[class_index]        
+    //method_index contains the index of the loaded method selected by the user
+    method_index = req.query.method_index 
+    //Only class selected - load heap search template for all the methods
+    if (!method_index)
+    {
+      //heap template generation
+      heap_template = await api.heapsearchtemplate(
+          [selected_class], 
+          loaded_methods, 
+          get_heap_search_template(mobile_OS)
+      )
+    }
+    //class and method selected - load heap search template for selected method only
+    else
+    {
+      var selected_method={}
+      //get method of the selected class
+      selected_method[selected_class] = 
+        [(loaded_methods[selected_class])[method_index]]
+      //heap template generation
+      heap_template = await api.heapsearchtemplate(
+          [selected_class], 
+          selected_method, 
+          get_heap_search_template(mobile_OS)
+      )
+    }
   }
-  //class and method selected - load heap search template for selected method only
-  else
-  {
-    var selected_method={}
-    //get method of the selected class
-    selected_method[selected_class] = 
-      [(loaded_methods[selected_class])[method_index]]
-    //heap template generation
-    heap_template = await api.heapsearchtemplate(
-        [selected_class], 
-        selected_method, 
-        get_heap_search_template(mobile_OS)
-    )
-  }
+
   //print hook template
   let template = {
     mobile_OS: mobile_OS,
@@ -1073,7 +1095,7 @@ app.post("/api_monitor", async function(req, res){
   catch(err)
   {
     console.log("Excpetion: "+err)
-    res.redirect('/?frida_crash=True&frida_crash_message=err');
+    return res.redirect('/?frida_crash=True&frida_crash_message=err');
   }
  
   let template = {
@@ -1190,9 +1212,15 @@ app.get("/load_frida_script", async function(req, res){
 
 app.post("/load_frida_script", async function(req, res){
   script = req.body.frida_custom_script
-  await api.loadcustomfridascript(script)
+  try
+  {
+    await api.loadcustomfridascript(script)
+  }
+  catch(err){
+    console.log("Exception: "+err)
+  }
   //auto redirect the user to the console output page
-  res.redirect('/console_output');
+  return res.redirect('/console_output');
 })
 
 /*
@@ -1297,7 +1325,7 @@ app.get("/reset_console_logs", async function(req, res){
 
   redirect_url = req.query.redirect
   //auto redirect the user to the console output page
-  res.redirect(redirect_url);
+  return res.redirect(redirect_url);
 })
 /* 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1346,13 +1374,19 @@ app.all("/config", async function(req, res){
 
   //read config file
   const config = read_json_file(CONFIG_FILE_PATH)
+
+  error = false
+  if (req.query.error)
+      error = true
+
   let template = {
     system_package_Android: config.system_package_Android,
     system_package_iOS: config.system_package_iOS,
     device_type_selected: config.device_type,
     device_type_options: FRIDA_DEVICE_OPTIONS,
     device_args: config.device_args,
-    device_args_options: FRIDA_DEVICE_ARGS_OPTIONS
+    device_args_options: FRIDA_DEVICE_ARGS_OPTIONS,
+    error: error
   }
   res.render("config.html", template);
 })
@@ -1366,9 +1400,18 @@ API - eval frida script and redirect
 app.post("/eval_script_and_redirect", async function(req, res){
   script = req.body.frida_custom_script
   redirect_url = req.body.redirect 
-  await api.loadcustomfridascript(script)
+  console.log(script)
+  console.log(redirect_url)
+  try
+  {
+    await api.loadcustomfridascript(script)
+  }
+  catch(err){
+    console.log("Exception: "+err)
+  }
+  
   //auto redirect the user to the console output page
-  res.redirect(redirect_url);
+  return res.redirect(redirect_url);
 })
 
 /*

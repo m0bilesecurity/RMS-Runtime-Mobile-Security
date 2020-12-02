@@ -4,9 +4,6 @@
   "description": "Runtime Mobile Security (RMS), powered by FRIDA, is a powerful web interface that helps you to manipulate Android and iOS Apps at Runtime",
   "private": true,
   "main": "app.js",
-  "directories": {
-    "lib": "lib"
-  },
   "scripts": {
     "prepare": "npm run build",
     "build": "frida-compile agent/RMS_core.js -o agent/compiled_RMS_core.js",
@@ -19,9 +16,12 @@
   "keywords": [
     "Mobile Security",
     "Android Security",
+    "iOS Security",
+    "Reverse Engineering",
+    "NodeJS",
     "Mobile",
     "Security",
-    "frida",
+    "FRIDA",
     "RMS"
   ],
   "author": "@mobilesecurity_",
