@@ -52,7 +52,7 @@ They are not needed on iOS devices, since FRIDA starts just after the boot of th
 # Installation
 1. ```npm install -g RMS-Runtime-Mobile-Security```
 2. Make sure frida-server is up and running on the target device. Instructions are here: [Prerequisites](https://github.com/m0bilesecurity/RMS-Runtime-Mobile-Security#prerequisites) / [Quick smoke-test](https://github.com/m0bilesecurity/RMS-Runtime-Mobile-Security#quick-smoke-test)
-3. RMS-Runtime-Mobile-Security
+3. ```RMS-Runtime-Mobile-Security```
 4. Open your browser at ```http://127.0.0.1:5000/```
 
 ### Notes and possibile issues
