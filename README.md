@@ -50,9 +50,9 @@ Some cool projects that can help you to **auto** install, update and run frida o
 They are not needed on iOS devices, since FRIDA starts just after the boot of the device (jailbreak mode).
 
 # Installation
-1. ```npm install -g RMS-Runtime-Mobile-Security```
+1. ```npm install -g rms-runtime-mobile-security```
 2. Make sure frida-server is up and running on the target device. Instructions are here: [Prerequisites](https://github.com/m0bilesecurity/RMS-Runtime-Mobile-Security#prerequisites) / [Quick smoke-test](https://github.com/m0bilesecurity/RMS-Runtime-Mobile-Security#quick-smoke-test)
-3. ```RMS-Runtime-Mobile-Security```
+3. Launch it via ```RMS-Runtime-Mobile-Security```
 4. Open your browser at ```http://127.0.0.1:5000/```
 
 ### Notes and possibile issues
@@ -63,6 +63,14 @@ They are not needed on iOS devices, since FRIDA starts just after the boot of th
     * RMS must be started **after** frida-server
     * make sure that **only 1 device** is connected to your computer. RMS is currently not able to detect multiple devices
     * kill RMS and start it again 
+# Development mode
+Follow the steps below if you want to develop new features for RMS 😉
+1. ```git clone https://github.com/m0bilesecurity/RMS-Runtime-Mobile-Security.git```
+2. ```cd RMS-Runtime-Mobile-Security```
+3. ```npm install```
+4. Launch RMS via ```node app.js```
+
+**NOTE:** If you work with the agent (/agent/RMS_core.js), please remember to recompile it by running ```npm install``` or directly via the frida-compile command (```frida-compile agent/RMS_core.js -o agent/compiled_RMS_core.js```)
 
 # General Info
 Runtime Mobile Security (RMS) supports <b>Android</b> and <b>iOS</b> devices.

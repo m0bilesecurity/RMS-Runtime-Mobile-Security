@@ -1,0 +1,12 @@
+/bin
+/include
+/lib
+/console_logs
+/.Python
+.DS_Store
+.vscode
+__pycache__
+node_modules/
+_RMS_core_BETA.js
+/test-directory
+/DEMO

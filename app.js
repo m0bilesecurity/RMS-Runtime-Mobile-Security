@@ -372,10 +372,10 @@ app.get("/", async function(req, res){
         device = await frida.getUsbDevice()
         break;
       case "Remote":
-        device = await device_manager.add_remote_device(config.host)
+        device = await device_manager.getRemoteDevice(config.host)
         break;
       case "ID":
-        device= await device_manager.get_device(config.id)
+        device= await device_manager.getDevice(config.id)
         break;
       default:
         device = await frida.getUsbDevice()
@@ -393,7 +393,7 @@ app.get("/", async function(req, res){
     return res.redirect('/config?error=True');
   }
 
-  const device_info=device.name+" | "+device.id+" | "+device.type
+  const device_info="name: "+device.name+" | id: "+device.id+" | mode: "+device.type
 
   //load FRIDA custom scripts list
   fs.readdirSync(CUSTOM_SCRIPTS_PATH+"Android").forEach(file => {
@@ -471,7 +471,7 @@ app.post("/", async function(req, res){
   else 
     console.log("Frida Startup Script: None")
   if(api_selected)
-    console.log("APIs Monitors: \n" + api_selected.join(" - "))
+    console.log("APIs Monitors: \n" + api_selected)
   else
     console.log("APIs Monitors: None")
   console.log
@@ -586,7 +586,14 @@ app.post("/", async function(req, res){
       });
       
       //load APIs monitors
-      await api.apimonitor(api_to_hook)
+      try
+      {
+        await api.apimonitor(api_to_hook)
+      }
+      catch(err)
+      {
+        console.log("Excpetion: "+err)
+      }
     }
   
   }//end try
@@ -1257,12 +1264,12 @@ app.get("/save_console_logs", async function(req, res){
   try
   {
     //check if console_logs exists
-    if (!fs.existsSync(CONSOLE_LOGS_PATH))
+    if (!fs.existsSync("./console_logs"))
       fs.mkdirSync("console_logs")
 
     //create new directory for current logs package_timestamp
     const dt = datetime.create().format('Ymd-HMS')
-    out_path=CONSOLE_LOGS_PATH+"/"+target_package+"_"+dt
+    out_path="./console_logs"+"/"+target_package+"_"+dt
     fs.mkdirSync(out_path)
 
     //save calls_console_output
@@ -1303,11 +1310,11 @@ app.get("/save_console_logs", async function(req, res){
                     console.log("api_monitor_console_output.txt saved");
                    });
     }
-
+    out_path=out_path.replace("./",process.cwd()+"/")
     res.send("print_done - "+out_path)
   }
   catch(err){
-    res.send("print_error: "+str(err))
+    res.send("print_error: "+err)
   }
 })
 
