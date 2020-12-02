@@ -9,6 +9,7 @@ const socket_io = require('socket.io');
 const datetime = require('node-datetime');
 
  
+const BETA = false
 const FRIDA_DEVICE_OPTIONS=["USB","Remote","ID"]
 const FRIDA_DEVICE_ARGS_OPTIONS={'host': 'IP:PORT','id': 'Device’s serial number'}
 //PATH files
@@ -1134,7 +1135,8 @@ app.get("/file_manager", async function(req, res){
     no_system_package: no_system_package,
     env: app_env_info,
     files_at_path: files_at_path,
-    currentPath: path
+    currentPath: path,
+    BETA: BETA
   }
   res.render("file_manager.html",template);
 })
