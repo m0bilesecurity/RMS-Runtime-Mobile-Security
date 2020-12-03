@@ -600,7 +600,7 @@ app.post("/", async function(req, res){
   catch(err)
   {
     console.log("Excpetion: "+err)
-    return res.redirect('/?frida_crash=True&frida_crash_message=err');
+    return res.redirect('/?frida_crash=True&frida_crash_message='+err);
   }
 
   //automatically redirect the user to the dump classes and methods tab
@@ -752,7 +752,7 @@ app.get("/dump", async function(req, res){
       msg="FRIDA crashed while loading methods for one or more classes selected. Try to exclude them from your search!"
       console.log(msg)
 
-      return res.redirect('/?frida_crash=True&frida_crash_message=err');
+      return res.redirect('/?frida_crash=True&frida_crash_message='+err);
     }
   }
   if (choice == 3)
@@ -788,7 +788,7 @@ app.get("/dump", async function(req, res){
       msg="FRIDA crashed while hooking methods for one or more classes selected. Try to exclude them from your search!"
       console.log(msg)
 
-      return res.redirect('/?frida_crash=True&frida_crash_message=err');
+      return res.redirect('/?frida_crash=True&frida_crash_message='+err);
     }
 
     //redirect the user to the console output
@@ -926,7 +926,7 @@ app.get("/hook_lab", async function(req, res){
       const msg="FRIDA crashed while loading methods for one or more classes selected. Try to exclude them from your search!"
       console.log(msg)
 
-      return res.redirect('/?frida_crash=True&frida_crash_message=err');
+      return res.redirect('/?frida_crash=True&frida_crash_message='+err);
     }
   }
 
@@ -1012,7 +1012,7 @@ app.get("/heap_search", async function(req, res){
       const msg="FRIDA crashed while loading methods for one or more classes selected. Try to exclude them from your search!"
       console.log(msg)
 
-      return redirect('/?frida_crash=True&frida_crash_message=err');
+      return redirect('/?frida_crash=True&frida_crash_message='+err);
     }
   }
 
@@ -1107,7 +1107,7 @@ app.post("/api_monitor", async function(req, res){
   catch(err)
   {
     console.log("Excpetion: "+err)
-    return res.redirect('/?frida_crash=True&frida_crash_message=err');
+    return res.redirect('/?frida_crash=True&frida_crash_message='+err);
   }
  
   let template = {
