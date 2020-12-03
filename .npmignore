@@ -1,12 +1,10 @@
 /bin
 /include
 /lib
-/console_logs
 /.Python
+__pycache__
 .DS_Store
 .vscode
-__pycache__
 node_modules/
-_RMS_core_BETA.js
-/test-directory
+/console_logs
 /DEMO
