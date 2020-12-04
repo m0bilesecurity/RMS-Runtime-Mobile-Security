@@ -474,7 +474,6 @@ app.post("/", async function(req, res){
     console.log("APIs Monitors: \n" + api_selected)
   else
     console.log("APIs Monitors: None")
-  console.log
   
   var device=null
   //get device
