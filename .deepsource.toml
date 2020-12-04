@@ -2,4 +2,5 @@ version = 1
 
 [[analyzers]]
 name = "javascript"
+environment = ["nodejs","browser"]
 enabled = true
