@@ -23,7 +23,7 @@
         <!-- Search Bar and Table -->
         <div class="col-sm-12">
           <br>
-          {% if error==True %}
+          {% if error==true %}
           <div class="alert alert-danger" role="alert">
             <b>Device not connected.</b> Please check your config and <b>click <a href="/">here</a> to try again.</b> <br>
             If you still see this error and the device is correctly connected with frida-server <a href="https://frida.re/docs/android/">up and running</a>, <b>please kill RSM and start it again.</b> <br>
@@ -50,29 +50,58 @@
             </div>
 
             <div class="form-group">
-              <label for="device-type">Device type</label>
-              <select class="form-control" id="device-type" name="device-type">
-                {{ printOptions|safe }}
+              <label for="device_type">Device type</label>
+              <select class="form-control" id="device_type" name="device_type">
+                {% for mode in device_type_options %}
+                <option {% if device_type_selected==mode %}selected{% endif %}>{{mode}}</option>
+                {% endfor %}
               </select>
             </div>
 
             <div class="form-group">
               <label for="device-args">Device arguments</label>
-              <div id="dynamic-content">   
-                <!-- Dynamic elements -->
-                {% for key, value in args.items() %}     
-                <div class="form-group {{ 'd-none' if is_hide(device_type_str, key) }}">
+              <div id="dynamic-content">
+                <div class="form-group">
                   <div class="row">
                     <div class="col-sm">  
-                      <input type="text" class="form-control" name="key[]" value="{{ key|safe }}"
-                      readonly>
+                      <input type="text" 
+                             class="form-control" 
+                             id=host
+                             name=host
+                             value=host
+                             readonly>
                     </div> 
                     <div class="col-sm">
-                      <input type="text" class="form-control" name="value[]" value="{{ value|safe }}" placeholder="{{ placeholder_str[key] }}">
+                      <input type="text" 
+                             class="form-control" 
+                             id=host_value
+                             name=host_value 
+                             value="{{device_args.host|safe}}"
+                             placeholder="{{ device_args_options["host"] }}">
                     </div>     
                   </div>
-                </div> {% endfor %}               
-              </div> <!-- dynamic elements -->
+                </div>
+                <div class="form-group">
+                  <div class="row">
+                    <div class="col-sm">  
+                      <input type="text" 
+                             class="form-control" 
+                             id=id
+                             name=id
+                             value=id
+                             readonly>
+                    </div> 
+                    <div class="col-sm">
+                      <input type="text" 
+                             class="form-control" 
+                             id=id_value
+                             name=id_value 
+                             value="{{device_args.id|safe}}"
+                             placeholder="{{ device_args_options["id"] }}">
+                    </div>     
+                  </div>
+                </div> 
+              </div> <!-- end dynamic content -->
             </div>
             <div class="form-group">
               <button type="submit" class="btn btn-primary mb-2">Save</button>
@@ -95,13 +124,53 @@
   <!-- Set current Page as active in the NavBar -->
   {% block scripts %}
   <script>
+  $("#device_type").on("change", function() {
+      console.log(this.value)
+      if(this.value=="USB"){
+        $('#host_value').val("")
+        $('#id_value').val("")
+
+        $('#host').prop('disabled', true);
+        $('#host_value').prop('disabled', true);
+
+        $('#id').prop('disabled', true);
+        $('#id_value').prop('disabled', true);
+      }
+      if(this.value=="Remote"){
+        $('#id_value').val("")
+
+        $('#host').prop('disabled', false);
+        $('#host_value').prop('disabled', false);
+
+        $('#id').prop('disabled', true);
+        $('#id_value').prop('disabled', true);
+      }
+      if(this.value=="ID"){
+        $('#host_value').val("")
+
+        $('#host').prop('disabled', true);
+        $('#host_value').prop('disabled', true);
+
+        $('#id').prop('disabled', false);
+        $('#id_value').prop('disabled', false);
+      }
+  });
+  </script>
+
+  <script>
   $(document).ready(function () {
+    //Auto trigger onchange event on device_type
+    var element = document.getElementById('device_type');
+    var event = new Event('change');
+    element.dispatchEvent(event);
+
+    //Set current Page as active in the NavBar
     $(".nav li").removeClass("active");
     $('#config').addClass('active');
+    //Set current Page as active in the NavBar
   });
   </script>
   {% endblock %}
-  <!-- Set current Page as active in the NavBar -->
   
 </body>
 

@@ -1,7 +1,7 @@
     <!-- Sidebar -->
     <div class="bg-light border-right" id="sidebar-wrapper">
       <div class="sidebar-heading">
-        <img class="profile_picture" src={{ url_for('static', filename='mobilesecurity.jpg') }}>
+        <img class="profile_picture" src=mobilesecurity.jpg>
         <br>
         <br>
         <font size=3><b>🔥 Runtime Mobile Security 🔥</b></font>
@@ -18,12 +18,12 @@
           <b>Target Package:</b> {{target_package}} <br>
           <b>System Package: </b> {{system_package}} <br>
           {% endif %}
-          {% if no_system_package==True and target_package!="Gadget" %}
+          {% if no_system_package==true and target_package!="Gadget" %}
           <br>
             <b><font color=red>{{system_package}} is NOT available on your device!</font></b> <br><br>
             <b><font color=red>For a better RE experience, Click <a href="/config">here</a> to change it!</font></b>
           {% endif %}
-          {% if frida_crash==True %}
+          {% if frida_crash=="True" %}
             <br>
             <b><font color=red>FRIDA crashed</font></b> <br><br>
             {% if frida_crash_message %}

@@ -179,7 +179,9 @@
     //Set cursors always at the bottom 
     heap_search_editor.setCursor(heap_search_editor.lineCount(), 0);
 
-    const socket = io.connect('//' + document.domain + ':' + location.port + '/console');
+    //const socket = io.connect('//' + document.domain + ':' + location.port + '/console');
+    const socket = io.connect()
+    
     socket.on('heap_search', function(msg) {
         if(msg.data.length) {
             heap_search_editor.setValue(heap_search_editor.getValue()+msg.data);

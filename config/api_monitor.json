@@ -1,0 +1,832 @@
+[{
+  "Category": "Device Info",
+  "HookType": "Java",
+  "hooks": [{
+      "clazz": "android.telephony.TelephonyManager",
+      "method": "getDeviceId"
+    },
+    {
+      "clazz": "android.telephony.TelephonyManager",
+      "method": "getSubscriberId"
+    },
+    {
+      "clazz": "android.telephony.TelephonyManager",
+      "method": "getLine1Number"
+    },
+    {
+      "clazz": "android.telephony.TelephonyManager",
+      "method": "getNetworkOperator"
+    },
+    {
+      "clazz": "android.telephony.TelephonyManager",
+      "method": "getNetworkOperatorName"
+    },
+    {
+      "clazz": "android.telephony.TelephonyManager",
+      "method": "getSimOperatorName"
+    },
+    {
+      "clazz": "android.net.wifi.WifiInfo",
+      "method": "getMacAddress"
+    },
+    {
+      "clazz": "android.net.wifi.WifiInfo",
+      "method": "getBSSID"
+    },
+    {
+      "clazz": "android.net.wifi.WifiInfo",
+      "method": "getIpAddress"
+    },
+    {
+      "clazz": "android.net.wifi.WifiInfo",
+      "method": "getNetworkId"
+    },
+    {
+      "clazz": "android.telephony.TelephonyManager",
+      "method": "getSimCountryIso"
+    },
+    {
+      "clazz": "android.telephony.TelephonyManager",
+      "method": "getSimSerialNumber"
+    },
+    {
+      "clazz": "android.telephony.TelephonyManager",
+      "method": "getNetworkCountryIso"
+    },
+    {
+      "clazz": "android.telephony.TelephonyManager",
+      "method": "getDeviceSoftwareVersion"
+    },
+    {
+      "clazz": "android.os.Debug",
+      "method": "isDebuggerConnected"
+    },
+    {
+      "clazz": "android.content.pm.PackageManager",
+      "method": "getInstallerPackageName"
+    },
+    {
+      "clazz": "android.content.pm.PackageManager",
+      "method": "getInstalledApplications"
+    },
+    {
+      "clazz": "android.content.pm.PackageManager",
+      "method": "getInstalledModules",
+      "target": 10
+    },
+    {
+      "clazz": "android.content.pm.PackageManager",
+      "method": "getInstalledPackages"
+    }
+  ]
+},
+{
+  "Category": "Device Data",
+  "HookType": "Java",
+  "hooks": [{
+      "clazz": "android.content.ContentResolver",
+      "method": "query"
+    },
+    {
+      "clazz": "android.content.ContentResolver",
+      "method": "registerContentObserver"
+    },
+    {
+      "clazz": "android.content.ContentResolver",
+      "method": "insert"
+    },
+    {
+      "clazz": "android.content.ContentResolver",
+      "method": "delete"
+    },
+    {
+      "clazz": "android.accounts.AccountManager",
+      "method": "getAccountsByType"
+    },
+    {
+      "clazz": "android.accounts.AccountManager",
+      "method": "getAccounts"
+    },
+    {
+      "clazz": "android.location.Location",
+      "method": "getLatitude"
+    },
+    {
+      "clazz": "android.location.Location",
+      "method": "getLongitude"
+    },
+    {
+      "clazz": "android.os.SystemProperties",
+      "method": "get"
+    },
+    {
+      "clazz": "android.app.ApplicationPackageManager",
+      "method": "getInstalledPackages"
+    }
+  ]
+},
+{
+  "Category": "Permissions",
+  "HookType": "Java",
+  "hooks": [{
+      "clazz": "android.app.ContextImpl",
+      "method": "checkSelfPermission"
+    },
+    {
+      "clazz": "android.support.v4.content.ContextCompat",
+      "method": "checkSelfPermission"
+    },
+    {
+      "clazz": "android.support.v4.content.PermissionChecker",
+      "method": "checkSelfPermission"
+    },
+    {
+      "clazz": "android.support.v4.app.ActivityCompat",
+      "method": "requestPermissions"
+    }
+  ]
+},
+{
+  "Category": "Process",
+  "HookType": "Java",
+  "hooks": [{
+      "clazz": "android.os.Process",
+      "method": "start"
+    },
+    {
+      "clazz": "android.app.ActivityManager",
+      "method": "killBackgroundProcesses"
+    },
+    {
+      "clazz": "android.os.Process",
+      "method": "killProcess"
+    }
+  ]
+},
+{
+  "Category": "Commands Execution",
+  "HookType": "Java",
+  "hooks": [{
+      "clazz": "java.lang.Runtime",
+      "method": "exec"
+    },
+    {
+      "clazz": "java.lang.ProcessBuilder",
+      "method": "start"
+    }
+  ]
+},
+{
+  "Category": "Dex Class Loader",
+  "HookType": "Java",
+  "hooks": [{
+      "clazz": "dalvik.system.BaseDexClassLoader",
+      "method": "findResource"
+    },
+    {
+      "clazz": "dalvik.system.BaseDexClassLoader",
+      "method": "findResources"
+    },
+    {
+      "clazz": "dalvik.system.BaseDexClassLoader",
+      "method": "findLibrary"
+    },
+    {
+      "clazz": "dalvik.system.DexFile",
+      "method": "loadDex"
+    },
+    {
+      "clazz": "dalvik.system.DexFile",
+      "method": "loadClass"
+    },
+    {
+      "clazz": "dalvik.system.DexClassLoader",
+      "method": "$init"
+    }
+  ]
+},
+{
+  "Category": "Java Native Interface (JNI)",
+  "HookType": "Java",
+  "hooks": [{
+      "clazz": "java.lang.Runtime",
+      "method": "loadLibrary"
+    },
+    {
+      "clazz": "java.lang.Runtime",
+      "method": "load"
+    }
+  ]
+},
+{
+  "Category": "IPC",
+  "HookType": "Java",
+  "hooks": [{
+      "clazz": "android.content.ContextWrapper",
+      "method": "sendBroadcast"
+    },
+    {
+      "clazz": "android.content.ContextWrapper",
+      "method": "sendStickyBroadcast"
+    },
+    {
+      "clazz": "android.content.ContextWrapper",
+      "method": "startActivity"
+    },
+    {
+      "clazz": "android.content.ContextWrapper",
+      "method": "startService"
+    },
+    {
+      "clazz": "android.content.ContextWrapper",
+      "method": "stopService"
+    },
+    {
+      "clazz": "android.content.ContextWrapper",
+      "method": "registerReceiver"
+    }
+  ]
+},
+{
+  "Category": "Binder",
+  "HookType": "Java",
+  "hooks": [{
+      "clazz": "android.app.ContextImpl",
+      "method": "registerReceiver"
+    },
+    {
+      "clazz": "android.app.ActivityThread",
+      "method": "handleReceiver"
+    },
+    {
+      "clazz": "android.app.Activity",
+      "method": "startActivity"
+    }
+  ]
+},
+{
+  "Category": "System Manager",
+  "HookType": "Java",
+  "hooks": [{
+      "clazz": "android.app.ApplicationPackageManager",
+      "method": "setComponentEnabledSetting"
+    },
+    {
+      "clazz": "android.app.NotificationManager",
+      "method": "notify"
+    },
+    {
+      "clazz": "android.telephony.TelephonyManager",
+      "method": "listen"
+    },
+    {
+      "clazz": "android.content.BroadcastReceiver",
+      "method": "abortBroadcast"
+    }
+  ]
+},
+{
+  "Category": "WebView",
+  "HookType": "Java",
+  "hooks": [{
+      "clazz": "android.webkit.WebView",
+      "method": "loadUrl"
+    },
+    {
+      "clazz": "android.webkit.WebView",
+      "method": "loadData"
+    },
+    {
+      "clazz": "android.webkit.WebView",
+      "method": "loadDataWithBaseURL"
+    },
+    {
+      "clazz": "android.webkit.WebView",
+      "method": "addJavascriptInterface"
+    },
+    {
+      "clazz": "android.webkit.WebView",
+      "method": "removeJavascriptInterface"
+    },
+    {
+      "clazz": "android.webkit.WebView",
+      "method": "evaluateJavascript"
+    },
+    {
+      "clazz": "android.webkit.WebView",
+      "method": "getUrl"
+    },
+    {
+      "clazz": "android.webkit.WebView",
+      "method": "getOriginalUrl"
+    },
+    {
+      "clazz": "android.webkit.WebView",
+      "method": "postUrl"
+    },
+    {
+      "clazz": "android.webkit.WebView",
+      "method": "postWebMessage"
+    },
+    {
+      "clazz": "android.webkit.WebView",
+      "method": "savePassword"
+    },
+    {
+      "clazz": "android.webkit.WebView",
+      "method": "setHttpAuthUsernamePassword"
+    },
+    {
+      "clazz": "android.webkit.WebView",
+      "method": "getHttpAuthUsernamePassword"
+    },
+    {
+      "clazz": "android.webkit.WebView",
+      "method": "setWebContentsDebuggingEnabled"
+    },
+    {
+      "clazz": "android.webkit.WebView",
+      "method": "setVisibility"
+    },
+    {
+      "clazz": "android.webkit.WebView",
+      "method": "setWebViewClient"
+    }
+  ]
+},
+{
+  "Category": "SharedPreferences",
+  "HookType": "Java",
+  "hooks": [{
+      "clazz": "android.app.SharedPreferencesImpl",
+      "method": "getString"
+    },
+    {
+      "clazz": "android.app.SharedPreferencesImpl",
+      "method": "contains"
+    },
+    {
+      "clazz": "android.app.SharedPreferencesImpl",
+      "method": "getInt"
+    },
+    {
+      "clazz": "android.app.SharedPreferencesImpl",
+      "method": "getFloat"
+    },
+    {
+      "clazz": "android.app.SharedPreferencesImpl",
+      "method": "getLong"
+    },
+    {
+      "clazz": "android.app.SharedPreferencesImpl",
+      "method": "getBoolean"
+    },
+    {
+      "clazz": "android.app.SharedPreferencesImpl",
+      "method": "getStringSet"
+    },
+    {
+      "clazz": "android.app.SharedPreferencesImpl$EditorImpl",
+      "method": "putString"
+    },
+    {
+      "clazz": "android.app.SharedPreferencesImpl$EditorImpl",
+      "method": "putStringSet"
+    },
+    {
+      "clazz": "android.app.SharedPreferencesImpl$EditorImpl",
+      "method": "putInt"
+    },
+    {
+      "clazz": "android.app.SharedPreferencesImpl$EditorImpl",
+      "method": "putFloat"
+    },
+    {
+      "clazz": "android.app.SharedPreferencesImpl$EditorImpl",
+      "method": "putBoolean"
+    },
+    {
+      "clazz": "android.app.SharedPreferencesImpl$EditorImpl",
+      "method": "putLong"
+    },
+    {
+      "clazz": "android.app.SharedPreferencesImpl$EditorImpl",
+      "method": "remove"
+    }
+
+  ]
+},
+{
+  "Category": "Database",
+  "HookType": "Java",
+  "hooks": [{
+      "clazz": "android.content.ContextWrapper",
+      "method": "openOrCreateDatabase"
+    },
+    {
+      "clazz": "android.content.ContextWrapper",
+      "method": "databaseList"
+    },
+    {
+      "clazz": "android.content.ContextWrapper",
+      "method": "deleteDatabase"
+    },
+    {
+      "clazz": "android.database.sqlite.SQLiteDatabase",
+      "method": "execSQL"
+    },
+    {
+      "clazz": "android.database.sqlite.SQLiteDatabase",
+      "method": "deleteDatabase"
+    },
+    {
+      "clazz": "android.database.sqlite.SQLiteDatabase",
+      "method": "getPath"
+    },
+    {
+      "clazz": "android.database.sqlite.SQLiteDatabase",
+      "method": "insert"
+    },
+    {
+      "clazz": "android.database.sqlite.SQLiteDatabase",
+      "method": "insertOrThrow"
+    },
+    {
+      "clazz": "android.database.sqlite.SQLiteDatabase",
+      "method": "insertWithOnConflict"
+    },
+    {
+      "clazz": "android.database.sqlite.SQLiteDatabase",
+      "method": "openDatabase"
+    },
+    {
+      "clazz": "android.database.sqlite.SQLiteDatabase",
+      "method": "openOrCreateDatabase"
+    },
+    {
+      "clazz": "android.database.sqlite.SQLiteDatabase",
+      "method": "query"
+    },
+    {
+      "clazz": "android.database.sqlite.SQLiteDatabase",
+      "method": "queryWithFactory"
+    },
+    {
+      "clazz": "android.database.sqlite.SQLiteDatabase",
+      "method": "rawQuery"
+    },
+    {
+      "clazz": "android.database.sqlite.SQLiteDatabase",
+      "method": "rawQueryWithFactory"
+    },
+    {
+      "clazz": "android.database.sqlite.SQLiteDatabase",
+      "method": "update"
+    },
+    {
+      "clazz": "android.database.sqlite.SQLiteDatabase",
+      "method": "updateWithOnConflict"
+    },
+    {
+      "clazz": "android.database.sqlite.SQLiteDatabase",
+      "method": "compileStatement"
+    },
+    {
+      "clazz": "android.database.sqlite.SQLiteDatabase",
+      "method": "create"
+    }
+  ]
+},
+{
+  "Category": "Bluetooth",
+  "HookType": "Java",
+  "hooks": [{
+      "clazz": "android.bluetooth.BluetoothGatt",
+      "method": "readCharacteristic"
+    },
+    {
+      "clazz": "android.bluetooth.BluetoothGattCharacteristic",
+      "method": "setValue"
+    }
+  ]
+},
+{
+  "Category": "SMS",
+  "HookType": "Java",
+  "hooks": [{
+      "clazz": "android.telephony.SmsManager",
+      "method": "sendTextMessage"
+    },
+    {
+      "clazz": "android.telephony.SmsManager",
+      "method": "sendMultipartTextMessage"
+    },
+    {
+      "clazz": "android.telephony.SmsMessage",
+      "method": "createFromPdu"
+    }
+  ]
+},
+{
+  "Category": "Audio/Media/Screen Recording",
+  "HookType": "Java",
+  "hooks": [{
+      "clazz": "android.media.MediaRecorder",
+      "method": "start"
+    },
+    {
+      "clazz": "android.media.MediaRecorder",
+      "method": "stop"
+    },
+    {
+      "clazz": "android.media.MediaRecorder'",
+      "method": "setCamera"
+    },
+    {
+      "clazz": "android.media.MediaRecorder'",
+      "method": "setAudioSource"
+    },
+    {
+      "clazz": "android.media.MediaRecorder'",
+      "method": "setOutputFile"
+    },
+    {
+      "clazz": "android.media.AudioRecord",
+      "method": "openFileInput"
+    },
+    {
+      "clazz": "android.media.AudioRecord",
+      "method": "startRecording"
+    },
+    {
+      "clazz": "android.media.AudioRecord",
+      "method": "stop"
+    },
+    {
+      "clazz": "android.media.AudioRecord",
+      "method": "getActiveMicrophones"
+    },
+    {
+      "clazz": "android.media.AudioRecord",
+      "method": "getAudioSource"
+    },
+    {
+      "clazz": "android.media.projection.MediaProjectionManager",
+      "method": "createScreenCaptureIntent"
+    },
+    {
+      "clazz": "android.media.projection.MediaProjectionManager",
+      "method": "getMediaProjection"
+    }
+  ]
+},
+{
+  "Category": "Clipboard",
+  "HookType": "Java",
+  "hooks": [{
+      "clazz": "android.content.ClipboardManager",
+      "method": "getPrimaryClip"
+    },
+    {
+      "clazz": "android.content.ClipboardManager",
+      "method": "setPrimaryClip"
+    },
+    {
+      "clazz": "android.content.ClipboardManager",
+      "method": "hasPrimaryClip"
+    },
+    {
+      "clazz": "android.content.ClipboardManager",
+      "method": "getText"
+    },
+    {
+      "clazz": "android.content.ClipboardManager",
+      "method": "hasText"
+    }
+  ]
+},
+{
+  "Category": "Accessibility - a11y",
+  "HookType": "Java",
+  "hooks": [{
+      "clazz": "android.view.accessibility.AccessibilityNodeInfo",
+      "method": "getPackageName"
+    },
+    {
+      "clazz": "android.view.accessibility.AccessibilityNodeInfo",
+      "method": "getClassName"
+    },
+    {
+      "clazz": "android.view.accessibility.AccessibilityNodeInfo",
+      "method": "getContentDescription"
+    },
+    {
+      "clazz": "android.view.accessibility.AccessibilityNodeInfo",
+      "method": "getText"
+    },
+    {
+      "clazz": "android.view.accessibility.AccessibilityNodeInfo",
+      "method": "getViewIdResourceName"
+    },
+    {
+      "clazz": "android.view.MotionEvent",
+      "method": "obtain"
+    }
+  ]
+},
+{
+  "Category": "Clicks - MotionEvent",
+  "HookType": "Java",
+  "hooks": [{
+    "clazz": "android.view.MotionEvent",
+    "method": "obtain"
+  }]
+},
+{
+  "Category": "Crypto",
+  "HookType": "Java",
+  "hooks": [{
+      "clazz": "javax.crypto.spec.SecretKeySpec",
+      "method": "$init"
+    },
+    {
+      "clazz": "javax.crypto.Cipher",
+      "method": "doFinal"
+    }
+  ]
+},
+{
+  "Category": "Hash",
+  "HookType": "Java",
+  "hooks": [{
+      "clazz": "java.security.MessageDigest",
+      "method": "digest"
+    },
+    {
+      "clazz": "java.security.MessageDigest",
+      "method": "update"
+    }
+  ]
+},
+{
+  "Category": "Base64 encode/decode",
+  "HookType": "Java",
+  "hooks": [{
+      "clazz": "android.util.Base64",
+      "method": "decode"
+    },
+    {
+      "clazz": "android.util.Base64",
+      "method": "encode"
+    },
+    {
+      "clazz": "android.util.Base64",
+      "method": "encodeToString"
+    }
+  ]
+},
+{
+  "Category": "Compression - Gzip",
+  "HookType": "Java",
+  "hooks": [{
+      "clazz": "java.util.zip.GZIPInputStream",
+      "method": "read"
+    },
+    {
+      "clazz": "java.util.zip.GZIPOutputStream",
+      "method": "write"
+    }
+  ]
+},
+{
+  "Category": "JSON",
+  "HookType": "Java",
+  "hooks": [{
+      "clazz": "org.json.JSONObject",
+      "method": "put"
+    },
+    {
+      "clazz": "org.json.JSONObject",
+      "method": "optString"
+    }
+  ]
+},
+{
+  "Category": "String",
+  "HookType": "Java",
+  "hooks": [{
+      "clazz": "java.lang.StringBuilder",
+      "method": "toString"
+    },
+    {
+      "clazz": "java.lang.StringBuffer",
+      "method": "toString"
+    }
+  ]
+},
+{
+  "Category": "String Comparison",
+  "HookType": "Java",
+  "hooks": [{
+    "clazz": "java.lang.String",
+    "method": "equals"
+  }]
+},
+{
+  "Category": "Network",
+  "HookType": "Java",
+  "hooks": [{
+      "clazz": "java.net.URL",
+      "method": "openConnection"
+    },
+    {
+      "clazz": "org.apache.http.impl.client.AbstractHttpClient",
+      "method": "execute"
+    },
+    {
+      "clazz": "com.android.okhttp.internal.huc.HttpURLConnectionImpl",
+      "method": "getInputStream"
+    },
+    {
+      "clazz": "com.android.okhttp.internal.http.HttpURLConnectionImpl",
+      "method": "getInputStream"
+    }
+  ]
+},
+{
+  "Category": "Socket",
+  "HookType": "Java",
+  "hooks": [{
+      "clazz": "java.net.Socket",
+      "method": "$init"
+    },
+    {
+      "clazz": "org.java_websocket.client.WebSocketClient",
+      "method": "$init"
+    },
+    {
+      "clazz": "org.java_websocket.client.WebSocketClient",
+      "method": "send"
+    }
+  ]
+},
+{
+  "Category": "FileSytem - Java",
+  "HookType": "Java",
+  "hooks": [{
+      "clazz": "ibcore.io.IoBridge",
+      "method": "open"
+    },
+    {
+      "clazz": "java.io.FileOutputStream",
+      "method": "write"
+    },
+    {
+      "clazz": "java.io.FileInputStream'",
+      "method": "read"
+    },
+    {
+      "clazz": "android.content.ContextWrapper",
+      "method": "openFileInput"
+    },
+    {
+      "clazz": "android.content.ContextWrapper",
+      "method": "openFileOutput"
+    },
+    {
+      "clazz": "android.content.ContextWrapper",
+      "method": "deleteFile"
+    }
+  ]
+},
+{
+  "Category": "FileSytem Native",
+  "HookType": "Native",
+  "Comment": "Hook it alone! Do not combine with other Categories",
+  "hooks": [{
+      "clazz": "libc.so",
+      "method": "open"
+    },
+    {
+      "clazz": "libc.so",
+      "method": "close"
+    },
+    {
+      "clazz": "libc.so",
+      "method": "read"
+    },
+    {
+      "clazz": "libc.so",
+      "method": "write"
+    },
+    {
+      "clazz": "libc.so",
+      "method": "unlink"
+    },
+    {
+      "clazz": "libc.so",
+      "method": "remove"
+    }
+  ]
+}
+]

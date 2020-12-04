@@ -121,6 +121,9 @@
               <input type=submit 
                      value="Start APIs Monitor" 
                      class="btn btn-success">
+              <small class="form-text text-muted">
+              <font color=red><b>NOTE:</b></font> Some APIs Monitors (e.g. 18, 19, 25, 26) <b>may not work on some devices.</b> If the target app crashes, try to exclude them one by one.
+              </small>
             </center>
           </form>
           <!-- Form end -->
@@ -192,7 +195,9 @@
     //Set cursors always at the bottom 
     api_monitor_editor.setCursor(api_monitor_editor.lineCount(), 0);
 
-    const socket = io.connect('//' + document.domain + ':' + location.port + '/console');
+    //const socket = io.connect('//' + document.domain + ':' + location.port + '/console');
+    const socket = io.connect()
+
     socket.on('api_monitor', function(msg) {
         if(msg.data.length) {
             api_monitor_editor.setValue(api_monitor_editor.getValue()+msg.data);

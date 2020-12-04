@@ -1,8 +1,5 @@
 version = 1
 
 [[analyzers]]
-name = "python"
+name = "javascript"
 enabled = true
-
-  [analyzers.meta]
-  runtime_version = "3.x.x"

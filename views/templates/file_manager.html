@@ -97,12 +97,13 @@
               {% else %}
               <th class="text-center">file path</th>
               {% endif %}
-              {% if BETA == True %}
+              {% if BETA == true %}
               <th class="text-center">download</th>
               {% endif %}
             </thead>
             <tbody>
-              {% set parent = '/'.join(((files_at_path.path).split("/"))[:-1])  %}
+              {% set pathlength = ((files_at_path.path).split("/")) | length %}
+              {% set parent = ((files_at_path.path).split("/")).slice(0,pathlength-1).join("/")  %}
               <!-- Android start -->
               {% if 
                 mobile_OS == "Android" and
@@ -126,8 +127,7 @@
           </tr>
           {% endif %}
           <!-- iOS end -->
-
-            {% for f in files_at_path["files"] %}
+            {% for f, item in files_at_path["files"] %}
             <tr>
               <td class="text-center">
                 {% if files_at_path.files[f].attributes.isDirectory == True %}
@@ -172,7 +172,7 @@
                   -
                   {% endif %}
                 </td>
-                {% if BETA == True %}
+                {% if BETA == true %}
                 <td class="text-center">
                   {% if files_at_path.files[f].attributes.isFile %}
                   <a

@@ -124,8 +124,8 @@
                      placeholder="com.example.app">
 
                     <datalist id="package">
-                    {% for package in packages %}
-                      <option>{{ package.identifier }}</option>
+                    {% for app in app_list %}
+                      <option>{{ app.identifier }}</option>
                     {% endfor %}
                     </datalist>
 
@@ -231,7 +231,9 @@
               <div class="form-group">
                 <h5>&nbsp;What do you want to monitor? <font color=red>(Android Only)</font></h5>
                 <small class="form-text text-muted">
-                  &nbsp; This feature is currently available for Android apps only.
+                  &nbsp; This feature is currently available for Android apps only. 
+                  <br>
+                  &nbsp; Some APIs Monitors (e.g. 18, 19, 25, 26) <b>may not work on some devices.</b> 
                 </small>
                 <br>
                 <div class="row">

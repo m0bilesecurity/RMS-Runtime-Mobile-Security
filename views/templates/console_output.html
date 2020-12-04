@@ -70,7 +70,7 @@
         <div class="border-top my-3"></div>
         <center>
           <a role="button" 
-             href="/reset_console_logs?redirect=console_output_loader" 
+             href="/reset_console_logs?redirect=/console_output" 
              class="btn btn-danger">
              Reset Console Output
           </a>
@@ -185,7 +185,9 @@
     hooks_stack_editor.setCursor(hooks_stack_editor.lineCount(), 0)
     calls_stack_editor.setCursor(calls_stack_editor.lineCount(), 0)
 
-    const socket = io.connect('//' + document.domain + ':' + location.port + '/console');
+    //const socket = io.connect('//' + document.domain + ':' + location.port + '/console');
+    const socket = io.connect()
+
     socket.on('call_stack', function(msg) {
         if(msg.data.length) {
           calls_stack_editor.setValue(calls_stack_editor.getValue()+msg.data);
