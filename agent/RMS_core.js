@@ -7,9 +7,9 @@
  5. hookclassesandmethods([loaded_classes], [loaded_methods], template)
  6. generatehooktemplate([loaded_classes], [loaded_methods], template)
  7. heapsearchtemplate([loaded_classes], [loaded_methods], template)
- 8. getappenvinfo()
- 9. listfilesatpath(path)
- 10. apimonitor([api_to_monitor])
+ 8. apimonitor([api_to_monitor])
+ 9. getappenvinfo()
+ 10. listfilesatpath(path)
  ******************************************************************************/
 
 rpc.exports = {
@@ -60,6 +60,12 @@ rpc.exports = {
     else 
       return heap_search_template_iOS(loaded_classes, loaded_methods, template)
   },
+  apimonitor: function (api_to_monitor) {
+    if (Java.available)
+      api_monitor_Android(api_to_monitor)
+    else 
+      api_monitor_iOS(api_to_monitor)
+  },
   getappenvinfo: function () {
     if (Java.available)
       return get_app_env_info_Android()
@@ -71,12 +77,6 @@ rpc.exports = {
       return list_files_at_path_Android(path)
     else 
       return list_files_at_path_iOS(path)
-  },
-  apimonitor: function (api_to_monitor) {
-    if (Java.available)
-      api_monitor_Android(api_to_monitor)
-    else 
-      api_monitor_iOS(api_to_monitor)
   }
 };
 
@@ -507,20 +507,16 @@ function api_monitor_Android(api_to_monitor)
         // Java 
         if (e["HookType"] == "Java") {
           javadynamichook(hook, e["Category"], function (realRetval, to_print) {
-            to_print.returnValue = realRetval
 
-            //check if type object if yes convert it to string
-            if (realRetval && typeof realRetval === 'object') {
-              var retval_string = [];
-              for (var k = 0, l = realRetval.length; k < l; k++) {
-                retval_string.push(realRetval[k]);
-              }
-              to_print.returnValue = '' + retval_string.join('');
-            }
-            if (!to_print.result) to_print.result = undefined
-            if (!to_print.returnValue) to_print.returnValue = undefined
-
-            send('[API_Monitor] - ' + JSON.stringify(to_print)+"\n");
+            send('[API_Monitor]\n' + 
+            JSON.stringify(to_print,function(k,v)
+            {
+              if(v instanceof Array)
+                 return JSON.stringify(v);
+              return v;
+            },2)
+            +"\n");
+            
             return realRetval;
           });
         } // end javadynamichook
@@ -577,6 +573,7 @@ function javadynamichook(hook, category, callback) {
         var args = [].slice.call(arguments);
         // Call original method
         var retval = this[method].apply(this, arguments);
+        
         if (callback) {
           var calledFrom = Exception.$new().getStackTrace().toString().split(',')[1];
           var to_print = {
@@ -584,8 +581,8 @@ function javadynamichook(hook, category, callback) {
             class: clazz,
             method: method,
             args: args,
+            returnValue: retval ? retval.toString() : "N/A",
             calledFrom: calledFrom
-            //result: retval ? retval.toString() : null,
           };
           retval = callback(retval, to_print);
         }
@@ -873,8 +870,6 @@ function list_files_at_path_iOS(path)
     //DEBUG console.log(JSON.stringify(listResult))
     return listResult;
 }
-
-
 
 function api_monitor_iOS(api_to_monitor) 
 {

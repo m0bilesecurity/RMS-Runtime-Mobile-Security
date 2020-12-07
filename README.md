@@ -1,41 +1,79 @@
 
-# RMS - Runtime Mobile Security #
+# Runtime Mobile Security (RMS) 📱🔥 #
 
-![mobilesecurity_](/static/mobilesecurity_circle.png)
+![RMS_logo](/views/static/RMS_Github_Header.png)
+
+[![NPM](https://nodei.co/npm/rms-runtime-mobile-security.png)](https://npmjs.org/package/rms-runtime-mobile-security)
 
 by [@mobilesecurity_](https://twitter.com/mobilesecurity_) 
 
 **Runtime Mobile Security (RMS)**, powered by [FRIDA](https://github.com/frida/frida), is a powerful web interface that helps you to manipulate <b>Android and iOS Apps</b> at Runtime. 
 
-You can easily dump all the loaded classes and relative methods, hook everything on the fly, trace methods args and return value, load custom scripts and many other useful stuff.
+With RMS you can easily dump all loaded classes and relative methods, hook everything on the fly, trace methods args and return value, load custom scripts and many other useful stuff.
 
-Please check below a **short video** (1min42s) that shows RMS in action on an iOS device. Same functionalities are of course also available for Android devices.
-
+### iOS DEMO - VIDEO
 [![RMS - iOS DEMO](https://img.youtube.com/vi/EtsYHYA9ID4/0.jpg)](https://www.youtube.com/watch?v=EtsYHYA9ID4)
 
+### Android DEMO - VIDEO
+[![RMS - Android DEMO](https://img.youtube.com/vi/Gq0bXeRu-I0/0.jpg)](https://www.youtube.com/watch?v=Gq0bXeRu-I0)
+
+### Tutorial - Android
+- [Solving **OWASP** UnCrackable Android **App Level 1** with **Runtime Mobile Security (RMS)**](https://youtu.be/P6rNPkM2DdY)
+- [Solving **OWASP** UnCrackable Android **App Level 2** with **Runtime Mobile Security (RMS)**](https://youtu.be/xRQVljerl0A)
 
 # Prerequisites
+1. [NodeJS](https://nodejs.org/en/download/) installed on your computer
+2. [FRIDA's CLI tools](https://frida.re/docs/installation/) installed on your computer
+2. **FRIDA server up and running** on the target device
+    * [Android - Official Tutorial](https://frida.re/docs/android/)
+    * [iOS - Official Tutorial](https://frida.re/docs/ios/)
 
-**FRIDA server up and running on the target device**
+### Quick smoke-test
 
-Refer to the official FRIDA guide for the installation: 
-* [Android](https://frida.re/docs/android/)
-* [iOS](https://frida.re/docs/ios/)
+As suggested by the official FRIDA doc, please perform a **quick smoke-test** to make sure **FRIDA is working properly on your test device**.
 
-Some cool projects that can help you to **auto** install, update and run frida on Android devices:
+By running the ```frida-ps -U``` command from your desktop, you should receive the list of the processes running on your connected mobile device.
+
+```
+Android                    | iOS
+  PID NAME                 |  PID NAME
+ 1590 com.facebook.katana  |  488 Clock
+ 3282 com.twitter.android  |  116 Facebook
+ …                            …
+```
+### Tips
+Some cool projects that can help you to **auto** install, update and run FRIDA on Android devices are:
 * [MagiskFrida - Android](https://github.com/ViRb3/magisk-frida)
 * [FridaLoader - Android](https://github.com/dineshshetty/FridaLoader)
 
 They are not needed on iOS devices, since FRIDA starts just after the boot of the device (jailbreak mode).
 
 # Installation
-
-1. **(optional)** Create a python virtual environment
-2. ```pip3 install -r requirements.txt```
-3. ```python3 mobilesecurity.py```
+1. Open the terminal and run the following command to install the npm package   
+    * ```npm install -g rms-runtime-mobile-security``` 
+2. Make sure frida-server is up and running on the target device. 
+    * Instructions are here: [prerequisites](https://github.com/m0bilesecurity/RMS-Runtime-Mobile-Security#prerequisites) / [quick smoke-test](https://github.com/m0bilesecurity/RMS-Runtime-Mobile-Security#quick-smoke-test)
+3. Launch RMS via the following command 
+    * ```rms``` (or ```RMS-Runtime-Mobile-Security```)
 4. Open your browser at ```http://127.0.0.1:5000/```
+5. Start enjoying RMS 📱🔥 
 
-<b>NOTE:</b> In case of issue with your favorite Browser, please use Google Chrome (fully supported).
+## Notes and possibile issues
+1. In case of issues with your favorite Browser (e.g. logs not printed in the web console), please use <b>Google Chrome</b> (fully supported)
+2. If <b>RMS is not able to detect your device</b>, please perform the following checks:
+    * double check if frida-server is up and running on the target device. Instructions are here: [prerequisites](https://github.com/m0bilesecurity/RMS-Runtime-Mobile-Security#prerequisites)
+    / [quick smoke-test](https://github.com/m0bilesecurity/RMS-Runtime-Mobile-Security#quick-smoke-test)
+    * RMS must be started **after** frida-server
+    * make sure that **only 1 device** is connected to your computer. RMS is currently not able to detect multiple devices
+    * kill RMS and start it again 
+# Development mode
+Follow the steps below if you want to develop new features for RMS 😉
+1. ```git clone https://github.com/m0bilesecurity/RMS-Runtime-Mobile-Security.git```
+2. ```cd RMS-Runtime-Mobile-Security```
+3. ```npm install -g .``` (or ```npm install``` for a local installation)
+4. Launch RMS via the ```rms``` command (or via ```node app.js``` if the package has been installed locally)
+
+**NOTE:** If you add new features to the agent (/agent/RMS_core.js), please remember to recompile the code by running ```npm install -g .``` or directly via the frida-compile command (```frida-compile agent/RMS_core.js -o agent/compiled_RMS_core.js```)
 
 # General Info
 Runtime Mobile Security (RMS) supports <b>Android</b> and <b>iOS</b> devices.
@@ -49,29 +87,19 @@ It has been tested on MacOS and with the following devices:
 
 It should also work well on Windows and Linux but some minor adjustments may be needed.
 
-Do not connect more than one device at the same time. RMS is not so smart at the moment 😉
-
-<b>NOTE:</b> Socket are not working on Safari, <b>please use Chrome</b> instead.
-
-# Known issues
-* Sometime RMS fails to load complex methods. Use a filter when this happens or feel free to improve the algo (agent/RMS_core.js).
+# Known issues and improvements
+* Sometime RMS fails to load complex methods. Use a filter when this happens or feel free to improve the algo (agent/RMS_core.js)
+* Socket are not working on Safari, <b>please use Chrome</b> instead
+*  RMS is not able to recognize multiple devices. Please do not connect more than one device at the same time
 * Code is not optimized
-
-# Improvements
-* Frida Gadget is currently NOT supported
-* Feel free to send me your best JS sript via a Pull request. I'll be happy to bundle all the best as default scripts in the next RMS release.
-e.g.
-	* root detection bypass
-	* ssl pinning bypass
-	* reflection detection
-	* etc...
+* Feel free to send me your best JS script via a Pull Request. I'll be happy to bundle all the best as default scripts in the next RMS release (e.g. root detection bypass, ssl pinning, etc)
 
 
 # Usage
 
 ## 1. Run your favorite app by simply inserting its package name ##
 **NOTE** RMS attachs a persistence process called **com.android.systemui** on Android and **SpringBoard** on iOS devices to get the list of all the classes that are already loaded in memory before the launch of the target app. If you have an issue with them, try to find a different default package that works well on your device. 
-You can set another default package via the Config Tab or by simply editing the **config.json** file.
+You can set another default package via the Config Tab or by simply editing the **/config/config.json** file.
 
 ![DEMO_1_Android](/DEMO/Android/DEMO_1_Device.gif)
 
@@ -104,7 +132,7 @@ Go back to the dump page in order to have an overview of all the **hooked method
 
 ## 7. Inject your favorite FRIDA CUSTOM SCRIPTS on the fly   ##
 
-Just add your .js files inside the custom_script folder and they will be automatically loaded by the web interface ready to be executed.
+Just add your .js files inside the **custom_script folder** and they will be automatically loaded by the web interface ready to be executed.
 
 ![DEMO_7_Android](/DEMO/Android/DEMO_7_Custom_Script.gif)
 
@@ -112,7 +140,7 @@ Just add your .js files inside the custom_script folder and they will be automat
 
 ## 8. API Monitor - Android Only ##
 
-via the API Monitor TAB you can easily monitor tons of Android APIs organized in 20 different Categories. Support can be easily extended by adding more classes/methods to the **api_monitor.json** file.
+via the API Monitor TAB you can easily monitor tons of Android APIs organized in 20 different Categories. Support can be easily extended by adding more classes/methods to the **/config/api_monitor.json** file.
 
 ![DEMO_10](/DEMO/Android/DEMO_10_API_Monitor.png)
 
@@ -132,12 +160,7 @@ Stetho is a sophisticated debug bridge for Android applications. When enabled, d
 
 A simple File Manager has been implemented to help you exploring app's private folders and files. **This feature is still in BETA.**
 
-[frida-fs](https://github.com/nowsecure/frida-fs) has been implemented to enable files download directly from the browser (File Manager TAB).
-
-In order to enable the download button, follow the steps below:
-1. Open the file called "**mobilesecurity.py**" and set the **BETA** variable to **True**
-2. Compile the "**RMS_Core.js**" agent via frida-compile! Just run the command ```npm install``` directly from the **agent** folder. A file called "**_RMS_Core_BETA.js**" will be generated.
-3. Run RMS!
+**improvement:** [frida-fs](https://github.com/nowsecure/frida-fs) needs to be implemented to enable files download directly from the browser (File Manager TAB).
 
 ![DEMO_11_Android](/DEMO/Android/DEMO_11_File_Manager.png)
 
@@ -168,6 +191,9 @@ Special thanks to the following Open Source projects for the inspiration:
 * [chaitin](https://github.com/chaitin/passionfruit)
 * [lich4](https://codeshare.frida.re/@lichao890427/dump-ios/)
 * [fadeevab](https://codeshare.frida.re/@fadeevab/intercept-android-apk-crypto-operations/)
+* [realgam3](https://codeshare.frida.re/@realgam3/dynamichooks/)
+* [noobpk](https://github.com/noobpk/frida-ios-hook)
+
 
 ### DEMO apps:
 

@@ -1,4 +1,0 @@
-frida-tools
-frida
-Flask
-Flask-SocketIO

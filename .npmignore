@@ -7,3 +7,4 @@ __pycache__
 .vscode
 node_modules/
 /console_logs
+/DEMO

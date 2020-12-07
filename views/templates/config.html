@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- head and css -->
+  {% include 't_head.html' %}
+</head>
+
+<body>
+  <div class="d-flex" id="wrapper">
+    <!-- Sidebar -->
+    {% include 't_sidebar.html' %}
+
+    <!-- Page Content -->
+    <div id="page-content-wrapper">
+
+      <!-- Navbar -->
+      {% include 't_navbar.html' %}
+
+      <!-- Content -->
+      <div class="container-fluid">
+
+        <!-- Search Bar and Table -->
+        <div class="col-sm-12">
+          <br>
+          {% if error==true %}
+          <div class="alert alert-danger" role="alert">
+            <b>Device not connected.</b> Please check your config and <b>click <a href="/">here</a> to try again.</b> <br>
+            If you still see this error and the device is correctly connected with frida-server <a href="https://frida.re/docs/android/">up and running</a>, <b>please kill RSM and start it again.</b> <br>
+            Other possibile issues and solutions are described here: 
+             <b><a href="https://github.com/m0bilesecurity/RMS-Runtime-Mobile-Security#notes-and-possibile-issues">Notes and possibile issues</a></b>.<br>
+          </div>
+          {% endif %}
+          <!-- Config file menu -->
+          <h2>Edit config file</h2>
+          <form class="form-group 
+                       list-group-item 
+                       list-group-item-action 
+                       bg-light
+                       rounded" action="/config" method=post>
+            
+            <div class="form-group">
+              <label for="system_package_Android">Android - System Package used for diff loaded classes - (In case of issue try to attach a different persistent process)</label>
+              <input type="text" class="form-control" id="system_package_Android" name="system_package_Android" value="{{ system_package_Android|safe }} ">
+            </div>
+
+            <div class="form-group">
+              <label for="system_package_iOS">iOS - System Package used for diff loaded classes - (In case of issue try to attach a different persistent process)</label>
+              <input type="text" class="form-control" id="system_package_iOS" name="system_package_iOS" value="{{ system_package_iOS|safe }} ">
+            </div>
+
+            <div class="form-group">
+              <label for="device_type">Device type</label>
+              <select class="form-control" id="device_type" name="device_type">
+                {% for mode in device_type_options %}
+                <option {% if device_type_selected==mode %}selected{% endif %}>{{mode}}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="device-args">Device arguments</label>
+              <div id="dynamic-content">
+                <div class="form-group">
+                  <div class="row">
+                    <div class="col-sm">  
+                      <input type="text" 
+                             class="form-control" 
+                             id=host
+                             name=host
+                             value=host
+                             readonly>
+                    </div> 
+                    <div class="col-sm">
+                      <input type="text" 
+                             class="form-control" 
+                             id=host_value
+                             name=host_value 
+                             value="{{device_args.host|safe}}"
+                             placeholder="{{ device_args_options["host"] }}">
+                    </div>     
+                  </div>
+                </div>
+                <div class="form-group">
+                  <div class="row">
+                    <div class="col-sm">  
+                      <input type="text" 
+                             class="form-control" 
+                             id=id
+                             name=id
+                             value=id
+                             readonly>
+                    </div> 
+                    <div class="col-sm">
+                      <input type="text" 
+                             class="form-control" 
+                             id=id_value
+                             name=id_value 
+                             value="{{device_args.id|safe}}"
+                             placeholder="{{ device_args_options["id"] }}">
+                    </div>     
+                  </div>
+                </div> 
+              </div> <!-- end dynamic content -->
+            </div>
+            <div class="form-group">
+              <button type="submit" class="btn btn-primary mb-2">Save</button>
+            </div>
+          </form>
+        </div> <!-- form group -->
+        <br>
+        <br>
+      </div>
+      <!-- /#container-fluid -->
+    </div>
+    <!-- /#page-content-wrapper -->
+
+  </div>
+  <!-- /#wrapper -->
+
+  <!-- Javascript loading -->
+  {% include 't_js_script.html' %}
+
+  <!-- Set current Page as active in the NavBar -->
+  {% block scripts %}
+  <script>
+  $("#device_type").on("change", function() {
+      console.log(this.value)
+      if(this.value=="USB"){
+        $('#host_value').val("")
+        $('#id_value').val("")
+
+        $('#host').prop('disabled', true);
+        $('#host_value').prop('disabled', true);
+
+        $('#id').prop('disabled', true);
+        $('#id_value').prop('disabled', true);
+      }
+      if(this.value=="Remote"){
+        $('#id_value').val("")
+
+        $('#host').prop('disabled', false);
+        $('#host_value').prop('disabled', false);
+
+        $('#id').prop('disabled', true);
+        $('#id_value').prop('disabled', true);
+      }
+      if(this.value=="ID"){
+        $('#host_value').val("")
+
+        $('#host').prop('disabled', true);
+        $('#host_value').prop('disabled', true);
+
+        $('#id').prop('disabled', false);
+        $('#id_value').prop('disabled', false);
+      }
+  });
+  </script>
+
+  <script>
+  $(document).ready(function () {
+    //Auto trigger onchange event on device_type
+    var element = document.getElementById('device_type');
+    var event = new Event('change');
+    element.dispatchEvent(event);
+
+    //Set current Page as active in the NavBar
+    $(".nav li").removeClass("active");
+    $('#config').addClass('active');
+    //Set current Page as active in the NavBar
+  });
+  </script>
+  {% endblock %}
+  
+</body>
+
+</html>

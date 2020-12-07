@@ -9,7 +9,7 @@
 </head>
 
 <body>
-<!-- Model View -->
+<!-- Model View - start -->
 <div class="modal fade" id="ModalZoomedView">
   <div class="modal-dialog modal-xl">
     <div class="modal-content">
@@ -19,6 +19,7 @@
         <h4 class="modal-title">Zoomed Console Output</h4>
         <button type="button" class="close" data-dismiss="modal">&times;</button>
       </div>
+      <!-- Modal Header -->
 
       <!-- Modal body -->
       <div class="modal-body">
@@ -29,17 +30,19 @@
                       name=zoomed_console_output></textarea>
           </div>
 
-      </div>
+      </div> 
+      <!-- Modal body -->
 
       <!-- Modal footer -->
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
       </div>
+      <!-- Modal footer -->
 
       </div>
     </div>
-  </div><!-- Modal body -->
-
+  </div>
+<!-- Model View - end -->
 
 
 
@@ -66,6 +69,11 @@
         </div> <!-- row -->
         <div class="border-top my-3"></div>
         <center>
+          <a role="button" 
+             href="/reset_console_logs?redirect=/console_output" 
+             class="btn btn-danger">
+             Reset Console Output
+          </a>
           <button class="btn btn-success" id="save_output">
           Save Console Output
           </button>
@@ -177,7 +185,9 @@
     hooks_stack_editor.setCursor(hooks_stack_editor.lineCount(), 0)
     calls_stack_editor.setCursor(calls_stack_editor.lineCount(), 0)
 
-    const socket = io.connect('//' + document.domain + ':' + location.port + '/console');
+    //const socket = io.connect('//' + document.domain + ':' + location.port + '/console');
+    const socket = io.connect()
+
     socket.on('call_stack', function(msg) {
         if(msg.data.length) {
           calls_stack_editor.setValue(calls_stack_editor.getValue()+msg.data);
@@ -199,6 +209,8 @@
     });
 
   </script>
+
+  <!-- Save Console Output -->
   <script>
     $(document).ready(function() {
        $('#save_output').click(function(){
@@ -215,6 +227,7 @@
        });
     });
   </script>
+  <!-- Save Console Output -->
 
 
   <script>
@@ -231,6 +244,15 @@
         zoomed_console_editor.refresh()
     })
   </script>
+
+    <!-- Set current Page as active in the NavBar -->
+    <script>
+      $(document).ready(function () {
+        $(".nav li").removeClass("active");
+        $('#console_output').addClass('active');
+      });
+      </script>
+    <!-- Set current Page as active in the NavBar -->
 
 
   {% endblock %}

@@ -1,7 +1,7 @@
     <!-- Sidebar -->
     <div class="bg-light border-right" id="sidebar-wrapper">
       <div class="sidebar-heading">
-        <img class="profile_picture" src={{ url_for('static', filename='mobilesecurity.jpg') }}>
+        <img class="profile_picture" src=mobilesecurity.jpg>
         <br>
         <br>
         <font size=3><b>🔥 Runtime Mobile Security 🔥</b></font>
@@ -18,16 +18,33 @@
           <b>Target Package:</b> {{target_package}} <br>
           <b>System Package: </b> {{system_package}} <br>
           {% endif %}
-          {% if no_system_package==True %}
+          {% if no_system_package==true and target_package!="Gadget" %}
           <br>
             <b><font color=red>{{system_package}} is NOT available on your device!</font></b> <br><br>
             <b><font color=red>For a better RE experience, Click <a href="/config">here</a> to change it!</font></b>
           {% endif %}
-          {% if frida_crash==True %}
-          <br>
-            <b><font color=red>FRIDA crashed while loading methods for one or more classes selected!</font></b> <br><br>
-            <b><font color=red>Try to exclude them from your search!</font></b>
+          {% if frida_crash=="True" %}
+            <br>
+            <b><font color=red>FRIDA crashed</font></b> <br><br>
+            {% if frida_crash_message %}
+              <b>Error description: <br>
+                <font color=red>{{frida_crash_message}}</font>
+              </b> 
+              <br><br>
+            {% endif %}
           {% endif %}
+
+          <!-- print a warning if the Browser is not Chrome - start -->
+          {% block scripts %}
+          <script>
+          var isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
+          if(isChrome==false){
+            document.write("<br><br><b><font color=red>Browser not fully supported, please use Chrome!</font></b>")
+          }
+          </script>
+          {% endblock %}
+          <!-- print a warning if the Browser is not Chrome - end -->
+
         </p>
       </div>
     </div>

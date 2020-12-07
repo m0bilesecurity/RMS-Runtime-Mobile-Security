@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- head and css -->
+  {% include 't_head.html' %}
+</head>
+
+<body>
+  <div class="d-flex" id="wrapper">
+    <!-- Sidebar -->
+    {% include 't_sidebar.html' %}
+
+    <!-- Page Content -->
+    <div id="page-content-wrapper">
+
+      <!-- Navbar -->
+      {% include 't_navbar.html' %}
+
+      <!-- Content -->
+      <div class="container-fluid">
+
+        <!-- Search Bar and Table -->
+        <div class="col-sm-12">
+
+          <!-- collapseViewDevice - start -->
+          <div class="collapse" id="collapseViewDevice">
+            <br>
+            <!-- main form group - start -->
+            <div class="form-group 
+                       list-group-item 
+                       list-group-item-action 
+                       bg-light
+                       rounded">
+            <div class="form-group">
+
+                <label for="Android_system_package"> 
+                  <b>Android - System Package used for diff loaded classes</b>
+                </label>
+                <input type="text" 
+                      class="form-control" 
+                      id="Android_system_package" 
+                      placeholder="{{ system_package_Android|safe}}"
+                      disabled>
+                <small class="form-text text-muted">
+                  In case of issue try to attach a different persistent process. <a href="/config">Click here to change.</a>
+                </small>
+
+                <br>
+                <label for="iOS_system_package">
+                  <b>iOS - System Package used for diff loaded classes</b>
+                </label>
+                <input type="text" 
+                      class="form-control" 
+                      id="iOS_system_package" 
+                      placeholder="{{system_package_iOS|safe}}"
+                      disabled>
+              </div>
+
+              <div class="form-group">
+                <label for="device_mode"><b>Device connection mode</b></label>
+                <input type="text" class="form-control" id="device_mode" placeholder="{{ device_mode|safe }} {{'- ' + device_attributes|safe if device_attributes}}"
+                  disabled>
+                  <small class="form-text text-muted">
+                    Edit these settings directly in the <a href="/config">Config tab</a>
+                  </small>
+              </div>
+
+            </div> <!-- main form group - end -->
+
+          </div> <!-- collapseViewDevice - end -->
+          <br>
+
+          <!-- Avanced menu -->
+          <div class="align-middle">
+          <!-- Show Device Config menu -->
+            <div class="float-right">
+              <button 
+                class="btn btn-info" 
+                type="button" 
+                data-toggle="collapse" 
+                data-target="#collapseViewDevice" 
+                aria-expanded="true" 
+                aria-controls="collapseView">
+                Show RMS Config
+              </button>
+            </div>
+          <h2>📱Device - Setting Panel</h2>
+
+          </div>
+          <form class="form-group 
+                       list-group-item 
+                       list-group-item-action 
+                       bg-light
+                       rounded" action="/" method=post>
+            
+            <div class="form-group">
+            <label for="Mobile_OS"><b>Device detected</b></label>
+              <input type="text" 
+                     class="form-control" 
+                     id="device_type" 
+                     placeholder="{{device_info}}"
+                    disabled>
+            </div>
+
+            <div class="form-group">
+              <label for="mode"><b>Mobile OS</b></label>
+              <select class="form-control" 
+                      id="mobile_OS" 
+                      name="mobile_OS"
+                      required=true>
+                <option disabled selected value> -- select an option -- </option>
+                <option>Android</option>
+                <option>iOS</option>
+              </select>
+            </div>         
+
+            <div class="form-group">
+              <label for="package"><b>Package name</b></label>
+              <input class="form-control" 
+                     list="package" 
+                     name="package" 
+                     required="true" 
+                     placeholder="com.example.app">
+
+                    <datalist id="package">
+                    {% for app in app_list %}
+                      <option>{{ app.identifier }}</option>
+                    {% endfor %}
+                    </datalist>
+
+            </div>
+
+            <div class="form-group">
+              <label for="mode">
+                <b>Spawn or Attach</b>
+              </label>
+
+              <select class="form-control" 
+                      id="mode" 
+                      name="mode">
+                <option>Spawn</option>
+                <option>Attach</option>
+              </select>
+              <small id="spawn_info" 
+                     class="form-text text-muted collapse">
+                If you choose "attach", make sure the app you are looking for is <b>up and running</b> on the device!
+              </small>
+            </div>
+
+            <div class="form-group" id="startup_monitors">
+              <label for="mode">
+                <b>Optional</b> - Load a custom script or APIs Monitors
+              </label>
+              <br>
+            <button class="btn btn-primary mb-2" 
+                    id="APIM_button"
+                    type="button" 
+                    data-toggle="collapse"
+                    data-target="#collapseViewAPIM" 
+                    aria-expanded="true" 
+                    aria-controls="collapseView"
+                    disabled>
+            Load APIs Monitors 
+            </button>
+
+            <button class="btn btn-danger mb-2" 
+                    id="CFS_button"
+                    type="button" 
+                    data-toggle="collapse"
+                    data-target="#collapseViewCFS" 
+                    aria-expanded="true" 
+                    aria-controls="collapseView"
+                    disabled>
+              Load Default Frida Scripts
+            </button>
+            </div>
+
+            <!-- Custom Frida Script - Toggle -->
+
+            <div class="collapse" id="collapseViewCFS">
+              <div class="form-group">
+                <h5>&nbsp;Load one of your favorite Frida Custom Scripts</h5>
+                <small class="form-text text-muted">
+                  &nbsp; Scripts are automatically loaded from the <font color=red>custom_scripts</font> folder.
+                  <u><b>Make sure to add your favorite <font color=red>.js</font> scripts!</b></u> 😉
+                </small>
+                <br>
+
+
+                <!-- Tab panes -->
+                 <div class="tab-content">
+                  
+                  <!-- Android FRIDA custom scripts -->
+                  <div id="Android_frida_custom_scripts">
+                  <ul class="list-group">
+                    {% for cs in custom_scripts_Android %}
+                    <li 
+                       onclick="return get_frida_script('Android','{{ cs }}');" 
+                       class="list-group-item list-group-item-action">
+                      [{{ loop.index }}] - {{ cs }}
+                    </li>
+                    {% endfor %}
+                  </ul>
+                  </div>
+                  <!-- Android FRIDA custom scripts -->
+
+                  <!-- iOS FRIDA custom scripts -->
+                  <div id="iOS_frida_custom_scripts">
+                  <ul class="list-group">
+                    {% for cs in custom_scripts_iOS %}
+                    <li 
+                       onclick="return get_frida_script('iOS','{{ cs }}');" 
+                       class="list-group-item list-group-item-action">
+                      [{{ loop.index }}] - {{ cs }}
+                    </li>
+                    {% endfor %}
+                  </ul>
+                  </div>
+                  <!-- iOS FRIDA custom scripts -->
+
+                </div> <!-- tab-content end-->
+
+              </div>
+            </div>
+            <!-- Custom Frida Script - Toggle -->
+
+            <!-- Custom APIs Monitors - Toggle -->
+
+            <div class="collapse" id="collapseViewAPIM">
+              <div class="form-group">
+                <h5>&nbsp;What do you want to monitor? <font color=red>(Android Only)</font></h5>
+                <small class="form-text text-muted">
+                  &nbsp; This feature is currently available for Android apps only. 
+                  <br>
+                  &nbsp; Some APIs Monitors (e.g. 18, 19, 25, 26) <b>may not work on some devices.</b> 
+                </small>
+                <br>
+                <div class="row">
+              
+              
+                  <div class="col-sm-4">
+                    {% for e in api_monitor %}
+                    {% if loop.index<=10 %}
+                    <div class="checkbox">
+                      <label><input type="checkbox" name="api_selected" value="{{e["Category"]}}">  {{ loop.index }}. {{e["Category"]}} {% if e["Comment"] is defined  %} <font color=red>&#8594;</font> {{e["Comment"]}} {% endif %}</label>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                  </div>
+    
+                  <div class="col-sm-4">
+                    {% for e in api_monitor %}
+                    {% if loop.index>10 and loop.index<=20  %}
+                    <div class="checkbox">
+                     <label><input type="checkbox" name="api_selected" value="{{e["Category"]}}">  {{ loop.index }}. {{e["Category"]}} {% if e["Comment"] is defined  %} <font color=red>&#8594;</font> {{e["Comment"]}} {% endif %}</label>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                  </div>
+    
+                  <div class="col-sm-4">
+                    {% for e in api_monitor %}
+                    {% if loop.index>20 and loop.index<=30  %}
+                    <div class="checkbox">
+                     <label><input type="checkbox" name="api_selected" value="{{e["Category"]}}">  {{ loop.index }}. {{e["Category"]}} {% if e["Comment"] is defined  %} <font color=red>&#8594;</font> {{e["Comment"]}} {% endif %}</label>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                  </div>
+              
+                  </div> <!-- end row -->
+
+              </div>
+            </div>
+            <!-- APIs Monitors - Toggle -->
+
+            <!-- FRIDA script textarea -->
+            <div class="form-group" id="form_group_frida_startup_script">
+              <label for="frida_startup_script"><b>Optional</b> - Run a FRIDA script at startup</label>
+              <textarea class="form-control" id="frida_startup_script" name="frida_startup_script"
+                rows="10"></textarea>
+            </div>
+            <!-- FRIDA script textarea -->
+
+            <!-- Submit button -->
+            <div class="form-group">
+              <button type="submit" class="btn btn-success mb-2">Start RMS</button>
+            </div>
+            <!-- Submit button -->
+
+
+          </form>
+        </div> <!-- form group-->
+        <br>
+        <br>
+      </div>
+      <!-- /#container-fluid -->
+    </div>
+    <!-- /#page-content-wrapper -->
+
+  </div>
+  <!-- /#wrapper -->
+
+  <!-- Javascript loading -->
+  {% include 't_js_script.html' %}
+  {% block scripts %}
+  <script>
+  $("#mobile_OS").on("change", function() {
+      
+      //collapse views on change
+      $('#collapseViewCFS').collapse('hide');
+      $('#collapseViewAPIM').collapse('hide');
+      
+      //clear text area
+      editor.setValue("");
+
+      //Android 
+      if(this.value=="Android")
+      {
+        $('#CFS_button').prop('disabled', false);
+        $('#APIM_button').prop('disabled', false);
+
+        $('#Android_frida_custom_scripts').show();
+        $('#iOS_frida_custom_scripts').hide();
+      }
+      //iOS
+      else 
+      {
+        $('#CFS_button').prop('disabled', false);
+        $('#APIM_button').prop('disabled', true);
+
+        $('#Android_frida_custom_scripts').hide();
+        $('#iOS_frida_custom_scripts').show();
+      }
+  });
+  $("#mode").on("change", function() {
+
+      if(this.value=="Attach")
+        $('#spawn_info').show();
+      else 
+        $('#spawn_info').hide();
+  });
+  </script>
+
+  <script>
+    
+    function get_frida_script(os,cs){
+          console.log(os,cs)
+          $.ajax({
+          url: "/get_frida_custom_script",
+          type: "get",
+          data: { 
+            os: os, 
+            cs: cs
+          },
+          success: function(selected_frida_script) {
+            console.log("selected_frida_script")
+            console.log(selected_frida_script)
+            editor.setValue(selected_frida_script);
+          }
+        });
+
+        //auto-collapse Custom Frida Script view
+        $('#collapseViewCFS').collapse('hide');
+
+    }
+  </script>
+
+  <script>
+    var editor = CodeMirror.fromTextArea(frida_startup_script, {
+        lineNumbers: true,
+        mode: 'javascript',
+        theme: 'dracula'
+    });
+    editor.setSize("100%",300);
+  </script>
+
+  <!-- Set current Page as active in the NavBar -->
+  <script>
+  $(document).ready(function () {
+    $(".nav li").removeClass("active");
+    $('#device').addClass('active');
+  });
+  </script>
+  <!-- Set current Page as active in the NavBar -->
+
+  {% endblock %}
+
+</body>
+
+</html>

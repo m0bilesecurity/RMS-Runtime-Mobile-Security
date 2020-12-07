@@ -1,0 +1,146 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
+    <button class="btn btn-primary" id="menu-toggle">Toggle Menu</button>
+
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav ml-auto mt-2 mt-lg-0">
+
+            <!-- Device Page - start -->
+            <li class="nav-item border-left border-right">
+                <a class="nav-link" 
+                   id="device"
+                   href="/">
+                   Device
+                </a>
+            </li>
+            <!-- Device Page - end -->
+
+            {% if target_package %}
+
+                <!-- Dump Page - start -->
+                {% if mobile_OS=="Android" or mobile_OS=="iOS" %}
+                <li class="nav-item border-right">
+                    <a class="nav-link" 
+                    id="dump"
+                    href="/dump">
+                    Dump TAB
+                    </a>
+                </li>
+                {% endif %}
+                <!-- Dump Page - end -->
+
+                <!-- Diff Classes Page - start -->
+                {% if mobile_OS=="Android" or mobile_OS=="iOS" %}
+                <li class="nav-item border-right">
+                    <a class="nav-link" 
+                       id="diff_classes"
+                       href="/diff_classes">
+                       Diff Classes Analysis
+                    </a>
+                </li>
+                {% endif %}
+                <!-- Diff Classes Page - end -->
+
+                <!-- Static Analysis Page - start -->
+                {% if mobile_OS=="iOS" %}
+                <li class="nav-item border-right">
+                    <a class="nav-link" 
+                       id="static_analysis"
+                       href="/static_analysis">
+                       Static Analysis
+                    </a>
+                </li>
+                {% endif %}
+                <!-- Static Analysis Page - end -->
+
+                <!-- Hook Lab Page - start -->
+                {% if mobile_OS=="Android" or mobile_OS=="iOS" %}
+                <li class="nav-item border-right">
+                    <a class="nav-link" 
+                       id="hook_lab"
+                       href="/hook_lab">
+                       Hook LAB
+                    </a>
+                </li>
+                {% endif %}
+                <!-- Hook Lab Page - end -->
+
+                <!-- Heap Search Page - start -->
+                {% if mobile_OS=="Android" or mobile_OS=="iOS" %}
+                <li class="nav-item border-right">
+                    <a class="nav-link" 
+                       id="heap_search"
+                       href="/heap_search">
+                       Heap Search
+                    </a>
+                </li>
+                {% endif %}
+                <!-- Heap Search Page - end -->
+
+                <!-- Api Monitor Page - start -->
+                {% if mobile_OS=="Android" %}
+                <li class="nav-item border-right">
+                    <a class="nav-link" 
+                       id="api_monitor"
+                       href="/api_monitor">
+                       API Monitor
+                    </a>
+                </li>
+                {% endif %}
+                <!-- Api Monitor Page - end -->
+
+                <!-- File Manager Page - start -->
+                {% if mobile_OS=="Android" or mobile_OS=="iOS" %}
+                <li class="nav-item border-right">
+                    <a class="nav-link" 
+                       id="file_manager"
+                       href="/file_manager">
+                       File Manager
+                    </a>
+                </li>
+                {% endif %}
+                <!-- File Manager Page - end -->
+
+                <!-- Load Custom FRIDA script Page - start -->
+                {% if mobile_OS=="Android" or mobile_OS=="iOS" %}
+                <li class="nav-item border-right">
+                    <a class="nav-link" 
+                       id="custom_frida_script"
+                       href="/load_frida_script">
+                       Load Frida Script
+                    </a>
+                </li>
+                {% endif %}
+                <!-- Load Custom FRIDA script Page - end -->
+
+                <!-- Console Output Page - start -->
+                {% if mobile_OS=="Android" or mobile_OS=="iOS" %}
+                <li class="nav-item border-right">
+                    <a class="nav-link" 
+                       id="console_output"
+                       href="/console_output">
+                       Console Output
+                    </a>
+                </li>
+                {% endif %}
+                <!-- Console Output Page - end -->
+
+            {% endif %}
+
+            <!-- Config Page - start -->
+            <li class="nav-item border-right">
+                <a class="nav-link" 
+                   id="config" 
+                   href="/config">
+                   Config
+                </a>
+            </li>
+            <!-- Config Page - end -->
+
+        </ul>
+    </div>
+</nav>
