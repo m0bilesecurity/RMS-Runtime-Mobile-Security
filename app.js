@@ -372,10 +372,10 @@ app.get("/", async function(req, res){
         device = await frida.getUsbDevice()
         break;
       case "Remote":
-		device = await device_manager.addRemoteDevice(config.device_args.host)        
+		    device = await device_manager.addRemoteDevice(config.device_args.host)        
         break;
       case "ID":
-        device= await device_manager.getDevice(config.id)
+        device= await device_manager.getDevice(config.device_args.id)
         break;
       default:
         device = await frida.getUsbDevice()
