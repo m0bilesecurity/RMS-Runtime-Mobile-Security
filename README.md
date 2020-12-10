@@ -70,10 +70,14 @@ They are not needed on iOS devices, since FRIDA starts just after the boot of th
 Follow the steps below if you want to develop new features for RMS 😉
 1. ```git clone https://github.com/m0bilesecurity/RMS-Runtime-Mobile-Security.git```
 2. ```cd RMS-Runtime-Mobile-Security```
-3. ```npm install -g .``` (or ```npm install``` for a local installation)
-4. Launch RMS via the ```rms``` command (or via ```node app.js``` if the package has been installed locally)
+3. ```npm install``` (local installation)
+4. Launch RMS via ```node rms.js``` 
+5. You can also install RMS as global package by running the following commands:
+    * ```npm install -g``` to install dependencies 
+    * ```npm run compile``` to compile the frida-agent
+    * ```rms``` to run RMS (anywhere)
 
-**NOTE:** If you add new features to the agent (/agent/RMS_core.js), please remember to recompile the code by running ```npm install -g .``` or directly via the frida-compile command (```frida-compile agent/RMS_core.js -o agent/compiled_RMS_core.js```)
+**NOTE:** If you add new features to the agent (/agent/RMS_core.js), please remember to recompile the code by running ```npm run compile``` or directly via the frida-compile command (```frida-compile agent/RMS_core.js -o agent/compiled_RMS_core.js```)
 
 # General Info
 Runtime Mobile Security (RMS) supports <b>Android</b> and <b>iOS</b> devices.

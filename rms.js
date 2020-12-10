@@ -436,6 +436,23 @@ app.post("/", async function(req, res){
   //output reset
   reset_variables_and_output()
 
+  //check if RMS agent exist
+  if(!fs.existsSync(FRIDA_AGENT_PATH))
+  {
+    console.log("")
+    console.log("RMS agent does not exist at path: "+FRIDA_AGENT_PATH)
+    console.log("in order to compile it, please run the following command:")
+    console.log("npm install -g rms-runtime-mobile-security")
+    console.log("***")
+    console.log("For Development mode ONLY --> check the readme on Github")
+    console.log("You can compile the agent via the following command:")
+    console.log("npm install or npm run compile")
+    console.log("***")
+    console.log("")
+    //RMS exit - important file is missing
+    process.kill(process.pid, 'SIGTERM')
+  }
+
   //read config file
   const config = read_json_file(CONFIG_FILE_PATH)
 
@@ -613,32 +630,6 @@ app.post("/", async function(req, res){
   }
   res.render("dump.html",template)
 })
-
-
-/* spawn app android
-  try{
-    const pid = await device.spawn(target_package);
-    session = await device.attach(pid);
-
-    //crash reporting
-    device.processCrashed.connect(onProcessCrashed);
-    session.detached.connect(onSessionDetached);
-
-    const frida_agent = await	load(require.resolve(FRIDA_AGENT_PATH));	
-    script = await session.createScript(frida_agent);
-    script.message.connect(onMessage);
-    await script.load()
-
-    api = await script.exports
-    console.log('[*] API Test - checkmobileos() =>', await api.checkmobileos());
-
-
-    await device.resume(pid);
-  }
-  catch (err) {
-      console.log(err);
-    }
-  */
 
 function onProcessCrashed(crash) {
   console.log('[*] onProcessCrashed() crash:', crash);
