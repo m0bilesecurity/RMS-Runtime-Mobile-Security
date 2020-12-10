@@ -144,7 +144,7 @@ var classname = "{className}";
 var classmethod = "{classMethod}";
 var methodsignature = "{methodSignature}";
 try {
-  var hook = eval('ObjC.classes.' + classname + '["' + classmethod + '"]');
+  var hook = eval('ObjC.classes["' + classname + '"]["' + classmethod + '"]');
 
   Interceptor.attach(hook.implementation, {
     onEnter: function (args) {
@@ -212,7 +212,7 @@ var classname = "{className}";
 var classmethod = "{classMethod}";
 var methodsignature = "{methodSignature}";
 try {
-  var hook = eval('ObjC.classes.' + classname + '["' + classmethod + '"]');
+  var hook = eval('ObjC.classes["' + classname + '"]["' + classmethod + '"]');
  
   //{methodSignature}
   Interceptor.attach(hook.implementation, {
