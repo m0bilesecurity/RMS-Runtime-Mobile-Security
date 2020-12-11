@@ -18,7 +18,8 @@ const FRIDA_AGENT_PATH = __dirname+"/agent/compiled_RMS_core.js"
 const CONFIG_FILE_PATH = __dirname+"/config/config.json"
 const API_MONITOR_FILE_PATH = __dirname+"/config/api_monitor.json"
 const CUSTOM_SCRIPTS_PATH = __dirname+"/custom_scripts/"
-const CONSOLE_LOGS_PATH = __dirname+"/console_logs"
+const CONSOLE_LOGS_PATH = "./console_logs"
+const PACKAGE_JSON_PATH = __dirname+"/package.json"
 
 const STATIC_PATH = __dirname+"/views/static/"
 const TEMPLATE_PATH =__dirname+"/views/templates"
@@ -88,7 +89,7 @@ server.listen(5000, () => {
   console.log("")
   console.log("_________________________________________________________")
   console.log("RMS - Runtime Mobile Security")
-  console.log("Version: 1.5 - NodeJS release")
+  console.log("Version: "+(require(PACKAGE_JSON_PATH).version))
   console.log("by @mobilesecurity_")
   console.log("Twitter Profile: https://twitter.com/mobilesecurity_")
   console.log("_________________________________________________________")
@@ -1254,12 +1255,12 @@ app.get("/save_console_logs", async function(req, res){
   try
   {
     //check if console_logs exists
-    if (!fs.existsSync("./console_logs"))
+    if (!fs.existsSync(CONSOLE_LOGS_PATH))
       fs.mkdirSync("console_logs")
 
     //create new directory for current logs package_timestamp
     const dt = datetime.create().format('Ymd-HMS')
-    out_path="./console_logs"+"/"+target_package+"_"+dt
+    out_path=CONSOLE_LOGS_PATH+"/"+target_package+"_"+dt
     fs.mkdirSync(out_path)
 
     //save calls_console_output
