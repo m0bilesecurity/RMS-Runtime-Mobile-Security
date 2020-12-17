@@ -8,3 +8,4 @@ __pycache__
 node_modules/
 /console_logs
 /DEMO
+mobilesecurity.py
