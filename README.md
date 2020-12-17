@@ -59,8 +59,9 @@ They are not needed on iOS devices, since FRIDA starts just after the boot of th
 5. Start enjoying RMS 📱🔥 
 
 ## Notes and possibile issues
-1. In case of issues with your favorite Browser (e.g. logs not printed in the web console), please use <b>Google Chrome</b> (fully supported)
-2. If <b>RMS is not able to detect your device</b>, please perform the following checks:
+1. In case of issues with the npm package installed as a global cli app, please try the local installation ([development mode](https://github.com/m0bilesecurity/RMS-Runtime-Mobile-Security#development-mode))
+2. In case of issues with your favorite Browser (e.g. logs not printed in the web console), please use <b>Google Chrome</b> (fully supported)
+3. If <b>RMS is not able to detect your device</b>, please perform the following checks:
     * double check if frida-server is up and running on the target device. Instructions are here: [prerequisites](https://github.com/m0bilesecurity/RMS-Runtime-Mobile-Security#prerequisites)
     / [quick smoke-test](https://github.com/m0bilesecurity/RMS-Runtime-Mobile-Security#quick-smoke-test)
     * RMS must be started **after** frida-server
@@ -197,6 +198,7 @@ Special thanks to the following Open Source projects for the inspiration:
 * [fadeevab](https://codeshare.frida.re/@fadeevab/intercept-android-apk-crypto-operations/)
 * [realgam3](https://codeshare.frida.re/@realgam3/dynamichooks/)
 * [noobpk](https://github.com/noobpk/frida-ios-hook)
+* [enovella](https://github.com/enovella/fridroid-unpacker)
 
 
 ### DEMO apps:
