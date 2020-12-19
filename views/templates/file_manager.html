@@ -130,7 +130,7 @@
             {% for f, item in files_at_path["files"] %}
             <tr>
               <td class="text-center">
-                {% if files_at_path.files[f].attributes.isDirectory == True %}
+                {% if files_at_path.files[f].attributes.isDirectory %}
                 📁
                 {% else %}
                 🗳

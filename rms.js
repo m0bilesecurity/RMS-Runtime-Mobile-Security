@@ -12,7 +12,11 @@ const datetime = require('node-datetime');
  
 const BETA = false
 const FRIDA_DEVICE_OPTIONS=["USB","Remote","ID"]
-const FRIDA_DEVICE_ARGS_OPTIONS={'host': 'IP:PORT','id': 'Device’s serial number'}
+const FRIDA_DEVICE_ARGS_OPTIONS=
+{
+  'host': 'IP:PORT',
+  'id': 'Device’s serial number'                                
+}
 //PATH files
 const FRIDA_AGENT_PATH = __dirname+"/agent/compiled_RMS_core.js"
 const CONFIG_FILE_PATH = __dirname+"/config/config.json"
