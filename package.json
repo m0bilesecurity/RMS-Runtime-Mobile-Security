@@ -34,14 +34,13 @@
   },
   "homepage": "https://github.com/m0bilesecurity/RMS-Runtime-Mobile-Security",
   "dependencies": {
-    "body-parser": "^1.19.0",
-    "express": "^4.17.1",
-    "frida": "^15.1.2",
-    "frida-compile": "^10.2.4",
-    "frida-fs": "^3.0.2",
-    "frida-load": "^1.0.0",
+    "body-parser": "^1.20.1",
+    "express": "^4.18.2",
+    "frida": "^16.0.2",
+    "frida-compile": "^16.1.4",
+    "frida-fs": "^5.2.1",
     "node-datetime": "^2.1.2",
-    "nunjucks": "^3.2.2",
-    "socket.io": "^3.0.4"
+    "nunjucks": "^3.2.3",
+    "socket.io": "^4.5.3"
   }
 }

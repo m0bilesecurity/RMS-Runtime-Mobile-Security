@@ -5,7 +5,6 @@ const express = require("express")
 const nunjucks = require('nunjucks')
 const bodyParser = require('body-parser');
 const frida = require('frida');
-const load = require('frida-load');
 const fs = require('fs');
 const socket_io = require('socket.io');
 const datetime = require('node-datetime');
@@ -531,7 +530,7 @@ app.post("/", async function(req, res){
     //attaching a persistent process to get enumerateLoadedClasses() result before starting the target app 
     //default process are com.android.systemui/SpringBoard
     session = await device.attach(system_package)
-    const frida_agent = await	load(require.resolve(FRIDA_AGENT_PATH));
+    const frida_agent = await	fs.readFileSync(FRIDA_AGENT_PATH, 'utf8');
     script = await session.createScript(frida_agent)
     await script.load()
     api = await script.exports
@@ -572,7 +571,7 @@ app.post("/", async function(req, res){
       console.log('[*] Process Attached')
     }
 
-    const frida_agent = await	load(require.resolve(FRIDA_AGENT_PATH));
+    const frida_agent = await	fs.readFileSync(FRIDA_AGENT_PATH, 'utf8');
     script = await session.createScript(frida_agent)
 
     //crash handling 
