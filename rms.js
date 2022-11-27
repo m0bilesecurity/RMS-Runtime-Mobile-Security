@@ -559,8 +559,8 @@ app.post("/", async function(req, res){
     }
     if (mode == "Attach" || target_package=="Gadget")
     {
-      //on iOS device "attach" is performd via package.name instead of identifier
-      if(mobile_OS=="iOS" && target_package!="Gadget")
+      //on iOS and Android devices "attach" is performed via package.name instead of identifier
+      if(target_package!="Gadget")
       {
         app_list.forEach(function(p) {
           if(p.identifier==target_package)
