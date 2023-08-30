@@ -87,7 +87,9 @@ Server startup
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 */
 
-server.listen(5000, () => {
+const PORT_INTERFACE = process.argv.includes('--port') ? process.argv[process.argv.indexOf('--port') + 1] : 5000;
+
+server.listen(PORT_INTERFACE, () => {
 
   console.log("")
   console.log("_________________________________________________________")
@@ -98,7 +100,7 @@ server.listen(5000, () => {
   console.log("_________________________________________________________")
   console.log("")
 
-  console.log("Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)");
+  console.log(`Running on http://127.0.0.1:${PORT_INTERFACE}/ (Press CTRL+C to quit)`);
   
 });
 
