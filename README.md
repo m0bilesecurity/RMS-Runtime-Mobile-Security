@@ -55,8 +55,10 @@ They are not needed on iOS devices, since FRIDA starts just after the boot of th
     * Instructions are here: [prerequisites](https://github.com/m0bilesecurity/RMS-Runtime-Mobile-Security#prerequisites) / [quick smoke-test](https://github.com/m0bilesecurity/RMS-Runtime-Mobile-Security#quick-smoke-test)
 3. Launch RMS via the following command 
     * ```rms``` (or ```RMS-Runtime-Mobile-Security```)
-4. Open your browser at ```http://127.0.0.1:5000/```
+4. Open your browser at ```http://127.0.0.1:5491/```
 5. Start enjoying RMS 📱🔥 
+
+**NOTE:** Default RMS port has been changed from 5000 to **5491** because since MacOS Ventura, port 5000 is the Control Center's default port. If you wish to change the default port, you can also run RMS with the **--port** parameter followed by the desired port number e.g. ```rms --port 9000```
 
 ## Notes and possibile issues
 1. In case of issues with the npm package installed as a global cli app, please try the local installation ([development mode](https://github.com/m0bilesecurity/RMS-Runtime-Mobile-Security#development-mode))

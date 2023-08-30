@@ -87,7 +87,7 @@ Server startup
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 */
 
-const PORT_INTERFACE = process.argv.includes('--port') ? process.argv[process.argv.indexOf('--port') + 1] : 5000;
+const PORT_INTERFACE = process.argv.includes('--port') ? process.argv[process.argv.indexOf('--port') + 1] : 5491;
 
 server.listen(PORT_INTERFACE, () => {
 
