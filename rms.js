@@ -62,8 +62,10 @@ var methods_hooked_and_executed = []
 
 //app instance
 const app = express();
+
 // server instance
 const server = http.createServer(app);
+
 // socket listen
 const io=socket_io(server);
 
@@ -71,10 +73,12 @@ const io=socket_io(server);
 app.set('socket_io', io);
 
 //express post config
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
 app.use(bodyParser.json());
+
 //express static path
-app.use(express.static(STATIC_PATH))
+app.use(express.static(STATIC_PATH));
+
 //nunjucks config
 nunjucks.configure(TEMPLATE_PATH, {
     autoescape: true,
