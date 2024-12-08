@@ -3,7 +3,16 @@
 
 ![RMS_logo](/views/static/RMS_Github_Header.png)
 
+![npm version](https://img.shields.io/npm/v/rms-runtime-mobile-security)
+![npm downloads](https://img.shields.io/npm/dm/rms-runtime-mobile-security)
+![bundle size](https://img.shields.io/bundlephobia/minzip/rms-runtime-mobile-security)
+![license](https://img.shields.io/npm/l/rms-runtime-mobile-security)
+![GitHub stars](https://img.shields.io/github/stars/m0bilesecurity/rms-runtime-mobile-security)
+![GitHub forks](https://img.shields.io/github/forks/m0bilesecurity/rms-runtime-mobile-security)
+
+<!---
 [![NPM](https://nodei.co/npm/rms-runtime-mobile-security.png)](https://npmjs.org/package/rms-runtime-mobile-security)
+-->
 
 by [@mobilesecurity_](https://twitter.com/mobilesecurity_) 
 
@@ -20,6 +29,9 @@ With RMS you can easily dump all loaded classes and relative methods, hook every
 ### Tutorial - Android
 - [Solving **OWASP** UnCrackable Android **App Level 1** with **Runtime Mobile Security (RMS)**](https://youtu.be/P6rNPkM2DdY)
 - [Solving **OWASP** UnCrackable Android **App Level 2** with **Runtime Mobile Security (RMS)**](https://youtu.be/xRQVljerl0A)
+- Solving **SANS** Holiday Hack Challenge 2024 with **Runtime Mobile Security (RMS)** by **[Andrea Lamonato](https://github.com/LamonatoAndrea)**
+    - [Writeup](https://holidayhackchallenge.thedead91.com/2024/12/02/2024-07-Mobile-Analysis/)
+    - [Video](https://youtu.be/qiONt-3zzU4)
 
 # Prerequisites
 1. [NodeJS](https://nodejs.org/en/download/) installed on your computer
@@ -51,6 +63,7 @@ They are not needed on iOS devices, since FRIDA starts just after the boot of th
 # Installation
 1. Open the terminal and run the following command to install the npm package   
     * ```npm install -g rms-runtime-mobile-security``` 
+    * If you can't install the frida-node dependency, please check [this troubleshooting post](https://github.com/ChiChou/Grapefruit/wiki/How-do-I-decide-which-version-of-nodejs-to-use%3F) written by [Chichou](https://github.com/ChiChou) to choose another version of Node.js
 2. Make sure frida-server is up and running on the target device. 
     * Instructions are here: [prerequisites](https://github.com/m0bilesecurity/RMS-Runtime-Mobile-Security#prerequisites) / [quick smoke-test](https://github.com/m0bilesecurity/RMS-Runtime-Mobile-Security#quick-smoke-test)
 3. Launch RMS via the following command 
@@ -58,7 +71,8 @@ They are not needed on iOS devices, since FRIDA starts just after the boot of th
 4. Open your browser at ```http://127.0.0.1:5491/```
 5. Start enjoying RMS 📱🔥 
 
-**NOTE:** Default RMS port has been changed from 5000 to **5491** because since MacOS Ventura, port 5000 is the Control Center's default port. If you wish to change the default port, you can also run RMS with the **--port** parameter followed by the desired port number e.g. ```rms --port 9000```
+**NOTE** \
+Default RMS port has been changed from 5000 to **5491** because since MacOS Ventura, port 5000 is the Control Center's default port. If you wish to change the default port, you can also run RMS with the **--port** parameter followed by the desired port number e.g. ```rms --port 9000```
 
 ## Notes and possibile issues
 1. In case of issues with the npm package installed as a global cli app, please try the local installation ([development mode](https://github.com/m0bilesecurity/RMS-Runtime-Mobile-Security#development-mode))
