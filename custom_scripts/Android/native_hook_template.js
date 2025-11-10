@@ -14,14 +14,14 @@ var native_library="{native_library}"
 var native_function="{native_function}"
 
 Interceptor.attach(
-    Module.findExportByName(native_library, native_function), {
+    Process.getModuleByName(native_library).findExportByName(native_function), {
         onEnter: function (args) {
             send(native_library + " - " + native_function);
-            send("arg0 "+Memory.readCString(args[0]));
+            send("arg0 "+ptr(args[0]).readCString());
             
         },
         onLeave: function (retval) {
-            send("Return Value: "+Memory.readCString(retval));
+            send("Return Value: "+ptr(retval).readCString());
             //retval.replace(0);
         }
     }

@@ -16,8 +16,10 @@ var ssl_get_psk_identity;
 /* Create SSL_CTX_set_custom_verify NativeFunction 
 *  Function signature https://github.com/google/boringssl/blob/7540cc2ec0a5c29306ed852483f833c61eddf133/include/openssl/ssl.h#L2294
 */
+var libboringssl = Process.getModuleByName("libboringssl.dylib");
+
 ssl_ctx_set_custom_verify = new NativeFunction(
-    Module.findExportByName("libboringssl.dylib", "SSL_CTX_set_custom_verify"),
+    libboringssl.findExportByName("SSL_CTX_set_custom_verify"),
     'void', ['pointer', 'int', 'pointer']
 );
 
@@ -25,7 +27,7 @@ ssl_ctx_set_custom_verify = new NativeFunction(
 * Function signature https://commondatastorage.googleapis.com/chromium-boringssl-docs/ssl.h.html#SSL_get_psk_identity
 */
 ssl_get_psk_identity = new NativeFunction(
-    Module.findExportByName("libboringssl.dylib", "SSL_get_psk_identity"),
+    libboringssl.findExportByName("SSL_get_psk_identity"),
     'pointer', ['pointer']
 );
 

@@ -5,7 +5,9 @@
  * Source: https://github.com/federicodotta/Brida
  **************************************************************************************/
 
-Interceptor.attach(Module.findExportByName("libSystem.B.dylib","CCCrypt"),
+var libSystem = Process.getModuleByName("libSystem.B.dylib");
+
+Interceptor.attach(libSystem.findExportByName("CCCrypt"),
     {
     onEnter: function(args) {
 
@@ -16,14 +18,14 @@ Interceptor.attach(Module.findExportByName("libSystem.B.dylib","CCCrypt"),
         
         if(ptr(args[3]) != 0 ) {
             send("Key:");
-            send(base64ArrayBuffer(Memory.readByteArray(ptr(args[3]),parseInt(args[4]))));
+            send(base64ArrayBuffer(ptr(args[3]).readByteArray(parseInt(args[4]))));
         } else {
             send("Key: 0");
         }
 
         if(ptr(args[5]) != 0 ) {
             send("IV:");
-            send(base64ArrayBuffer(Memory.readByteArray(ptr(args[5]),16)));
+            send(base64ArrayBuffer(ptr(args[5]).readByteArray(16)));
         } else {
             send("IV: 0");
         }
@@ -33,7 +35,7 @@ Interceptor.attach(Module.findExportByName("libSystem.B.dylib","CCCrypt"),
         if(ptr(args[6]) != 0 ) {
 
             send("Data in ****:");
-            send(base64ArrayBuffer(Memory.readByteArray(ptr(args[6]),this.dataInLength)));
+            send(base64ArrayBuffer(ptr(args[6]).readByteArray(this.dataInLength)));
 
         } else {
             send("Data in: null");
@@ -48,7 +50,7 @@ Interceptor.attach(Module.findExportByName("libSystem.B.dylib","CCCrypt"),
 
         if(ptr(this.dataOut) != 0 ) {
             send("Data out");
-            send(base64ArrayBuffer(Memory.readByteArray(this.dataOut,parseInt(ptr(Memory.readU32(ptr(this.dataOutLength),4))))));
+            send(base64ArrayBuffer(ptr(this.dataOut).readByteArray(parseInt(ptr(ptr(this.dataOutLength).readU32(4))))));
 
         } else {
             send("Data out: null");
@@ -60,7 +62,7 @@ Interceptor.attach(Module.findExportByName("libSystem.B.dylib","CCCrypt"),
 
 });
 
-Interceptor.attach(Module.findExportByName("libSystem.B.dylib","CCCryptorCreate"),
+Interceptor.attach(libSystem.findExportByName("CCCryptorCreate"),
     {
     onEnter: function(args) {
 
@@ -71,7 +73,7 @@ Interceptor.attach(Module.findExportByName("libSystem.B.dylib","CCCryptorCreate"
 
         if(ptr(args[3]) != 0 ) {
             send("Key:");
-            send(base64ArrayBuffer(Memory.readByteArray(ptr(args[3]),parseInt(args[4]))));
+            send(base64ArrayBuffer(ptr(args[3]).readByteArray(parseInt(args[4]))));
 
         } else {
             send("Key: 0");
@@ -79,7 +81,7 @@ Interceptor.attach(Module.findExportByName("libSystem.B.dylib","CCCryptorCreate"
 
         if(ptr(args[5]) != 0 ) {
             send("IV:");
-            send(base64ArrayBuffer(Memory.readByteArray(ptr(args[5]),16)));
+            send(base64ArrayBuffer(ptr(args[5]).readByteArray(16)));
         } else {
             send("IV: 0");
         }
@@ -92,13 +94,13 @@ Interceptor.attach(Module.findExportByName("libSystem.B.dylib","CCCryptorCreate"
 });
 
 
-Interceptor.attach(Module.findExportByName("libSystem.B.dylib","CCCryptorUpdate"),
+Interceptor.attach(libSystem.findExportByName("CCCryptorUpdate"),
     {
     onEnter: function(args) {
         send("*** CCCryptorUpdate ENTER ****");
         if(ptr(args[1]) != 0) {
             send("Data in:");
-            send(base64ArrayBuffer(Memory.readByteArray(ptr(args[1]),parseInt(args[2]))));
+            send(base64ArrayBuffer(ptr(args[1]).readByteArray(parseInt(args[2]))));
 
         } else {
             send("Data in: null");
@@ -114,7 +116,7 @@ Interceptor.attach(Module.findExportByName("libSystem.B.dylib","CCCryptorUpdate"
 
         if(ptr(this.out) != 0) {
             send("Data out CCUpdate:");
-            send(base64ArrayBuffer(Memory.readByteArray(this.out,parseInt(ptr(Memory.readU32(ptr(this.len),4))))));
+            send(base64ArrayBuffer(ptr(this.out).readByteArray(parseInt(ptr(ptr(this.len).readU32(4))))));
 
         } else {
             send("Data out: null");
@@ -124,7 +126,7 @@ Interceptor.attach(Module.findExportByName("libSystem.B.dylib","CCCryptorUpdate"
 
 });
 
-Interceptor.attach(Module.findExportByName("libSystem.B.dylib","CCCryptorFinal"),
+Interceptor.attach(libSystem.findExportByName("CCCryptorFinal"),
     {
     onEnter: function(args) {
         send("*** CCCryptorFinal ENTER ****");
@@ -135,7 +137,7 @@ Interceptor.attach(Module.findExportByName("libSystem.B.dylib","CCCryptorFinal")
     onLeave: function(retval) {
         if(ptr(this.out2) != 0) {
             send("Data out CCCryptorFinal:");
-            send(base64ArrayBuffer(Memory.readByteArray(this.out2,parseInt(ptr(Memory.readU32(ptr(this.len2),4))))));
+            send(base64ArrayBuffer(ptr(this.out2).readByteArray(parseInt(ptr(ptr(this.len2).readU32(4))))));
 
         } else {
             send("Data out: null")
@@ -146,7 +148,7 @@ Interceptor.attach(Module.findExportByName("libSystem.B.dylib","CCCryptorFinal")
 });
 
 //CC_SHA1_Init(CC_SHA1_CTX *c);
-Interceptor.attach(Module.findExportByName("libSystem.B.dylib","CC_SHA1_Init"),
+Interceptor.attach(libSystem.findExportByName("CC_SHA1_Init"),
 {
     onEnter: function(args) {
     send("*** CC_SHA1_Init ENTER ****");	  	
@@ -155,14 +157,14 @@ Interceptor.attach(Module.findExportByName("libSystem.B.dylib","CC_SHA1_Init"),
 });
 
 //CC_SHA1_Update(CC_SHA1_CTX *c, const void *data, CC_LONG len);
-Interceptor.attach(Module.findExportByName("libSystem.B.dylib","CC_SHA1_Update"),
+Interceptor.attach(libSystem.findExportByName("CC_SHA1_Update"),
 {
     onEnter: function(args) {
     send("*** CC_SHA1_Update ENTER ****");
     send("Context address: " + args[0]);
     if(ptr(args[1]) != 0) {
         send("data:");
-        send(base64ArrayBuffer(Memory.readByteArray(ptr(args[1]),parseInt(args[2]))));
+        send(base64ArrayBuffer(ptr(args[1]).readByteArray(parseInt(args[2]))));
     } else {
         send("data: null");
     }
@@ -170,7 +172,7 @@ Interceptor.attach(Module.findExportByName("libSystem.B.dylib","CC_SHA1_Update")
 });
 
 //CC_SHA1_Final(unsigned char *md, CC_SHA1_CTX *c);
-Interceptor.attach(Module.findExportByName("libSystem.B.dylib","CC_SHA1_Final"),
+Interceptor.attach(libSystem.findExportByName("CC_SHA1_Final"),
 {
     onEnter: function(args) {
     this.mdSha = args[0];
@@ -181,7 +183,7 @@ Interceptor.attach(Module.findExportByName("libSystem.B.dylib","CC_SHA1_Final"),
     send("Context address: " + this.ctxSha);
     if(ptr(this.mdSha) != 0) {
         send("Hash:");
-        send(base64ArrayBuffer(Memory.readByteArray(ptr(this.mdSha),20)));
+        send(base64ArrayBuffer(ptr(this.mdSha).readByteArray(20)));
 
     } else {
         send("Hash: null");

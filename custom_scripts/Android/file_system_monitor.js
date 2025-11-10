@@ -8,9 +8,9 @@
 
 Java.perform(function () {
 Interceptor.attach(
-    Module.findExportByName("libc.so", "open"), {
+    Process.getModuleByName("libc.so").findExportByName("open"), {
         onEnter: function (args) {
-            var file = Memory.readCString(args[0]);
+            var file = ptr(args[0]).readCString();
             if(!file.includes("/dev/ashmem") && !file.includes("/proc/"))
             print("open",file);
         },
@@ -21,9 +21,9 @@ Interceptor.attach(
 );
 
 Interceptor.attach(
-    Module.findExportByName("libc.so", "close"), {
+    Process.getModuleByName("libc.so").findExportByName("close"), {
         onEnter: function (args) {
-            var file = Memory.readCString(args[0]);
+            var file = ptr(args[0]).readCString();
             print("close",file);
         },
         onLeave: function (retval) {
@@ -33,9 +33,9 @@ Interceptor.attach(
 );
 
 Interceptor.attach(
-    Module.findExportByName("libc.so", "read"), {
+    Process.getModuleByName("libc.so").findExportByName("read"), {
         onEnter: function (args) {
-            var file = Memory.readCString(args[0]);
+            var file = ptr(args[0]).readCString();
             print("read",file);
         },
         onLeave: function (retval) {
@@ -45,9 +45,9 @@ Interceptor.attach(
 );
 
 Interceptor.attach(
-    Module.findExportByName("libc.so", "write"), {
+    Process.getModuleByName("libc.so").findExportByName("write"), {
         onEnter: function (args) {
-            var file = Memory.readCString(args[0]);
+            var file = ptr(args[0]).readCString();
             print("write",file);
         },
         onLeave: function (retval) {
@@ -57,9 +57,9 @@ Interceptor.attach(
 );
 
 Interceptor.attach(
-    Module.findExportByName("libc.so", "unlink"), {
+    Process.getModuleByName("libc.so").findExportByName("unlink"), {
         onEnter: function (args) {
-            var file = Memory.readCString(args[0]);
+            var file = ptr(args[0]).readCString();
             print("remove",file);
         },
         onLeave: function (retval) {
@@ -69,9 +69,9 @@ Interceptor.attach(
 );
 
 Interceptor.attach(
-    Module.findExportByName("libc.so", "remove"), {
+    Process.getModuleByName("libc.so").findExportByName("remove"), {
         onEnter: function (args) {
-            var file = Memory.readCString(args[0]);
+            var file = ptr(args[0]).readCString();
             print("remove",file);
         },
         onLeave: function (retval) {

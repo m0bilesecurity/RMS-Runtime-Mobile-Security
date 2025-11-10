@@ -16,7 +16,7 @@ function constantLookup(v) {
 function odas(raw) {
     try {
     const data = new ObjC.Object(raw)
-    return Memory.readUtf8String(data.bytes(), data.length())
+    return ptr(data.bytes()).readUtf8String(data.length())
     } catch (_) {
     try {
         return raw.toString()
@@ -180,10 +180,12 @@ const kSecClasses = [  kSecClassKey,kSecClassIdentity,kSecClassCertificate, kSec
 
 const NSMutableDictionary = ObjC.classes.NSMutableDictionary
 
-const SecItemCopyMatching = new NativeFunction(ptr(Module.findExportByName('Security', 'SecItemCopyMatching')), 'pointer', ['pointer', 'pointer'])
-const SecItemDelete = new NativeFunction(ptr(Module.findExportByName('Security', 'SecItemDelete')), 'pointer', ['pointer'])
+var securityMod = Process.getModuleByName('Security');
+
+const SecItemCopyMatching = new NativeFunction(ptr(securityMod.findExportByName('SecItemCopyMatching')), 'pointer', ['pointer', 'pointer'])
+const SecItemDelete = new NativeFunction(ptr(securityMod.findExportByName('SecItemDelete')), 'pointer', ['pointer'])
 const SecAccessControlGetConstraints = new NativeFunction(
-ptr(Module.findExportByName('Security', 'SecAccessControlGetConstraints')),
+ptr(securityMod.findExportByName('SecAccessControlGetConstraints')),
 'pointer', ['pointer']
 )
 
@@ -207,7 +209,7 @@ const status = SecItemCopyMatching(query, p)
 if (status != 0x00)
     return
 
-const arr = new ObjC.Object(Memory.readPointer(p))
+const arr = new ObjC.Object(p.readPointer())
 var i,size;
 for (i = 0, size = arr.count(); i < size; i++) {
     const item = arr.objectAtIndex_(i)
