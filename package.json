@@ -9,7 +9,7 @@
   },
   "scripts": {
     "prepare": "npm run compile",
-    "compile": "frida-compile agent/RMS_core.js -o agent/compiled_RMS_core.js",
+    "compile": "frida-compile agent/RMS_core.js -o agent/compiled_RMS_core.js -c",
     "watch": "frida-compile agent/RMS_core.js -o agent/compiled_RMS_core.js -w"
   },
   "repository": {
@@ -33,12 +33,18 @@
     "url": "https://github.com/m0bilesecurity/RMS-Runtime-Mobile-Security/issues"
   },
   "homepage": "https://github.com/m0bilesecurity/RMS-Runtime-Mobile-Security",
+  "devDependencies": {
+    "@types/frida-gum": "^18.3.1",
+    "@types/node": "^18.14.0",
+    "frida-compile": "^16.1.8"
+  },
   "dependencies": {
     "body-parser": "^1.20.3",
     "express": "^4.21.0",
-    "frida": "^16.5.2",
-    "frida-compile": "^16.4.1",
+    "frida": "^17.5.1",
     "frida-fs": "^5.2.5",
+    "frida-java-bridge": "^7.0.10",
+    "frida-objc-bridge": "^8.0.5",
     "node-datetime": "^2.1.2",
     "nunjucks": "^3.2.4",
     "socket.io": "^4.8.0"
