@@ -565,19 +565,23 @@ app.post("/", async function(req, res){
     }
     if (mode == "Attach" || target_package=="Gadget")
     {
-      //on iOS and Android devices "attach" is performed via package.name instead of identifier
+      // On iOS and Android devices "attach" is performed via process.pid instead of package identifier or name
+      // The previous approach did not work with a specific package name.
+      var target_pid;
+
       if(target_package!="Gadget")
       {
         app_list.forEach(function(p) {
           if(p.identifier==target_package) {
-            target_package=p.pid
+            target_package = p.name;
+            target_pid = p.pid;
             if (target_package == 0) {
               console.log("The application does not seem to be running... Please launch before attaching to it!");
             }
           }
         });
       }        
-      session = await device.attach(target_package)
+      session = await device.attach(target_pid)
       console.log('[*] Process Attached')
     }
 
