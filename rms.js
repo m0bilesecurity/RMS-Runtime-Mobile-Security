@@ -4,7 +4,7 @@ const http = require('http');
 const express = require("express")
 const nunjucks = require('nunjucks')
 const bodyParser = require('body-parser');
-const frida = require('frida');
+let frida;
 const fs = require('fs');
 const socket_io = require('socket.io');
 const datetime = require('node-datetime');
@@ -91,30 +91,42 @@ Server startup
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 */
 
-const PORT_INTERFACE = process.argv.includes('--port') ? process.argv[process.argv.indexOf('--port') + 1] : 5491;
+async function startServer() {
+  try {
+    frida = await import('frida');
+    console.log("✅ Frida module loaded successfully!");
 
-server.listen(PORT_INTERFACE, () => {
+    const PORT_INTERFACE = process.argv.includes('--port') ? process.argv[process.argv.indexOf('--port') + 1] : 5491;
 
-  console.log("")
-  console.log("_________________________________________________________")
-  console.log("RMS - Runtime Mobile Security")
-  console.log("Version: "+(require(PACKAGE_JSON_PATH).version))
-  console.log("by @mobilesecurity_")
-  console.log("Twitter Profile: https://twitter.com/mobilesecurity_")
-  console.log("_________________________________________________________")
-  console.log("")
+    server.listen(PORT_INTERFACE, () => {
 
-  console.log(`Running on http://127.0.0.1:${PORT_INTERFACE}/ (Press CTRL+C to quit)`);
-  
-});
+      console.log("")
+      console.log("_________________________________________________________")
+      console.log("RMS - Runtime Mobile Security")
+      console.log("Version: "+(require(PACKAGE_JSON_PATH).version))
+      console.log("by @mobilesecurity_")
+      console.log("Twitter Profile: https://twitter.com/mobilesecurity_")
+      console.log("_________________________________________________________")
+      console.log("")
 
-io.on('connection', (socket) => {
-  console.log('Socket connected');
+      console.log(`Running on http://127.0.0.1:${PORT_INTERFACE}/ (Press CTRL+C to quit)`);
 
-  socket.on('disconnect', () => {
-    console.log('Socket disconnected');
-  });
-});
+    });
+
+    io.on('connection', (socket) => {
+      console.log('Socket connected');
+
+      socket.on('disconnect', () => {
+        console.log('Socket disconnected');
+      });
+    });
+
+  } catch (err) {
+    console.error("💥 CRITICAL ERROR: Failed to load Frida or start server!");
+    console.error(err);
+    process.exit(1); // Exit the app if Frida can't load
+  }
+}
 
 /*
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1627,3 +1639,5 @@ function reset_variables_and_output(){
   //error reset
   no_system_package=false
 }
+
+startServer();
