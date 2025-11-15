@@ -8,7 +8,7 @@
 Java.perform(function () {
     var lib_name = "Insert_lib_name" //e.g. libnative-lib.so 
 
-    var exports = Module.enumerateExportsSync(lib_name);
+    var exports = Process.getModuleByName(lib_name).enumerateExports();
 
     send("Enumerate Native Lib Exports - started")
     send("Native lib name: " + lib_name)

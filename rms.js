@@ -565,15 +565,23 @@ app.post("/", async function(req, res){
     }
     if (mode == "Attach" || target_package=="Gadget")
     {
-      //on iOS and Android devices "attach" is performed via package.name instead of identifier
+      // On iOS and Android devices "attach" is performed via process.pid instead of package identifier or name
+      // The previous approach did not work with a specific package name.
+      var target_pid;
+
       if(target_package!="Gadget")
       {
         app_list.forEach(function(p) {
-          if(p.identifier==target_package)
-            target_package=p.name
+          if(p.identifier==target_package) {
+            target_package = p.name;
+            target_pid = p.pid;
+            if (target_package == 0) {
+              console.log("The application does not seem to be running... Please launch before attaching to it!");
+            }
+          }
         });
       }        
-      session = await device.attach(target_package)
+      session = await device.attach(target_pid)
       console.log('[*] Process Attached')
     }
 
@@ -618,14 +626,14 @@ app.post("/", async function(req, res){
       }
       catch(err)
       {
-        console.log("Excpetion: "+err)
+        console.log("Exception: "+err)
       }
     }
   
   }//end try
   catch(err)
   {
-    console.log("Excpetion: "+err)
+    console.log("Exception: "+err)
     return res.redirect('/?frida_crash=True&frida_crash_message='+err);
   }
 
@@ -747,7 +755,7 @@ app.get("/dump", async function(req, res){
       //console.log(loaded_methods)
     }
     catch (err) {
-      console.log("Excpetion: "+err)
+      console.log("Exception: "+err)
       
       msg="FRIDA crashed while loading methods for one or more classes selected. Try to exclude them from your search!"
       console.log(msg)
@@ -783,7 +791,7 @@ app.get("/dump", async function(req, res){
     }
     catch(err)
     {
-      console.log("Excpetion: "+err)
+      console.log("Exception: "+err)
       
       msg="FRIDA crashed while hooking methods for one or more classes selected. Try to exclude them from your search!"
       console.log(msg)
@@ -921,7 +929,7 @@ app.get("/hook_lab", async function(req, res){
       return res.redirect("/hook_lab")
     }
     catch(err){
-      console.log("Excpetion: "+err)
+      console.log("Exception: "+err)
       
       const msg="FRIDA crashed while loading methods for one or more classes selected. Try to exclude them from your search!"
       console.log(msg)
@@ -1007,7 +1015,7 @@ app.get("/heap_search", async function(req, res){
       return res.redirect("/heap_search")
     }
     catch(err){
-      console.log("Excpetion: "+err)
+      console.log("Exception: "+err)
       
       const msg="FRIDA crashed while loading methods for one or more classes selected. Try to exclude them from your search!"
       console.log(msg)
@@ -1106,7 +1114,7 @@ app.post("/api_monitor", async function(req, res){
   }
   catch(err)
   {
-    console.log("Excpetion: "+err)
+    console.log("Exception: "+err)
     return res.redirect('/?frida_crash=True&frida_crash_message='+err);
   }
  

@@ -10,7 +10,7 @@
 ****************************************************************************/
 
 try {
-	Module.ensureInitialized("libboringssl.dylib");
+	Process.getModuleByName("libboringssl.dylib").ensureInitialized();
 } catch(err) {
 	send("libboringssl.dylib module not loaded. Trying to manually load it.")
 	Module.load("libboringssl.dylib");	
@@ -20,8 +20,10 @@ var SSL_VERIFY_NONE = 0;
 var ssl_set_custom_verify;
 var ssl_get_psk_identity;	
 
+var libboringssl = Process.getModuleByName("libboringssl.dylib");
+
 ssl_set_custom_verify = new NativeFunction(
-	Module.findExportByName("libboringssl.dylib", "SSL_set_custom_verify"),
+	libboringssl.findExportByName("SSL_set_custom_verify"),
 	'void', ['pointer', 'int', 'pointer']
 );
 
@@ -29,7 +31,7 @@ ssl_set_custom_verify = new NativeFunction(
 * Function signature https://commondatastorage.googleapis.com/chromium-boringssl-docs/ssl.h.html#SSL_get_psk_identity
 */
 ssl_get_psk_identity = new NativeFunction(
-	Module.findExportByName("libboringssl.dylib", "SSL_get_psk_identity"),
+	libboringssl.findExportByName("SSL_get_psk_identity"),
 	'pointer', ['pointer']
 );
 

@@ -42,7 +42,7 @@ const subject = 'jailbreak'
 if(ObjC.available) {
 //function bypassJailbreak() {
     /* eslint no-param-reassign: 0, camelcase: 0, prefer-destructuring: 0 */
-    Interceptor.attach(Module.findExportByName(null, 'open'), {
+    Interceptor.attach(Module.getGlobalExportByName('open'), {
     onEnter(args) {
         if (!args[0])
         return
@@ -99,10 +99,10 @@ if(ObjC.available) {
         }
     }
     }
-    Interceptor.attach(Module.findExportByName(null, 'stat'), statHandler)
-    Interceptor.attach(Module.findExportByName(null, 'stat64'), statHandler)
+    Interceptor.attach(Module.getGlobalExportByName('stat'), statHandler)
+    Interceptor.attach(Module.getGlobalExportByName('stat64'), statHandler)
 
-    Interceptor.attach(Module.findExportByName(null, 'getenv'), {
+    Interceptor.attach(Module.getGlobalExportByName('getenv'), {
     onEnter(args) {
         //const key = Memory.readUtf8String(args[0])
         const key = args[0].readUtf8String()
@@ -134,14 +134,14 @@ if(ObjC.available) {
     }
     })
 
-    Interceptor.attach(Module.findExportByName(null, '_dyld_get_image_name'), {
+    Interceptor.attach(Module.getGlobalExportByName('_dyld_get_image_name'), {
     onLeave(retVal) {
-        if (Memory.readUtf8String(retVal).indexOf('MobileSubstrate') > -1)
+        if (ptr(retVal).readUtf8String().indexOf('MobileSubstrate') > -1)
         retVal.replace(ptr(0x00))
     }
     })
 
-    Interceptor.attach(Module.findExportByName(null, 'fork'), {
+    Interceptor.attach(Module.getGlobalExportByName('fork'), {
     onLeave(retVal) {
         retVal.replace(ptr(-1))
         // todo: send

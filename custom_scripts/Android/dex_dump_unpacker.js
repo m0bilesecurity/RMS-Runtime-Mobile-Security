@@ -49,7 +49,7 @@ function getFunctionName(){
     if (g_AndroidOSVersion > 4){ // android 5 and later version
         // OpenCommon is in libdexfile.so in android 10 and later
         var soName = g_AndroidOSVersion >= 10 ? "libdexfile.so" : "libart.so";
-        var artExports =  Module.enumerateExportsSync(soName);
+        var artExports =  Process.getModuleByName(soName).enumerateExports();
         for(i = 0; i< artExports.length; i++){
             if(artExports[i].name.indexOf("OpenMemory") !== -1){
                 functionName = artExports[i].name;
@@ -64,7 +64,7 @@ function getFunctionName(){
             }
         }
     }else{ //android 4
-        var dvmExports =  Module.enumerateExportsSync("libdvm.so");
+        var dvmExports =  Process.getModuleByName("libdvm.so").enumerateExports();
         if (dvmExports.length !== 0) {
             for(i = 0; i< dvmExports.length; i++){
                 if(dvmExports[i].name.indexOf("dexFileParse") !== -1){
@@ -74,7 +74,7 @@ function getFunctionName(){
                 }
             }
         }else {
-            dvmExports = Module.enumerateExportsSync("libart.so");
+            dvmExports = Process.getModuleByName("libart.so").enumerateExports();
             for(i = 0; i< dvmExports.length; i++){
                 if(dvmExports[i].name.indexOf("OpenMemory") !== -1){
                     functionName = dvmExports[i].name;
@@ -90,9 +90,11 @@ function getFunctionName(){
 function getg_processName(){
     var g_processName = "";
 
-    var fopenPtr = Module.findExportByName("libc.so", "fopen");
-    var fgetsPtr = Module.findExportByName("libc.so", "fgets");
-    var fclosePtr = Module.findExportByName("libc.so", "fclose");
+    var libc = Process.getModuleByName("libc.so");
+
+    var fopenPtr = libc.findExportByName("fopen");
+    var fgetsPtr = libc.findExportByName("fgets");
+    var fclosePtr = libc.findExportByName("fclose");
 
     var fopenFunc = new NativeFunction(fopenPtr, 'pointer', ['pointer', 'pointer']);
     var fgetsFunc = new NativeFunction(fgetsPtr, 'int', ['pointer', 'int', 'pointer']);
@@ -106,7 +108,7 @@ function getg_processName(){
         var buffData = Memory.alloc(128);
         var ret = fgetsFunc(buffData, 128, fp);
         if(ret !== 0){
-            g_processName = Memory.readCString(buffData);
+            g_processName = ptr(buffData).readCString();
             logPrint("[*] ProcessName: " + g_processName);
         }
         fcloseFunc(fp);
@@ -130,7 +132,7 @@ function checkDexMagic(dataAddr){
     var magicFlagHex = [0x64, 0x65, 0x78, 0x0a, 0x30, 0x33, 0x35, 0x00];
 
     for(var i = 0; i < 8; i++){
-        if(Memory.readU8(ptr(dataAddr).add(i)) !== magicFlagHex[i]){
+        if(ptr(dataAddr).add(i).readU8() !== magicFlagHex[i]){
             magicMatch = false;
             break;
         }
@@ -144,7 +146,7 @@ function checkOdexMagic(dataAddr){
     var magicFlagHex = [0x64, 0x65, 0x79, 0x0a, 0x30, 0x33, 0x36, 0x00];
 
     for(var i = 0; i < 8; i++){
-        if(Memory.readU8(ptr(dataAddr).add(i)) !== magicFlagHex[i]){
+        if(ptr(dataAddr).add(i).readU8() !== magicFlagHex[i]){
             magicMatch = false;
             break;
         }
@@ -157,13 +159,13 @@ function dumpDexToFile(isDex, begin, g_processName) {
     //send(hexdump(begin, { offset: 0, header: false, length: 64, ansi: false }));
     var dexType;
     isDex ? dexType = "dex" : dexType = "odex";
-    var magic = Memory.readUtf8String(begin).replace(/\n/g, '');
+    var magic = ptr(begin).readUtf8String().replace(/\n/g, '');
     var address = ptr(begin).add(isDex ? 0x20 : 0x1C);
-    var dex_size = Memory.readInt(ptr(address));
+    var dex_size = ptr(address).readInt();
     var dex_path = "/data/data/" + g_processName + "/" + dex_size + "." + dexType;
     var dex_file = new File(dex_path, "wb");
 
-    dex_file.write(Memory.readByteArray(begin, dex_size));
+    dex_file.write(ptr(begin).readByteArray(dex_size));
     dex_file.flush();
     dex_file.close();
 
@@ -176,11 +178,11 @@ function dumpDex(moduleFuncName, g_processName){
     if(moduleFuncName !== ""){
         var hookFunction;
         if (g_AndroidOSVersion > 4) {
-            hookFunction = Module.findExportByName("libart.so", moduleFuncName);
+            hookFunction = Process.getModuleByName("libart.so").findExportByName(moduleFuncName);
         } else {
-            hookFunction = Module.findExportByName("libdvm.so", moduleFuncName);
+            hookFunction = Process.getModuleByName("libdvm.so").findExportByName(moduleFuncName);
             if(hookFunction == null) {
-                hookFunction = Module.findExportByName("libart.so", moduleFuncName);
+                hookFunction = Process.getModuleByName("libart.so").findExportByName(moduleFuncName);
             }
         }
         Interceptor.attach(hookFunction,{

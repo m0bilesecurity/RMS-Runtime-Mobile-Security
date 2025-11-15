@@ -23,6 +23,8 @@
 
 //import frida-fs
 const fs = require('frida-fs');
+import Java from "frida-java-bridge";
+import ObjC from "frida-objc-bridge";
 
 rpc.exports = {
   checkmobileos: function(){
@@ -557,9 +559,9 @@ function api_monitor_Android(api_to_monitor)
 function nativedynamichook(hook, category) {
   // File System monitor only - libc.so
   Interceptor.attach(
-    Module.findExportByName(hook["clazz"], hook["method"]), {
+    Process.getModuleByName(hook["clazz"]).findExportByName(hook["method"]), {
       onEnter: function (args) {
-        var file = Memory.readCString(args[0]);
+        var file = ptr(args[0]).readCString();
         //bypass ashem and prod if libc.so - open
         if (hook["clazz"] == "libc.so" &&
           hook["method"] == "open" &&

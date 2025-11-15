@@ -6,7 +6,7 @@
 *************************************************************************/
 
 var tls_helper_create_peer_trust = new NativeFunction(
-    Module.findExportByName(null, "tls_helper_create_peer_trust"),
+    Module.getGlobalExportByName("tls_helper_create_peer_trust"),
     'int', ['pointer', 'bool', 'pointer']
     );
 

@@ -262,14 +262,16 @@ Java.perform(function() {
         return this.get.call(this, name);
     };
 
-    Interceptor.attach(Module.findExportByName("libc.so", "fopen"), {
+    var libc = Process.getModuleByName("libc.so");
+
+    Interceptor.attach(libc.findExportByName("fopen"), {
         onEnter: function(args) {
-            var path = Memory.readCString(args[0]);
+            var path = ptr(args[0]).readCString();
             path = path.split("/");
             var executable = path[path.length - 1];
             var shouldFakeReturn = (RootBinaries.indexOf(executable) > -1)
             if (shouldFakeReturn) {
-                Memory.writeUtf8String(args[0], "/notexists");
+                ptr(args[0]).writeUtf8String("/notexists");
                 send("Root Bypass - app is looking for native fopen");
             }
         },
@@ -278,18 +280,18 @@ Java.perform(function() {
         }
     });
 
-    Interceptor.attach(Module.findExportByName("libc.so", "system"), {
+    Interceptor.attach(libc.findExportByName("system"), {
         onEnter: function(args) {
-            var cmd = Memory.readCString(args[0]);
+            var cmd = ptr(args[0]).readCString();
             send("SYSTEM CMD: " + cmd);
             if (cmd.indexOf("getprop") != -1 || cmd == "mount" || cmd.indexOf("build.prop") != -1 || cmd == "id") 
             {
                 send("Root Bypass - app is looking for native system: "+cmd);
-                Memory.writeUtf8String(args[0], "grep");
+                ptr(args[0]).writeUtf8String("grep");
             }
             if (cmd == "su") {
                 send("Root Bypass - app is looking for native system: "+cmd);
-                Memory.writeUtf8String(args[0], "fakeCommand");
+                ptr(args[0]).writeUtf8String("fakeCommand");
             }
         },
         onLeave: function(retval) {

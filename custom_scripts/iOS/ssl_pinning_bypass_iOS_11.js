@@ -7,7 +7,7 @@
 
 /* OSStatus nw_tls_create_peer_trust(tls_handshake_t hdsk, bool server, SecTrustRef *trustRef); */
 var tls_helper_create_peer_trust = new NativeFunction(
-    Module.findExportByName(null, "nw_tls_create_peer_trust"),
+    Module.getGlobalExportByName("nw_tls_create_peer_trust"),
     'int', ['pointer', 'bool', 'pointer']
     );
 
