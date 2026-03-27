@@ -1357,6 +1357,10 @@ app.get("/reset_console_logs", async function(req, res){
 
   redirect_url = req.query.redirect
   //auto redirect the user to the console output page
+  // Prevent open redirect: only allow relative paths
+  if (!redirect_url || redirect_url.startsWith('//') || redirect_url.includes('://')) {
+    redirect_url = '/';
+  }
   return res.redirect(redirect_url);
 })
 /* 
