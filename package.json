@@ -43,7 +43,7 @@
     "express": "^5.1.0",
     "frida": "^17.5.1",
     "frida-fs": "^7.0.0",
-    "frida-java-bridge": "^7.0.10",
+    "frida-java-bridge": "^7.0.13",
     "frida-objc-bridge": "^8.0.5",
     "node-datetime": "^2.1.2",
     "nunjucks": "^3.2.4",
