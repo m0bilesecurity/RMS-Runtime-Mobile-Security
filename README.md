@@ -195,6 +195,7 @@ Special thanks to the following Open Source projects for the inspiration:
 * [FRIDA](https://github.com/frida/frida)
 * [Objection](https://github.com/sensepost/objection)
 * [House](https://github.com/nccgroup/house)
+* [Darkmoon](https://github.com/ASCIT31/Dark-Moon) - an open source (GPL-3.0) autonomous AI penetration testing platform for web, API, Active Directory and Kubernetes.
 * [MobSF](https://github.com/MobSF/Mobile-Security-Framework-MobSF)
 
 ### FRIDA Custom Scripts bundled in RMS - Credits:
