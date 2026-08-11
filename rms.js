@@ -593,8 +593,8 @@ app.post("/", async function(req, res){
     api = script.exports
 
     if (mode == "Spawn" && target_package!="Gadget")
-      device.resume(pid)
-    
+      await device.resume(pid)
+
     //loading FRIDA startup script if selected by the user
     if (frida_script)
       await api.loadcustomfridascript(frida_script)

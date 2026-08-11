@@ -12,6 +12,13 @@
  10. listfilesatpath(path)
  ******************************************************************************/
 
+// Frida 17 removed the global Java/ObjC bridges; re-expose them as globals so
+// this agent and user-supplied custom scripts keep working unchanged.
+import Java from 'frida-java-bridge';
+globalThis.Java = Java;
+try { globalThis.ObjC = require('frida-objc-bridge'); }
+catch (e) { globalThis.ObjC = globalThis.ObjC || { available: false, classes: {} }; }
+
 rpc.exports = {
   checkmobileos: function(){
     if (Java.available) return "Android"
