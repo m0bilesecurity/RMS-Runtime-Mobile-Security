@@ -12,12 +12,91 @@
  10. listfilesatpath(path)
  ******************************************************************************/
 
-// Frida 17 removed the global Java/ObjC bridges; re-expose them as globals so
-// this agent and user-supplied custom scripts keep working unchanged.
+/******************************************************************************
+ * Frida 17 compatibility layer
+ * ----------------------------
+ * Frida 17 (1) moved the Java/ObjC runtime bridges out of the core into
+ * separate packages and stopped injecting them as globals, and (2) removed a
+ * number of long-deprecated globals (static Module.* export/base helpers and
+ * the Memory.readX/writeX helpers). RMS's own agent AND the many community
+ * scripts it loads (custom_scripts/ + user-pasted scripts) are written against
+ * the Frida <=16 API, so we re-create those globals here. This keeps every
+ * script working unchanged on Frida 17 without editing each one.
+ ******************************************************************************/
 import Java from 'frida-java-bridge';
+import ObjC from 'frida-objc-bridge';
 globalThis.Java = Java;
-try { globalThis.ObjC = require('frida-objc-bridge'); }
-catch (e) { globalThis.ObjC = globalThis.ObjC || { available: false, classes: {} }; }
+globalThis.ObjC = ObjC;
+
+// (1) Static Module.* helpers removed in Frida 17 -> instance/global equivalents
+(function reinstateModuleStatics() {
+  try {
+    if (typeof Module.findExportByName !== 'function') {
+      Module.findExportByName = function (moduleName, exportName) {
+        if (moduleName === null || moduleName === undefined)
+          return Module.findGlobalExportByName(exportName);
+        const m = Process.findModuleByName(moduleName);
+        return m ? m.findExportByName(exportName) : null;
+      };
+    }
+    if (typeof Module.getExportByName !== 'function') {
+      Module.getExportByName = function (moduleName, exportName) {
+        const p = Module.findExportByName(moduleName, exportName);
+        if (p === null)
+          throw new Error("unable to find export '" + exportName + "'" +
+            (moduleName ? " in '" + moduleName + "'" : ""));
+        return p;
+      };
+    }
+    if (typeof Module.findBaseAddress !== 'function') {
+      Module.findBaseAddress = function (name) {
+        const m = Process.findModuleByName(name);
+        return m ? m.base : null;
+      };
+    }
+    if (typeof Module.getBaseAddress !== 'function') {
+      Module.getBaseAddress = function (name) { return Process.getModuleByName(name).base; };
+    }
+    if (typeof Module.ensureInitialized !== 'function') {
+      Module.ensureInitialized = function (name) { return Process.getModuleByName(name).ensureInitialized(); };
+    }
+  } catch (e) { console.log('[RMS compat] Module shim: ' + e); }
+})();
+
+// (1b) Process.*Sync variants removed in Frida 17 -> the non-Sync calls are now synchronous
+(function reinstateProcessSync() {
+  try {
+    ['enumerateModules', 'enumerateThreads', 'enumerateRanges', 'enumerateMallocRanges'].forEach(function (fn) {
+      if (typeof Process[fn + 'Sync'] !== 'function' && typeof Process[fn] === 'function')
+        Process[fn + 'Sync'] = function () { return Process[fn].apply(Process, arguments); };
+    });
+  } catch (e) { console.log('[RMS compat] Process shim: ' + e); }
+})();
+
+// (2) Memory.readX / writeX helpers removed in Frida 17 -> NativePointer methods
+(function reinstateMemoryHelpers() {
+  try {
+    const types = ['Pointer', 'S8', 'U8', 'S16', 'U16', 'S32', 'U32', 'Short',
+      'UShort', 'Int', 'UInt', 'Long', 'ULong', 'Float', 'Double', 'ByteArray',
+      'CString', 'Utf8String', 'Utf16String', 'AnsiString'];
+    types.forEach(function (t) {
+      if (typeof Memory['read' + t] !== 'function' &&
+          typeof NativePointer.prototype['read' + t] === 'function') {
+        Memory['read' + t] = function (address) {
+          return ptr(address)['read' + t].apply(ptr(address),
+            Array.prototype.slice.call(arguments, 1));
+        };
+      }
+      if (typeof Memory['write' + t] !== 'function' &&
+          typeof NativePointer.prototype['write' + t] === 'function') {
+        Memory['write' + t] = function (address) {
+          return ptr(address)['write' + t].apply(ptr(address),
+            Array.prototype.slice.call(arguments, 1));
+        };
+      }
+    });
+  } catch (e) { console.log('[RMS compat] Memory shim: ' + e); }
+})();
 
 rpc.exports = {
   checkmobileos: function(){
